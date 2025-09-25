@@ -17,10 +17,16 @@ export const Settings: React.FC = () => {
   const [serviceChargeDialogOpen, setServiceChargeDialogOpen] = useState(false);
   const [dashboardConfigDialogOpen, setDashboardConfigDialogOpen] = useState(false);
   const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
+  const [passwordSuccessDialogOpen, setPasswordSuccessDialogOpen] = useState(false);
+  const [passwordValidationDialogOpen, setPasswordValidationDialogOpen] = useState(false);
+  const [validationErrorMessage, setValidationErrorMessage] = useState('');
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    confirmMismatch: false
   });
 
 
@@ -36,31 +42,47 @@ export const Settings: React.FC = () => {
     updateDashboardCardVisibility(viewType, cardId, enabled);
   };
 
+  const validatePassword = (password: string): boolean => {
+    // At least 6 characters, one uppercase, one lowercase, one number
+    const minLength = password.length >= 6;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
+    return minLength && hasUpperCase && hasLowerCase && hasNumber;
+  };
+
   const handlePasswordChange = () => {
+    // Reset errors
+    setPasswordErrors({ confirmMismatch: false });
+
     // Validate passwords
     if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toast.error('All fields are required');
+      setValidationErrorMessage('All fields are required');
+      setPasswordValidationDialogOpen(true);
       return;
     }
-    
+
+    if (!validatePassword(passwordForm.newPassword)) {
+      setValidationErrorMessage('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      setPasswordValidationDialogOpen(true);
+      return;
+    }
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match');
+      setPasswordErrors({ confirmMismatch: true });
       return;
     }
-    
-    if (passwordForm.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters long');
-      return;
-    }
-    
+
     if (passwordForm.currentPassword === passwordForm.newPassword) {
-      toast.error('New password must be different from current password');
+      setValidationErrorMessage('New password must be different from current password');
+      setPasswordValidationDialogOpen(true);
       return;
     }
-    
+
     // In a real app, this would validate the current password against the backend
     // For demo purposes, we'll simulate a successful password change
-    toast.success('Password changed successfully');
+    setPasswordSuccessDialogOpen(true);
     setChangePasswordDialogOpen(false);
     setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
@@ -148,6 +170,9 @@ export const Settings: React.FC = () => {
                         onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         placeholder="Confirm your new password"
                       />
+                      {passwordErrors.confirmMismatch && (
+                        <p className="text-sm text-red-600">Passwords do not match</p>
+                      )}
                     </div>
 
                     {/* Password strength indicator */}
@@ -269,6 +294,40 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Password Success Dialog */}
+      <Dialog open={passwordSuccessDialogOpen} onOpenChange={setPasswordSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Password Changed Successfully</DialogTitle>
+            <DialogDescription>
+              Your password has been successfully changed. You can now use your new password to log in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setPasswordSuccessDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Validation Error Dialog */}
+      <Dialog open={passwordValidationDialogOpen} onOpenChange={setPasswordValidationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Validation Error</DialogTitle>
+            <DialogDescription>
+              {validationErrorMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setPasswordValidationDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

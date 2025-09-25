@@ -14,6 +14,14 @@ import {
 } from "../../../components/common/select";
 import { Textarea } from "../../../components/common/textarea";
 import { Badge } from "../../../components/common/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/common/dialog";
 import { UserPlus, Users, ArrowLeft, Copy, Trash2, Download, Upload, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,6 +50,9 @@ export const AddNewStaff = () => {
 
   const [sendingEmails, setSendingEmails] = useState<{ [key: number]: boolean }>({});
   const [bulkEmailInput, setBulkEmailInput] = useState("");
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [invalidEmailOpen, setInvalidEmailOpen] = useState(false);
+  const [emailSentOpen, setEmailSentOpen] = useState(false);
 
   const generateUsername = (lastName: string): string => {
     if (!lastName) return "";
@@ -58,6 +69,11 @@ export const AddNewStaff = () => {
     return password;
   };
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^.{4,}@.{3,}\..{2,}$/;
+    return emailRegex.test(email);
+  };
+
   const handleSingleStaffChange = (field: keyof NewStaffMember, value: string) => {
     setSingleStaff((prev) => {
       const updated = { ...prev, [field]: value };
@@ -72,17 +88,39 @@ export const AddNewStaff = () => {
     });
   };
 
-  const sendCredentialEmail = async (staff: NewStaffMember) => {
+  const sendCredentialEmail = async (staff: NewStaffMember, showDialog: boolean = true) => {
     if (!staff.email) {
       toast.error("Email address is required to send credentials");
       return;
     }
 
-    // In a real app, this would make an API call to send email
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+    if (!validateEmail(staff.email)) {
+      setInvalidEmailOpen(true);
+      return;
+    }
 
-    toast.success(`Credentials sent to ${staff.email}`);
+    // In a real app, this would make an API call to send email
+    await new Promise((resolve) => setTimeout(resolve, 0)); // Simulate API call
+
+    if (showDialog) {
+      setEmailSentOpen(true);
+    }
     console.log("Sending credentials email to:", staff.email);
+  };
+
+  const addStaffToList = (staff: NewStaffMember) => {
+    const existingStaff = JSON.parse(localStorage.getItem("staffMembers") || "[]");
+    const newStaff = {
+      id: Date.now().toString(),
+      fullName: staff.fullName,
+      username: staff.username,
+      status: "active" as const,
+      dateCreated: new Date().toISOString().split("T")[0],
+      lastLogin: new Date().toISOString().split("T")[0],
+      role: staff.role,
+    };
+    const updatedStaff = [...existingStaff, newStaff];
+    localStorage.setItem("staffMembers", JSON.stringify(updatedStaff));
   };
 
   const handleCreateSingleStaff = async () => {
@@ -91,14 +129,22 @@ export const AddNewStaff = () => {
       return;
     }
 
+    setConfirmationOpen(true);
+  };
+
+  const confirmCreateStaff = async () => {
     // In a real app, this would make an API call
-    toast.success(`Staff account created for ${singleStaff.fullName}`);
     console.log("Creating staff:", singleStaff);
+
+    // Add to staff list
+    addStaffToList(singleStaff);
 
     // Send email if email is provided
     if (singleStaff.email) {
-      await sendCredentialEmail(singleStaff);
+      await sendCredentialEmail(singleStaff, false);
     }
+
+    toast.success(`Staff account created for ${singleStaff.fullName}`);
 
     // Reset form
     setSingleStaff({
@@ -109,6 +155,8 @@ export const AddNewStaff = () => {
       password: "",
       email: "",
     });
+
+    setConfirmationOpen(false);
   };
 
   const parseBulkInput = () => {
@@ -356,6 +404,77 @@ export const AddNewStaff = () => {
           </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Staff Account Creation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to create a staff account for {singleStaff.fullName}?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm text-muted-foreground">Full Name</Label>
+                <p className="font-medium">{singleStaff.fullName}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Username</Label>
+                <p className="font-mono text-sm">{singleStaff.username}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Email</Label>
+                <p>{singleStaff.email || "Not provided"}</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmationOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmCreateStaff} className="bg-gradient-primary">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Create Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invalid Email Dialog */}
+      <Dialog open={invalidEmailOpen} onOpenChange={setInvalidEmailOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invalid Email</DialogTitle>
+            <DialogDescription>
+              The email address you entered is invalid. Email must be in the format XXXX@XXX.XX
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setInvalidEmailOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Sent Dialog */}
+      <Dialog open={emailSentOpen} onOpenChange={setEmailSentOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email Sent</DialogTitle>
+            <DialogDescription>
+              An email has been sent with credentials to {singleStaff.email}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setEmailSentOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

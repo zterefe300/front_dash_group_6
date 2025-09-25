@@ -5,13 +5,15 @@ import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/common/tabs';
 import { Badge } from '../../../components/common/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
 import { useUser } from '../../../contexts/UserContext';
 import {
   User,
   Lock,
   Shield,
   Save,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/common/dropdown-menu';
 
@@ -29,6 +31,12 @@ export const AccountSettings: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [passwordSuccessDialogOpen, setPasswordSuccessDialogOpen] = useState(false);
+  const [passwordValidationDialogOpen, setPasswordValidationDialogOpen] = useState(false);
+  const [validationErrorMessage, setValidationErrorMessage] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState({
+    confirmMismatch: false
+  });
 
 
 
@@ -37,9 +45,47 @@ export const AccountSettings: React.FC = () => {
     // In real app, make API call
   };
 
+  const validatePassword = (password: string): boolean => {
+    // At least 6 characters, one uppercase, one lowercase, one number
+    const minLength = password.length >= 6;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
+    return minLength && hasUpperCase && hasLowerCase && hasNumber;
+  };
+
   const handlePasswordChange = () => {
-    console.log('Changing password');
-    // In real app, make API call
+    // Reset errors
+    setPasswordErrors({ confirmMismatch: false });
+
+    // Validate passwords
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setValidationErrorMessage('All fields are required');
+      setPasswordValidationDialogOpen(true);
+      return;
+    }
+
+    if (!validatePassword(passwordData.newPassword)) {
+      setValidationErrorMessage('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      setPasswordValidationDialogOpen(true);
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordErrors({ confirmMismatch: true });
+      return;
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setValidationErrorMessage('New password must be different from current password');
+      setPasswordValidationDialogOpen(true);
+      return;
+    }
+
+    // In a real app, this would validate the current password against the backend
+    // For demo purposes, we'll simulate a successful password change
+    setPasswordSuccessDialogOpen(true);
     setPasswordData({
       currentPassword: '',
       newPassword: '',
@@ -183,6 +229,9 @@ export const AccountSettings: React.FC = () => {
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                 />
+                {passwordErrors.confirmMismatch && (
+                  <p className="text-sm text-red-600">Passwords do not match</p>
+                )}
               </div>
               
               <div className="pt-4">
@@ -197,6 +246,40 @@ export const AccountSettings: React.FC = () => {
 
 
       </Tabs>
+
+      {/* Password Success Dialog */}
+      <Dialog open={passwordSuccessDialogOpen} onOpenChange={setPasswordSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Password Changed Successfully</DialogTitle>
+            <DialogDescription>
+              Your password has been successfully changed. You can now use your new password to log in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setPasswordSuccessDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Validation Error Dialog */}
+      <Dialog open={passwordValidationDialogOpen} onOpenChange={setPasswordValidationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Validation Error</DialogTitle>
+            <DialogDescription>
+              {validationErrorMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setPasswordValidationDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

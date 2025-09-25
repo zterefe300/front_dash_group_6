@@ -48,7 +48,7 @@ export const StaffAccounts = () => {
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
 
   // Mock staff data
-  const staffMembers: StaffMember[] = [
+  const mockStaff: StaffMember[] = [
     {
       id: "1",
       fullName: "John Smith",
@@ -95,6 +95,19 @@ export const StaffAccounts = () => {
       role: "Support Staff",
     },
   ];
+
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(() => {
+    let stored = localStorage.getItem("staffMembers");
+
+    if (stored && stored?.length > mockStaff.length) {
+      return JSON.parse(stored);
+    }
+    
+    localStorage.setItem("staffMembers", JSON.stringify(mockStaff));
+    stored = JSON.stringify(mockStaff);
+
+    return JSON.parse(stored);
+  });
 
   const filteredStaff = staffMembers.filter((staff) => {
     const matchesSearch =
@@ -168,7 +181,6 @@ export const StaffAccounts = () => {
                 <TableRow>
                   <TableHead>Full Name</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead>Role</TableHead>
                   <TableHead>Date Created</TableHead>
                   <TableHead>Last Login</TableHead>
                 </TableRow>
@@ -178,8 +190,6 @@ export const StaffAccounts = () => {
                   <TableRow key={staff.id}>
                     <TableCell className="font-medium">{staff.fullName}</TableCell>
                     <TableCell className="font-mono text-sm">{staff.username}</TableCell>
-                    <TableCell>{staff.role}</TableCell>
-
                     <TableCell>{new Date(staff.dateCreated).toLocaleDateString()}</TableCell>
                     <TableCell>{new Date(staff.lastLogin).toLocaleDateString()}</TableCell>
                   </TableRow>
