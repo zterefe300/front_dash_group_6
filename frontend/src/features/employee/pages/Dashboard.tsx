@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
 import { useUser } from '../../../contexts/UserContext';
 import { useSettings } from '../../../contexts/SettingsContext';
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, currentView } = useUser();
   const { dashboardConfig } = useSettings();
 
@@ -20,32 +22,28 @@ export const Dashboard: React.FC = () => {
     {
       id: 'total-restaurants',
       title: 'Total Restaurants',
-      value: '156',
-      change: '+12 this month',
+      value: '4',
       icon: Building2,
       color: 'text-blue-600'
     },
     {
       id: 'active-staff',
       title: 'Active Staff',
-      value: '24',
-      change: '+3 this week',
+      value: '5',
       icon: Users,
       color: 'text-green-600'
     },
     {
       id: 'active-drivers',
       title: 'Active Drivers',
-      value: '89',
-      change: '+7 this week',
+      value: '5',
       icon: Truck,
       color: 'text-purple-600'
     },
     {
       id: 'pending-requests',
       title: 'Pending Requests',
-      value: '8',
-      change: '2 urgent',
+      value: '6',
       icon: AlertCircle,
       color: 'text-orange-600'
     }
@@ -55,7 +53,7 @@ export const Dashboard: React.FC = () => {
     {
       id: 'orders-today',
       title: 'Orders Today',
-      value: '47',
+      value: '4',
       change: '+8 from yesterday',
       icon: ShoppingCart,
       color: 'text-blue-600'
@@ -63,7 +61,7 @@ export const Dashboard: React.FC = () => {
     {
       id: 'active-orders',
       title: 'Active Orders',
-      value: '12',
+      value: '2',
       change: 'In progress',
       icon: Clock,
       color: 'text-orange-600'
@@ -71,7 +69,7 @@ export const Dashboard: React.FC = () => {
     {
       id: 'completed-orders',
       title: 'Completed Orders',
-      value: '35',
+      value: '2',
       change: 'Today',
       icon: CheckCircle,
       color: 'text-green-600'
@@ -79,7 +77,7 @@ export const Dashboard: React.FC = () => {
     {
       id: 'available-drivers',
       title: 'Available Drivers',
-      value: '18',
+      value: '3',
       change: 'Ready for delivery',
       icon: Truck,
       color: 'text-purple-600'
@@ -178,6 +176,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Quick Actions */}
+      {currentView === 'admin' &&
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -190,58 +189,34 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 gap-2">
               {currentView === 'admin' ? (
                 <>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
+                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left" onClick={() => navigate("/employee/registration-requests")}>
                     <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
                       <Building2 className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm font-medium text-accent-foreground">Review Restaurant Requests</span>
                   </button>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
+                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left" onClick={() => navigate("/employee/add-new-staff")}>
                     <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm font-medium text-accent-foreground">Add New Staff Member</span>
                   </button>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
+                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left" onClick={() => navigate("/employee/manage-drivers")}>
                     <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
                       <Truck className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-sm font-medium text-accent-foreground">Hire New Driver</span>
+                    <span className="text-sm font-medium text-accent-foreground">Manage Drivers</span>
                   </button>
 
                 </>
               ) : (
                 <>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
-                    <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
-                      <ShoppingCart className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-accent-foreground">View Order Queue</span>
-                  </button>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
-                    <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-accent-foreground">Check Active Orders</span>
-                  </button>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
-                    <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
-                      <Truck className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-accent-foreground">Assign Driver</span>
-                  </button>
-                  <button className="quick-action-button flex items-center space-x-3 p-3 rounded-lg text-left">
-                    <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-accent-foreground">Mark Order Complete</span>
-                  </button>
                 </>
               )}
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>}
     </div>
   );
 };

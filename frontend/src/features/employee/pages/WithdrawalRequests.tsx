@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Badge } from '../../../components/common/badge';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/common/alert-dialog';
-import { Textarea } from '../../../components/common/textarea';
-import { Label } from '../../../components/common/label';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Badge } from "../../../components/common/badge";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
 import {
-  ArrowLeft,
-  UserX,
-  Search,
-  Eye,
-  Check,
-  X,
-  Clock,
-  Building2,
-  FileText,
-  Calendar
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../../components/common/alert-dialog";
+import { Textarea } from "../../../components/common/textarea";
+import { Label } from "../../../components/common/label";
+import { ArrowLeft, UserX, Search, Eye, Check, X, Clock, Building2, FileText, Calendar } from "lucide-react";
 
 interface DeregistrationRequest {
   id: string;
@@ -28,7 +42,7 @@ interface DeregistrationRequest {
   restaurantName: string;
   ownerName: string;
   requestDate: string;
-  status: 'pending' | 'approved' | 'rejected' | 'processing';
+  status: "pending" | "approved" | "rejected" | "processing";
   reason: string;
   joinDate: string;
   contractEndDate: string;
@@ -40,125 +54,83 @@ interface DeregistrationRequest {
 
 const mockDeregistrationRequests: DeregistrationRequest[] = [
   {
-    id: '1',
-    restaurantId: 'rest_001',
-    restaurantName: 'Pizza Palace',
-    ownerName: 'John Smith',
-    requestDate: '2024-01-15',
-    status: 'pending',
-    reason: 'Business Closure',
-    joinDate: '2022-03-15',
-    contractEndDate: '2024-03-15',
+    id: "1",
+    restaurantId: "rest_001",
+    restaurantName: "Pizza Palace",
+    ownerName: "John Smith",
+    requestDate: "2024-01-15",
+    status: "pending",
+    reason: "Business Closure",
+    joinDate: "2022-03-15",
+    contractEndDate: "2024-03-15",
     outstandingOrders: 0,
-    lastActiveDate: '2024-01-14',
-    description: 'Closing down due to lease expiration and unable to find new location'
+    lastActiveDate: "2024-01-14",
+    description: "Closing down due to lease expiration and unable to find new location",
   },
   {
-    id: '2',
-    restaurantId: 'rest_002',
-    restaurantName: 'Sushi Zen',
-    ownerName: 'Mike Chen',
-    requestDate: '2024-01-14',
-    status: 'pending',
-    reason: 'Relocation',
-    joinDate: '2021-08-20',
-    contractEndDate: '2024-08-20',
+    id: "2",
+    restaurantId: "rest_002",
+    restaurantName: "Sushi Zen",
+    ownerName: "Mike Chen",
+    requestDate: "2024-01-14",
+    status: "pending",
+    reason: "Relocation",
+    joinDate: "2021-08-20",
+    contractEndDate: "2024-08-20",
     outstandingOrders: 2,
-    lastActiveDate: '2024-01-13',
-    description: 'Moving restaurant to a different city outside FrontDash service area'
+    lastActiveDate: "2024-01-13",
+    description: "Moving restaurant to a different city outside FrontDash service area",
   },
-  {
-    id: '3',
-    restaurantId: 'rest_003',
-    restaurantName: 'Burger House',
-    ownerName: 'Sarah Johnson',
-    requestDate: '2024-01-13',
-    status: 'processing',
-    reason: 'Switch to Competitor',
-    joinDate: '2020-11-05',
-    contractEndDate: '2024-11-05',
-    outstandingOrders: 5,
-    lastActiveDate: '2024-01-12',
-    description: 'Switching to another delivery platform that better suits our business needs'
-  },
-  {
-    id: '4',
-    restaurantId: 'rest_004',
-    restaurantName: 'Taco Fiesta',
-    ownerName: 'Maria Garcia',
-    requestDate: '2024-01-12',
-    status: 'approved',
-    reason: 'Contract Completion',
-    joinDate: '2023-01-12',
-    contractEndDate: '2024-01-12',
-    outstandingOrders: 0,
-    lastActiveDate: '2024-01-11',
-    description: 'Contract period completed successfully, not renewing for business reasons'
-  },
-  {
-    id: '5',
-    restaurantId: 'rest_005',
-    restaurantName: 'Mediterranean Delight',
-    ownerName: 'Omar Hassan',
-    requestDate: '2024-01-11',
-    status: 'rejected',
-    reason: 'Dissatisfied with Service',
-    joinDate: '2023-06-10',
-    contractEndDate: '2024-06-10',
-    outstandingOrders: 8,
-    lastActiveDate: '2024-01-10',
-    description: 'Unhappy with commission rates and customer service quality',
-    rejectionReason: 'Outstanding orders must be completed before deregistration. Early contract termination fees apply.'
-  }
 ];
 
 export const WithdrawalRequests = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<DeregistrationRequest | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState("");
 
-  const filteredRequests = mockDeregistrationRequests.filter(request =>
-    request.restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRequests = mockDeregistrationRequests.filter(
+    (request) =>
+      request.restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const pendingRequests = filteredRequests.filter(req => req.status === 'pending');
+  const pendingRequests = filteredRequests.filter((req) => req.status === "pending");
 
   const handleApprove = (id: string) => {
-    console.log('Approving withdrawal:', id);
+    console.log("Approving withdrawal:", id);
     // In real app, make API call to approve withdrawal
   };
 
   const handleReject = (id: string, reason: string) => {
-    console.log('Rejecting withdrawal:', id, 'Reason:', reason);
+    console.log("Rejecting withdrawal:", id, "Reason:", reason);
     // In real app, make API call to reject withdrawal
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return (
           <Badge variant="secondary">
             <Clock className="mr-1 h-3 w-3" />
             Pending
           </Badge>
         );
-      case 'approved':
+      case "approved":
         return (
           <Badge variant="default">
             <Check className="mr-1 h-3 w-3" />
             Approved
           </Badge>
         );
-      case 'rejected':
+      case "rejected":
         return (
           <Badge variant="destructive">
             <X className="mr-1 h-3 w-3" />
             Rejected
           </Badge>
         );
-      case 'processing':
+      case "processing":
         return (
           <Badge variant="outline">
             <Clock className="mr-1 h-3 w-3" />
@@ -170,15 +142,13 @@ export const WithdrawalRequests = () => {
     }
   };
 
-
-
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/restaurant-management')}
+          onClick={() => navigate("/employee/restaurant-management")}
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -237,9 +207,7 @@ export const WithdrawalRequests = () => {
             <span>Withdrawal Requests Queue</span>
             <Badge variant="secondary">{filteredRequests.length}</Badge>
           </CardTitle>
-          <CardDescription>
-            Review and process restaurant withdrawal requests
-          </CardDescription>
+          <CardDescription>Review and process restaurant withdrawal requests</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -276,18 +244,12 @@ export const WithdrawalRequests = () => {
                       <p className="font-medium">{request.ownerName}</p>
                     </TableCell>
                     <TableCell>{request.requestDate}</TableCell>
-                    <TableCell>
-                      {getStatusBadge(request.status)}
-                    </TableCell>
+                    <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedRequest(request)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => setSelectedRequest(request)}>
                               <Eye className="h-4 w-4 mr-1" />
                               Review
                             </Button>
@@ -343,7 +305,8 @@ export const WithdrawalRequests = () => {
                                     <div>
                                       <Label>Outstanding Orders</Label>
                                       <p className="text-sm mt-1">
-                                        {selectedRequest.outstandingOrders} {selectedRequest.outstandingOrders === 1 ? 'order' : 'orders'}
+                                        {selectedRequest.outstandingOrders}{" "}
+                                        {selectedRequest.outstandingOrders === 1 ? "order" : "orders"}
                                       </p>
                                     </div>
                                     <div>
@@ -352,12 +315,10 @@ export const WithdrawalRequests = () => {
                                     </div>
                                     <div>
                                       <Label>Current Status</Label>
-                                      <div className="mt-1">
-                                        {getStatusBadge(selectedRequest.status)}
-                                      </div>
+                                      <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
                                     </div>
                                   </div>
-                                  
+
                                   {selectedRequest.outstandingOrders > 0 && (
                                     <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                       <div className="flex items-center text-yellow-800">
@@ -365,24 +326,26 @@ export const WithdrawalRequests = () => {
                                         <span className="text-sm font-medium">Outstanding Orders</span>
                                       </div>
                                       <p className="text-sm text-yellow-700 mt-1">
-                                        This restaurant has {selectedRequest.outstandingOrders} pending {selectedRequest.outstandingOrders === 1 ? 'order' : 'orders'} that must be completed before withdrawal.
+                                        This restaurant has {selectedRequest.outstandingOrders} pending{" "}
+                                        {selectedRequest.outstandingOrders === 1 ? "order" : "orders"} that
+                                        must be completed before withdrawal.
                                       </p>
                                     </div>
                                   )}
                                 </div>
 
-
-
                                 {/* Additional Details */}
                                 {selectedRequest.description && (
                                   <div>
                                     <Label>Additional Details</Label>
-                                    <p className="text-sm mt-1 p-3 bg-gray-50 rounded">{selectedRequest.description}</p>
+                                    <p className="text-sm mt-1 p-3 bg-gray-50 rounded">
+                                      {selectedRequest.description}
+                                    </p>
                                   </div>
                                 )}
 
                                 {/* Rejection Reason */}
-                                {selectedRequest.status === 'rejected' && selectedRequest.rejectionReason && (
+                                {selectedRequest.status === "rejected" && selectedRequest.rejectionReason && (
                                   <div>
                                     <Label>Rejection Reason</Label>
                                     <p className="text-sm mt-1 p-3 bg-red-50 border border-red-200 rounded text-red-800">
@@ -392,7 +355,7 @@ export const WithdrawalRequests = () => {
                                 )}
 
                                 {/* Rejection Reason Input (for new rejections) */}
-                                {selectedRequest.status === 'pending' && (
+                                {selectedRequest.status === "pending" && (
                                   <div>
                                     <Label htmlFor="rejection-reason">Rejection Reason (if rejecting)</Label>
                                     <Textarea
@@ -407,14 +370,14 @@ export const WithdrawalRequests = () => {
                               </div>
                             )}
                             <DialogFooter className="flex space-x-2">
-                              {selectedRequest?.status === 'pending' && (
+                              {selectedRequest?.status === "pending" && (
                                 <>
                                   <Button
                                     variant="outline"
                                     onClick={() => {
                                       if (selectedRequest && rejectionReason.trim()) {
                                         handleReject(selectedRequest.id, rejectionReason);
-                                        setRejectionReason('');
+                                        setRejectionReason("");
                                       }
                                     }}
                                     disabled={!rejectionReason.trim()}
@@ -434,14 +397,14 @@ export const WithdrawalRequests = () => {
                                   </Button>
                                 </>
                               )}
-                              {selectedRequest?.status !== 'pending' && (
+                              {selectedRequest?.status !== "pending" && (
                                 <Button variant="outline">Close</Button>
                               )}
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
 
-                        {request.status === 'pending' && (
+                        {request.status === "pending" && (
                           <div className="flex space-x-1">
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -453,7 +416,9 @@ export const WithdrawalRequests = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Approve Withdrawal</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to approve this withdrawal request for {request.restaurantName}? This will remove the restaurant from the platform.
+                                    Are you sure you want to approve this withdrawal request for{" "}
+                                    {request.restaurantName}? This will remove the restaurant from the
+                                    platform.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

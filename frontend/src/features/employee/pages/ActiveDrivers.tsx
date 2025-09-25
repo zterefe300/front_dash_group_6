@@ -1,20 +1,51 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Badge } from '../../../components/common/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
-import { Search, Filter, Truck, ArrowLeft, MapPin, Star, Phone, Clock, UserCheck, Activity } from 'lucide-react';
-import { Avatar, AvatarFallback } from '../../../components/common/avatar';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
+import { Badge } from "../../../components/common/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/common/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/common/dialog";
+import {
+  Search,
+  Filter,
+  Truck,
+  ArrowLeft,
+  MapPin,
+  Star,
+  Phone,
+  Clock,
+  UserCheck,
+  Activity,
+} from "lucide-react";
+import { Avatar, AvatarFallback } from "../../../components/common/avatar";
 
 interface Driver {
   id: string;
   fullName: string;
   phone: string;
-  status: 'online' | 'busy' | 'offline';
+  status: "online" | "busy" | "offline";
   rating: number;
   totalDeliveries: number;
   currentLocation: string;
@@ -26,85 +57,86 @@ interface Driver {
 
 export const ActiveDrivers = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'online' | 'busy' | 'offline'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "online" | "busy" | "offline">("all");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
 
   // Mock driver data
   const activeDrivers: Driver[] = [
     {
-      id: '1',
-      fullName: 'Michael Rodriguez',
-      phone: '+1 (555) 123-4567',
-      status: 'online',
+      id: "1",
+      fullName: "Michael Rodriguez",
+      phone: "+1 (555) 123-4567",
+      status: "online",
       rating: 4.9,
       totalDeliveries: 1245,
-      currentLocation: 'Downtown District',
-      vehicleType: 'Motorcycle',
-      joinDate: '2024-01-15',
+      currentLocation: "Downtown District",
+      vehicleType: "Motorcycle",
+      joinDate: "2024-01-15",
       todayDeliveries: 8,
-      earnings: 145.50
+      earnings: 145.5,
     },
     {
-      id: '2',
-      fullName: 'Sarah Chen',
-      phone: '+1 (555) 234-5678',
-      status: 'busy',
+      id: "2",
+      fullName: "Sarah Chen",
+      phone: "+1 (555) 234-5678",
+      status: "busy",
       rating: 4.8,
       totalDeliveries: 980,
-      currentLocation: 'Business Quarter',
-      vehicleType: 'Car',
-      joinDate: '2024-02-20',
+      currentLocation: "Business Quarter",
+      vehicleType: "Car",
+      joinDate: "2024-02-20",
       todayDeliveries: 12,
-      earnings: 198.75
+      earnings: 198.75,
     },
     {
-      id: '3',
-      fullName: 'David Park',
-      phone: '+1 (555) 345-6789',
-      status: 'online',
+      id: "3",
+      fullName: "David Park",
+      phone: "+1 (555) 345-6789",
+      status: "online",
       rating: 4.7,
       totalDeliveries: 756,
-      currentLocation: 'Residential Area',
-      vehicleType: 'Bicycle',
-      joinDate: '2024-03-10',
+      currentLocation: "Residential Area",
+      vehicleType: "Bicycle",
+      joinDate: "2024-03-10",
       todayDeliveries: 6,
-      earnings: 89.25
+      earnings: 89.25,
     },
     {
-      id: '4',
-      fullName: 'Lisa Thompson',
-      phone: '+1 (555) 456-7890',
-      status: 'offline',
+      id: "4",
+      fullName: "Lisa Thompson",
+      phone: "+1 (555) 456-7890",
+      status: "offline",
       rating: 4.9,
       totalDeliveries: 1543,
-      currentLocation: 'Uptown Area',
-      vehicleType: 'Car',
-      joinDate: '2023-11-05',
+      currentLocation: "Uptown Area",
+      vehicleType: "Car",
+      joinDate: "2023-11-05",
       todayDeliveries: 15,
-      earnings: 267.80
+      earnings: 267.8,
     },
     {
-      id: '5',
-      fullName: 'Ahmed Hassan',
-      phone: '+1 (555) 567-8901',
-      status: 'busy',
+      id: "5",
+      fullName: "Ahmed Hassan",
+      phone: "+1 (555) 567-8901",
+      status: "busy",
       rating: 4.6,
       totalDeliveries: 623,
-      currentLocation: 'Mall District',
-      vehicleType: 'Motorcycle',
-      joinDate: '2024-04-12',
+      currentLocation: "Mall District",
+      vehicleType: "Motorcycle",
+      joinDate: "2024-04-12",
       todayDeliveries: 9,
-      earnings: 156.40
-    }
+      earnings: 156.4,
+    },
   ];
 
-  const filteredDrivers = activeDrivers.filter(driver => {
-    const matchesSearch = driver.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         driver.phone.includes(searchTerm) ||
-                         driver.currentLocation.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || driver.status === statusFilter;
+  const filteredDrivers = activeDrivers.filter((driver) => {
+    const matchesSearch =
+      driver.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      driver.phone.includes(searchTerm) ||
+      driver.currentLocation.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || driver.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -115,34 +147,40 @@ export const ActiveDrivers = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-100 text-green-800';
-      case 'busy': return 'bg-amber-100 text-amber-800';
-      case 'offline': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "online":
+        return "bg-green-100 text-green-800";
+      case "busy":
+        return "bg-amber-100 text-amber-800";
+      case "offline":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
-  const onlineDrivers = activeDrivers.filter(d => d.status === 'online').length;
-  const busyDrivers = activeDrivers.filter(d => d.status === 'busy').length;
+  const onlineDrivers = activeDrivers.filter((d) => d.status === "online").length;
+  const busyDrivers = activeDrivers.filter((d) => d.status === "busy").length;
   const totalDeliveriesToday = activeDrivers.reduce((sum, d) => sum + d.todayDeliveries, 0);
   const avgRating = activeDrivers.reduce((sum, d) => sum + d.rating, 0) / activeDrivers.length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={() => navigate('/driver-management')}>
+        <Button variant="outline" onClick={() => navigate("/employee/driver-management")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Driver Management
         </Button>
         <div>
           <h1>Active Drivers</h1>
-          <p className="text-muted-foreground">
-            View and manage currently active delivery drivers
-          </p>
+          <p className="text-muted-foreground">View and manage currently active delivery drivers</p>
         </div>
       </div>
 
@@ -189,7 +227,6 @@ export const ActiveDrivers = () => {
             </div>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Active Drivers Table */}
@@ -199,9 +236,7 @@ export const ActiveDrivers = () => {
             <Truck className="h-5 w-5" />
             <span>Active Driver Directory</span>
           </CardTitle>
-          <CardDescription>
-            Current active drivers with filtering and sorting options
-          </CardDescription>
+          <CardDescription>Current active drivers with filtering and sorting options</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-4 mb-6">
@@ -214,7 +249,10 @@ export const ActiveDrivers = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(value: 'all' | 'online' | 'busy' | 'offline') => setStatusFilter(value)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value: "all" | "online" | "busy" | "offline") => setStatusFilter(value)}
+            >
               <SelectTrigger className="w-40">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by status" />
@@ -287,9 +325,7 @@ export const ActiveDrivers = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Driver Details</DialogTitle>
-            <DialogDescription>
-              Comprehensive information about the selected driver
-            </DialogDescription>
+            <DialogDescription>Comprehensive information about the selected driver</DialogDescription>
           </DialogHeader>
           {selectedDriver && (
             <div className="space-y-6">

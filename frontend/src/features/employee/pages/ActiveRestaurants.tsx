@@ -1,13 +1,44 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Badge } from '../../../components/common/badge';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/common/alert-dialog';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Badge } from "../../../components/common/badge";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/common/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../../components/common/alert-dialog";
 import {
   ArrowLeft,
   Building2,
@@ -20,8 +51,8 @@ import {
   Phone,
   Mail,
   TrendingUp,
-  Filter
-} from 'lucide-react';
+  Filter,
+} from "lucide-react";
 
 interface Restaurant {
   id: string;
@@ -31,7 +62,7 @@ interface Restaurant {
   phone: string;
   address: string;
   cuisine: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   joinDate: string;
   rating: number;
   totalOrders: number;
@@ -42,115 +73,115 @@ interface Restaurant {
 
 const mockActiveRestaurants: Restaurant[] = [
   {
-    id: '1',
-    name: 'Sushi Zen',
-    owner: 'Mike Chen',
-    email: 'mike@sushizen.com',
-    phone: '+1 234 567 8903',
-    address: '789 Pine St, City, State 12345',
-    cuisine: 'Japanese',
-    status: 'active',
-    joinDate: '2023-12-01',
+    id: "1",
+    name: "Sushi Zen",
+    owner: "Mike Chen",
+    email: "mike@sushizen.com",
+    phone: "+1 234 567 8903",
+    address: "789 Pine St, City, State 12345",
+    cuisine: "Japanese",
+    status: "active",
+    joinDate: "2023-12-01",
     rating: 4.8,
     totalOrders: 1247,
-    revenue: '$24,850.00',
-    commission: '$3,727.50',
-    lastActive: '2024-01-15 14:30'
+    revenue: "$24,850.00",
+    commission: "$3,727.50",
+    lastActive: "2024-01-15 14:30",
   },
   {
-    id: '2',
-    name: 'Taco Fiesta',
-    owner: 'Maria Garcia',
-    email: 'maria@tacofiesta.com',
-    phone: '+1 234 567 8904',
-    address: '321 Elm St, City, State 12345',
-    cuisine: 'Mexican',
-    status: 'active',
-    joinDate: '2023-11-15',
+    id: "2",
+    name: "Taco Fiesta",
+    owner: "Maria Garcia",
+    email: "maria@tacofiesta.com",
+    phone: "+1 234 567 8904",
+    address: "321 Elm St, City, State 12345",
+    cuisine: "Mexican",
+    status: "active",
+    joinDate: "2023-11-15",
     rating: 4.6,
     totalOrders: 892,
-    revenue: '$15,670.00',
-    commission: '$2,350.50',
-    lastActive: '2024-01-15 16:45'
+    revenue: "$15,670.00",
+    commission: "$2,350.50",
+    lastActive: "2024-01-15 16:45",
   },
   {
-    id: '3',
-    name: 'Burger Corner',
-    owner: 'Tom Wilson',
-    email: 'tom@burgercorner.com',
-    phone: '+1 234 567 8905',
-    address: '555 Main Ave, City, State 12345',
-    cuisine: 'American',
-    status: 'active',
-    joinDate: '2023-10-20',
+    id: "3",
+    name: "Burger Corner",
+    owner: "Tom Wilson",
+    email: "tom@burgercorner.com",
+    phone: "+1 234 567 8905",
+    address: "555 Main Ave, City, State 12345",
+    cuisine: "American",
+    status: "active",
+    joinDate: "2023-10-20",
     rating: 4.4,
     totalOrders: 1563,
-    revenue: '$31,260.00',
-    commission: '$4,689.00',
-    lastActive: '2024-01-15 12:15'
+    revenue: "$31,260.00",
+    commission: "$4,689.00",
+    lastActive: "2024-01-15 12:15",
   },
   {
-    id: '4',
-    name: 'Mediterranean Delight',
-    owner: 'Omar Hassan',
-    email: 'omar@meddelight.com',
-    phone: '+1 234 567 8906',
-    address: '777 Olive Dr, City, State 12345',
-    cuisine: 'Mediterranean',
-    status: 'inactive',
-    joinDate: '2023-09-10',
+    id: "4",
+    name: "Mediterranean Delight",
+    owner: "Omar Hassan",
+    email: "omar@meddelight.com",
+    phone: "+1 234 567 8906",
+    address: "777 Olive Dr, City, State 12345",
+    cuisine: "Mediterranean",
+    status: "inactive",
+    joinDate: "2023-09-10",
     rating: 3.9,
     totalOrders: 423,
-    revenue: '$8,940.00',
-    commission: '$1,341.00',
-    lastActive: '2024-01-10 09:20'
-  }
+    revenue: "$8,940.00",
+    commission: "$1,341.00",
+    lastActive: "2024-01-10 09:20",
+  },
 ];
 
 export const ActiveRestaurants = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
-  const filteredRestaurants = mockActiveRestaurants.filter(restaurant => {
-    const matchesSearch = 
+  const filteredRestaurants = mockActiveRestaurants.filter((restaurant) => {
+    const matchesSearch =
       restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       restaurant.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
       restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || restaurant.status === statusFilter;
-    
+
+    const matchesStatus = statusFilter === "all" || restaurant.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   const handleDeactivate = (id: string) => {
-    console.log('Deactivating restaurant:', id);
+    console.log("Deactivating restaurant:", id);
     // In real app, make API call
   };
 
   const handleActivate = (id: string) => {
-    console.log('Activating restaurant:', id);
+    console.log("Activating restaurant:", id);
     // In real app, make API call
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
+      case "active":
         return (
           <Badge variant="default">
             <Check className="mr-1 h-3 w-3" />
             Active
           </Badge>
         );
-      case 'suspended':
+      case "suspended":
         return (
           <Badge variant="secondary">
             <Clock className="mr-1 h-3 w-3" />
             Inactive
           </Badge>
         );
-      case 'inactive':
+      case "inactive":
         return (
           <Badge variant="secondary">
             <Clock className="mr-1 h-3 w-3" />
@@ -168,7 +199,7 @@ export const ActiveRestaurants = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/restaurant-management')}
+          onClick={() => navigate("/employee/restaurant-management")}
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -178,12 +209,8 @@ export const ActiveRestaurants = () => {
 
       <div>
         <h1>Restaurant Directory</h1>
-        <p className="text-muted-foreground">
-          Manage all restaurant partners - view and update their status
-        </p>
+        <p className="text-muted-foreground">Manage all restaurant partners - view and update their status</p>
       </div>
-
-
 
       <Card>
         <CardHeader>
@@ -191,9 +218,7 @@ export const ActiveRestaurants = () => {
             <Building2 className="h-5 w-5" />
             <span>Restaurant Directory ({filteredRestaurants.length})</span>
           </CardTitle>
-          <CardDescription>
-            View and manage all restaurant partners on the platform
-          </CardDescription>
+          <CardDescription>View and manage all restaurant partners on the platform</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -241,7 +266,9 @@ export const ActiveRestaurants = () => {
                           <MapPin className="h-3 w-3 mr-1" />
                           {restaurant.address}
                         </p>
-                        <Badge variant="outline" className="mt-1">{restaurant.cuisine}</Badge>
+                        <Badge variant="outline" className="mt-1">
+                          {restaurant.cuisine}
+                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -257,7 +284,6 @@ export const ActiveRestaurants = () => {
                         </p>
                       </div>
                     </TableCell>
-
 
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -288,7 +314,9 @@ export const ActiveRestaurants = () => {
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Owner</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.owner}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.owner}
+                                    </p>
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Cuisine Type</h4>
@@ -296,25 +324,34 @@ export const ActiveRestaurants = () => {
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Join Date</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.joinDate}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.joinDate}
+                                    </p>
                                   </div>
                                   <div className="col-span-2">
                                     <h4 className="font-medium">Address</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.address}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.address}
+                                    </p>
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Contact Email</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.email}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.email}
+                                    </p>
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Phone</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.phone}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.phone}
+                                    </p>
                                   </div>
                                   <div>
                                     <h4 className="font-medium">Last Active</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedRestaurant.lastActive}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedRestaurant.lastActive}
+                                    </p>
                                   </div>
-
                                 </div>
                               </div>
                             )}
@@ -323,8 +360,6 @@ export const ActiveRestaurants = () => {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-
-
                       </div>
                     </TableCell>
                   </TableRow>

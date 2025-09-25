@@ -112,27 +112,18 @@ export const AccountSettings: React.FC = () => {
                     id="name"
                     value={profileData.name}
                     onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                    disabled={user?.role === 'staff'}
+                    disabled={true}
                   />
                   {user?.role === 'staff' && (
                     <p className="text-xs text-muted-foreground">Full name cannot be edited by staff members</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    value={profileData.phone}
-                    onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="jobTitle">Job Title</Label>
+                  <Label htmlFor="jobTitle">Level</Label>
                   <Input
                     id="jobTitle"
-                    value={profileData.jobTitle}
-                    onChange={(e) => setProfileData({...profileData, jobTitle: e.target.value})}
+                    value={user?.role}
+                    disabled={true}
                   />
                 </div>
               </div>
@@ -147,11 +138,6 @@ export const AccountSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
-                <Button onClick={handleProfileSave}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
-                </Button>
               </div>
             </CardContent>
           </Card>

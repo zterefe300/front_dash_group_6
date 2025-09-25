@@ -1,22 +1,53 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Label } from '../../../components/common/label';
-import { Badge } from '../../../components/common/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../components/common/alert-dialog';
-import { Search, Filter, Users, Trash2, ArrowLeft, UserCheck, UserX, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
+import { Badge } from "../../../components/common/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/common/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../../components/common/alert-dialog";
+import { Search, Filter, Users, Trash2, ArrowLeft, UserCheck, UserX, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 interface StaffMember {
   id: string;
   fullName: string;
   username: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   dateCreated: string;
   lastLogin: string;
   role: string;
@@ -24,73 +55,74 @@ interface StaffMember {
 
 export const ManageStaff = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const roles = [
-    'Order Manager',
-    'Delivery Coordinator',
-    'Customer Service',
-    'Operations Manager',
-    'Support Staff',
-    'Supervisor'
+    "Order Manager",
+    "Delivery Coordinator",
+    "Customer Service",
+    "Operations Manager",
+    "Support Staff",
+    "Supervisor",
   ];
 
   // Mock staff data
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([
     {
-      id: '1',
-      fullName: 'John Smith',
-      username: 'smith01',
-      status: 'active',
-      dateCreated: '2024-01-15',
-      lastLogin: '2024-09-08',
-      role: 'Order Manager'
+      id: "1",
+      fullName: "John Smith",
+      username: "smith01",
+      status: "active",
+      dateCreated: "2024-01-15",
+      lastLogin: "2024-09-08",
+      role: "Order Manager",
     },
     {
-      id: '2',
-      fullName: 'Emily Johnson',
-      username: 'johnson02',
-      status: 'active',
-      dateCreated: '2024-02-20',
-      lastLogin: '2024-09-09',
-      role: 'Delivery Coordinator'
+      id: "2",
+      fullName: "Emily Johnson",
+      username: "johnson02",
+      status: "active",
+      dateCreated: "2024-02-20",
+      lastLogin: "2024-09-09",
+      role: "Delivery Coordinator",
     },
     {
-      id: '3',
-      fullName: 'Michael Brown',
-      username: 'brown03',
-      status: 'inactive',
-      dateCreated: '2024-01-10',
-      lastLogin: '2024-08-15',
-      role: 'Customer Service'
+      id: "3",
+      fullName: "Michael Brown",
+      username: "brown03",
+      status: "inactive",
+      dateCreated: "2024-01-10",
+      lastLogin: "2024-08-15",
+      role: "Customer Service",
     },
     {
-      id: '4',
-      fullName: 'Sarah Davis',
-      username: 'davis04',
-      status: 'active',
-      dateCreated: '2024-03-05',
-      lastLogin: '2024-09-09',
-      role: 'Operations Manager'
+      id: "4",
+      fullName: "Sarah Davis",
+      username: "davis04",
+      status: "active",
+      dateCreated: "2024-03-05",
+      lastLogin: "2024-09-09",
+      role: "Operations Manager",
     },
     {
-      id: '5',
-      fullName: 'David Wilson',
-      username: 'wilson05',
-      status: 'active',
-      dateCreated: '2024-02-28',
-      lastLogin: '2024-09-08',
-      role: 'Support Staff'
-    }
+      id: "5",
+      fullName: "David Wilson",
+      username: "wilson05",
+      status: "active",
+      dateCreated: "2024-02-28",
+      lastLogin: "2024-09-08",
+      role: "Support Staff",
+    },
   ]);
 
-  const filteredStaff = staffMembers.filter(staff => {
-    const matchesSearch = staff.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         staff.username.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || staff.status === statusFilter;
+  const filteredStaff = staffMembers.filter((staff) => {
+    const matchesSearch =
+      staff.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.username.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || staff.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -102,39 +134,33 @@ export const ManageStaff = () => {
   const confirmDelete = () => {
     if (!selectedStaff) return;
 
-    setStaffMembers(prev => prev.filter(staff => staff.id !== selectedStaff.id));
+    setStaffMembers((prev) => prev.filter((staff) => staff.id !== selectedStaff.id));
     toast.success(`Staff account for ${selectedStaff.fullName} has been deleted`);
     setDeleteDialogOpen(false);
     setSelectedStaff(null);
   };
 
   const toggleStaffStatus = (staff: StaffMember) => {
-    const newStatus = staff.status === 'active' ? 'inactive' : 'active';
-    setStaffMembers(prev => prev.map(s => 
-      s.id === staff.id ? { ...s, status: newStatus } : s
-    ));
-    toast.success(`${staff.fullName} has been ${newStatus === 'active' ? 'activated' : 'deactivated'}`);
+    const newStatus = staff.status === "active" ? "inactive" : "active";
+    setStaffMembers((prev) => prev.map((s) => (s.id === staff.id ? { ...s, status: newStatus } : s)));
+    toast.success(`${staff.fullName} has been ${newStatus === "active" ? "activated" : "deactivated"}`);
   };
 
-  const activeStaffCount = staffMembers.filter(s => s.status === 'active').length;
-  const inactiveStaffCount = staffMembers.filter(s => s.status === 'inactive').length;
+  const activeStaffCount = staffMembers.filter((s) => s.status === "active").length;
+  const inactiveStaffCount = staffMembers.filter((s) => s.status === "inactive").length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={() => navigate('/staff-management')}>
+        <Button variant="outline" onClick={() => navigate("/employee/staff-management")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Staff Management
         </Button>
         <div>
           <h1>Manage Staff</h1>
-          <p className="text-muted-foreground">
-            Edit and delete staff accounts
-          </p>
+          <p className="text-muted-foreground">Edit and delete staff accounts</p>
         </div>
       </div>
-
-
 
       {/* Staff Management Table */}
       <Card>
@@ -143,9 +169,7 @@ export const ManageStaff = () => {
             <Users className="h-5 w-5" />
             <span>Staff Management</span>
           </CardTitle>
-          <CardDescription>
-            Edit staff details, change status, or delete accounts
-          </CardDescription>
+          <CardDescription>Edit staff details, change status, or delete accounts</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-4 mb-6">
@@ -158,7 +182,10 @@ export const ManageStaff = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}
+            >
               <SelectTrigger className="w-40">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by status" />
@@ -225,8 +252,8 @@ export const ManageStaff = () => {
               <span>Delete Staff Account</span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the staff account for <strong>{selectedStaff?.fullName}</strong>?
-              This action cannot be undone and will permanently remove all account data.
+              Are you sure you want to delete the staff account for <strong>{selectedStaff?.fullName}</strong>
+              ? This action cannot be undone and will permanently remove all account data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -399,7 +399,7 @@ export const OrderManagement: React.FC = () => {
                 <Badge variant="default">{activeOrders.length}</Badge>
               </CardTitle>
               <CardDescription>
-                Orders currently being prepared or delivered
+                Orders currently being delivered
               </CardDescription>
             </CardHeader>
             <CardContent>

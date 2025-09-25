@@ -1,18 +1,18 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Badge } from '../../../components/common/badge';
-import { Truck, Users, UserCheck, UserX, ArrowRight } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Button } from "../../../components/common/button";
+import { Badge } from "../../../components/common/badge";
+import { Truck, Users, UserCheck, UserX, ArrowRight } from "lucide-react";
 
 export const DriverManagement = () => {
   const navigate = useNavigate();
   // Mock data for dashboard overview
   const driverStats = {
-    activeDrivers: 24,
-    readyToHire: 8,
-    terminated: 12,
-    totalDeliveries: 156
+    activeDrivers: 5,
+    readyToHire: 2,
+    terminated: 2,
+    totalDeliveries: 156,
   };
 
   return (
@@ -67,21 +67,20 @@ export const DriverManagement = () => {
             </div>
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/active-drivers')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => navigate("/employee/active-drivers")}
+        >
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <UserCheck className="h-5 w-5 text-primary" />
               <span>Active Drivers</span>
             </CardTitle>
-            <CardDescription>
-              View and manage currently active delivery drivers
-            </CardDescription>
+            <CardDescription>View and manage currently active delivery drivers</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -103,15 +102,16 @@ export const DriverManagement = () => {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/manage-drivers')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => navigate("/employee/manage-drivers")}
+        >
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Truck className="h-5 w-5 text-primary" />
               <span>Manage Drivers</span>
             </CardTitle>
-            <CardDescription>
-              Hire, terminate, and manage driver accounts
-            </CardDescription>
+            <CardDescription>Hire, terminate, and manage driver accounts</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -133,8 +133,6 @@ export const DriverManagement = () => {
           </CardContent>
         </Card>
       </div>
-
-
     </div>
   );
 };

@@ -54,9 +54,7 @@ const EmployeeRoutes = () => (
   <UserProvider>
     <SettingsProvider>
       <div className="min-h-screen bg-background">
-        <DashboardLayout>
-          <EmployeePortalRoutes />
-        </DashboardLayout>
+        <EmployeePortalRoutes />
       </div>
     </SettingsProvider>
   </UserProvider>

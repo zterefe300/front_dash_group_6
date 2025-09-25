@@ -1,8 +1,8 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Users, UserPlus, Settings2 } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Button } from "../../../components/common/button";
+import { Users, UserPlus, Settings2 } from "lucide-react";
 
 export const StaffManagement = () => {
   const navigate = useNavigate();
@@ -10,13 +10,11 @@ export const StaffManagement = () => {
     <div className="space-y-6">
       <div>
         <h1>Staff Management</h1>
-        <p className="text-muted-foreground">
-          Manage staff accounts, permissions, and employee operations
-        </p>
+        <p className="text-muted-foreground">Manage staff accounts, permissions, and employee operations</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="stat-card cursor-pointer" onClick={() => navigate('/staff-accounts')}>
+        <Card className="stat-card cursor-pointer" onClick={() => navigate("/employee/staff-accounts")}>
           <CardHeader>
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
@@ -31,17 +29,23 @@ export const StaffManagement = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold">15</div>
+                <div className="text-2xl font-bold">5</div>
                 <p className="text-xs text-muted-foreground">Total employees</p>
               </div>
-              <Button size="sm" onClick={(e: React.ChangeEvent<HTMLInputElement>) => { e.stopPropagation(); navigate('/staff-accounts'); }}>
+              <Button
+                size="sm"
+                onClick={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  e.stopPropagation();
+                  navigate("/employee/staff-accounts");
+                }}
+              >
                 View All
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="stat-card cursor-pointer" onClick={() => navigate('/add-new-staff')}>
+        <Card className="stat-card cursor-pointer" onClick={() => navigate("/employee/add-new-staff")}>
           <CardHeader>
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
@@ -59,14 +63,20 @@ export const StaffManagement = () => {
                 <div className="text-2xl font-bold">+</div>
                 <p className="text-xs text-muted-foreground">Single or bulk creation</p>
               </div>
-              <Button size="sm" onClick={(e: React.ChangeEvent<HTMLInputElement>) => { e.stopPropagation(); navigate('/add-new-staff'); }}>
+              <Button
+                size="sm"
+                onClick={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  e.stopPropagation();
+                  navigate("/employee/add-new-staff");
+                }}
+              >
                 Create
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="stat-card cursor-pointer" onClick={() => navigate('/manage-staff')}>
+        <Card className="stat-card cursor-pointer" onClick={() => navigate("/employee/manage-staff")}>
           <CardHeader>
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
@@ -81,44 +91,22 @@ export const StaffManagement = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold">13</div>
+                <div className="text-2xl font-bold">5</div>
                 <p className="text-xs text-muted-foreground">Active accounts</p>
               </div>
-              <Button size="sm" onClick={(e: React.ChangeEvent<HTMLInputElement>) => { e.stopPropagation(); navigate('/manage-staff'); }}>
+              <Button
+                size="sm"
+                onClick={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  e.stopPropagation();
+                  navigate("/employee/manage-staff");
+                }}
+              >
                 Manage
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Staff Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Staff Overview</CardTitle>
-          <CardDescription>Current staff management statistics</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">15</div>
-              <p className="text-sm text-muted-foreground">Total Staff</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">13</div>
-              <p className="text-sm text-muted-foreground">Active</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">2</div>
-              <p className="text-sm text-muted-foreground">Inactive</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">3</div>
-              <p className="text-sm text-muted-foreground">Admins</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

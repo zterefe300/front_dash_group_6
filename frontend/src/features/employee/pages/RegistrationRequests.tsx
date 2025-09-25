@@ -1,13 +1,28 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Badge } from '../../../components/common/badge';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { Label } from '../../../components/common/label';
-import { Textarea } from '../../../components/common/textarea';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Badge } from "../../../components/common/badge";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import { Label } from "../../../components/common/label";
+import { Textarea } from "../../../components/common/textarea";
 import {
   ArrowLeft,
   Building2,
@@ -19,8 +34,8 @@ import {
   MapPin,
   Phone,
   Mail,
-  FileText
-} from 'lucide-react';
+  FileText,
+} from "lucide-react";
 
 interface Restaurant {
   id: string;
@@ -30,7 +45,7 @@ interface Restaurant {
   phone: string;
   address: string;
   cuisine: string;
-  status: 'pending' | 'active' | 'suspended';
+  status: "pending" | "active" | "suspended";
   registrationDate: string;
   documents?: string[];
   businessLicense?: string;
@@ -40,86 +55,87 @@ interface Restaurant {
 
 const mockRegistrationRequests: Restaurant[] = [
   {
-    id: '1',
-    name: 'Pizza Palace',
-    owner: 'John Smith',
-    email: 'john@pizzapalace.com',
-    phone: '+1 234 567 8901',
-    address: '123 Main St, City, State 12345',
-    cuisine: 'Italian',
-    status: 'pending',
-    registrationDate: '2024-01-15',
-    documents: ['license.pdf', 'insurance.pdf', 'tax-cert.pdf'],
-    businessLicense: 'BL123456789',
-    taxId: 'TX987654321',
-    description: 'Authentic Italian pizza and pasta restaurant with traditional recipes.'
+    id: "1",
+    name: "Pizza Palace",
+    owner: "John Smith",
+    email: "john@pizzapalace.com",
+    phone: "234 567 8901",
+    address: "123 Main St, City, State 12345",
+    cuisine: "Italian",
+    status: "pending",
+    registrationDate: "2024-01-15",
+    documents: ["license.pdf", "insurance.pdf", "tax-cert.pdf"],
+    businessLicense: "BL123456789",
+    taxId: "TX987654321",
+    description: "Authentic Italian pizza and pasta restaurant with traditional recipes.",
   },
   {
-    id: '2',
-    name: 'Burger House',
-    owner: 'Sarah Johnson',
-    email: 'sarah@burgerhouse.com',
-    phone: '+1 234 567 8902',
-    address: '456 Oak Ave, City, State 12345',
-    cuisine: 'American',
-    status: 'pending',
-    registrationDate: '2024-01-14',
-    documents: ['license.pdf', 'health-cert.pdf', 'insurance.pdf'],
-    businessLicense: 'BL987654321',
-    taxId: 'TX123456789',
-    description: 'Classic American burgers made with fresh, locally sourced ingredients.'
+    id: "2",
+    name: "Burger House",
+    owner: "Sarah Johnson",
+    email: "sarah@burgerhouse.com",
+    phone: "234 567 8902",
+    address: "456 Oak Ave, City, State 12345",
+    cuisine: "American",
+    status: "pending",
+    registrationDate: "2024-01-14",
+    documents: ["license.pdf", "health-cert.pdf", "insurance.pdf"],
+    businessLicense: "BL987654321",
+    taxId: "TX123456789",
+    description: "Classic American burgers made with fresh, locally sourced ingredients.",
   },
   {
-    id: '3',
-    name: 'Spice Garden',
-    owner: 'Raj Patel',
-    email: 'raj@spicegarden.com',
-    phone: '+1 234 567 8903',
-    address: '789 Curry Lane, City, State 12345',
-    cuisine: 'Indian',
-    status: 'pending',
-    registrationDate: '2024-01-13',
-    documents: ['license.pdf', 'health-cert.pdf', 'fire-safety.pdf'],
-    businessLicense: 'BL456789123',
-    taxId: 'TX654321987',
-    description: 'Authentic Indian cuisine with traditional spices and cooking methods.'
+    id: "3",
+    name: "Spice Garden",
+    owner: "Raj Patel",
+    email: "raj@spicegarden.com",
+    phone: "234 567 8903",
+    address: "789 Curry Lane, City, State 12345",
+    cuisine: "Indian",
+    status: "pending",
+    registrationDate: "2024-01-13",
+    documents: ["license.pdf", "health-cert.pdf", "fire-safety.pdf"],
+    businessLicense: "BL456789123",
+    taxId: "TX654321987",
+    description: "Authentic Indian cuisine with traditional spices and cooking methods.",
   },
   {
-    id: '4',
-    name: 'Noodle Express',
-    owner: 'Li Wei',
-    email: 'li@noodleexpress.com',
-    phone: '+1 234 567 8904',
-    address: '321 Dragon St, City, State 12345',
-    cuisine: 'Chinese',
-    status: 'pending',
-    registrationDate: '2024-01-12',
-    documents: ['license.pdf', 'health-cert.pdf'],
-    businessLicense: 'BL321654987',
-    taxId: 'TX987321654',
-    description: 'Fast-casual Chinese noodle dishes with fresh vegetables and authentic sauces.'
-  }
+    id: "4",
+    name: "Noodle Express",
+    owner: "Li Wei",
+    email: "li@noodleexpress.com",
+    phone: "234 567 8904",
+    address: "321 Dragon St, City, State 12345",
+    cuisine: "Chinese",
+    status: "pending",
+    registrationDate: "2024-01-12",
+    documents: ["license.pdf", "health-cert.pdf"],
+    businessLicense: "BL321654987",
+    taxId: "TX987321654",
+    description: "Fast-casual Chinese noodle dishes with fresh vegetables and authentic sauces.",
+  },
 ];
 
 export const RegistrationRequests = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<Restaurant | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState("");
 
-  const filteredRequests = mockRegistrationRequests.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRequests = mockRegistrationRequests.filter(
+    (restaurant) =>
+      restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      restaurant.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleApprove = (id: string) => {
-    console.log('Approving restaurant:', id);
+    console.log("Approving restaurant:", id);
     // In real app, make API call
   };
 
   const handleReject = (id: string, reason: string) => {
-    console.log('Rejecting restaurant:', id, 'Reason:', reason);
+    console.log("Rejecting restaurant:", id, "Reason:", reason);
     // In real app, make API call
   };
 
@@ -129,7 +145,7 @@ export const RegistrationRequests = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/restaurant-management')}
+          onClick={() => navigate("/employee/restaurant-management")}
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -139,9 +155,7 @@ export const RegistrationRequests = () => {
 
       <div>
         <h1>Registration Requests</h1>
-        <p className="text-muted-foreground">
-          Review and process restaurant registration applications
-        </p>
+        <p className="text-muted-foreground">Review and process restaurant registration applications</p>
       </div>
 
       <Card>
@@ -151,9 +165,7 @@ export const RegistrationRequests = () => {
             <span>Pending Applications</span>
             <Badge variant="secondary">{filteredRequests.length}</Badge>
           </CardTitle>
-          <CardDescription>
-            Review restaurant information and documentation before approval
-          </CardDescription>
+          <CardDescription>Review restaurant information and documentation before approval</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -261,7 +273,9 @@ export const RegistrationRequests = () => {
                                     </div>
                                     <div>
                                       <Label>Cuisine Type</Label>
-                                      <Badge variant="outline" className="mt-1">{selectedRequest.cuisine}</Badge>
+                                      <Badge variant="outline" className="mt-1">
+                                        {selectedRequest.cuisine}
+                                      </Badge>
                                     </div>
                                     <div>
                                       <Label>Application Date</Label>
@@ -269,8 +283,6 @@ export const RegistrationRequests = () => {
                                     </div>
                                   </div>
                                 </div>
-
-
 
                                 {/* Rejection Reason */}
                                 <div>
@@ -291,7 +303,7 @@ export const RegistrationRequests = () => {
                                 onClick={() => {
                                   if (selectedRequest && rejectionReason.trim()) {
                                     handleReject(selectedRequest.id, rejectionReason);
-                                    setRejectionReason('');
+                                    setRejectionReason("");
                                   }
                                 }}
                                 disabled={!rejectionReason.trim()}

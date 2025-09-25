@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Badge } from '../../../components/common/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/common/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../../components/common/alert-dialog';
-import { Search, Truck, ArrowLeft, UserCheck, UserX, UserPlus, Star, Phone, MapPin, AlertTriangle } from 'lucide-react';
-import { Avatar, AvatarFallback } from '../../../components/common/avatar';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { Button } from "../../../components/common/button";
+import { Input } from "../../../components/common/input";
+import { Badge } from "../../../components/common/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/common/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/common/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/common/alert-dialog";
+import {
+  Search,
+  Truck,
+  ArrowLeft,
+  UserCheck,
+  UserX,
+  UserPlus,
+  Star,
+  Phone,
+  MapPin,
+  AlertTriangle,
+} from "lucide-react";
+import { Avatar, AvatarFallback } from "../../../components/common/avatar";
+import { toast } from "sonner";
 
 interface Driver {
   id: string;
@@ -21,7 +55,7 @@ interface Driver {
   totalDeliveries: number;
   vehicleType: string;
   joinDate: string;
-  status: 'active' | 'available' | 'terminated';
+  status: "active" | "available" | "terminated";
   terminationDate?: string;
   terminationReason?: string;
   location: string;
@@ -30,116 +64,121 @@ interface Driver {
 export const ManageDrivers = () => {
   const navigate = useNavigate();
   const [searchTerms, setSearchTerms] = useState({
-    active: '',
-    available: '',
-    terminated: ''
+    active: "",
+    available: "",
+    terminated: "",
   });
-  
+
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [actionType, setActionType] = useState<'hire' | 'terminate' | 'rehire' | null>(null);
+  const [actionType, setActionType] = useState<"hire" | "terminate" | "rehire" | null>(null);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
 
   // Mock driver data
   const [drivers, setDrivers] = useState<Driver[]>([
     // Active Drivers
     {
-      id: '1',
-      fullName: 'Michael Rodriguez',
-      phone: '+1 (555) 123-4567',
-      email: 'michael.r@email.com',
+      id: "1",
+      fullName: "Michael Rodriguez",
+      phone: "+1 (555) 123-4567",
+      email: "michael.r@email.com",
       rating: 4.9,
       totalDeliveries: 1245,
-      vehicleType: 'Motorcycle',
-      joinDate: '2024-01-15',
-      status: 'active',
-      location: 'Downtown District'
+      vehicleType: "Motorcycle",
+      joinDate: "2024-01-15",
+      status: "active",
+      location: "Downtown District",
     },
     {
-      id: '2',
-      fullName: 'Sarah Chen',
-      phone: '+1 (555) 234-5678',
-      email: 'sarah.c@email.com',
+      id: "2",
+      fullName: "Sarah Chen",
+      phone: "+1 (555) 234-5678",
+      email: "sarah.c@email.com",
       rating: 4.8,
       totalDeliveries: 980,
-      vehicleType: 'Car',
-      joinDate: '2024-02-20',
-      status: 'active',
-      location: 'Business Quarter'
+      vehicleType: "Car",
+      joinDate: "2024-02-20",
+      status: "active",
+      location: "Business Quarter",
     },
     // Available to Hire
     {
-      id: '3',
-      fullName: 'James Wilson',
-      phone: '+1 (555) 345-6789',
-      email: 'james.w@email.com',
+      id: "3",
+      fullName: "James Wilson",
+      phone: "+1 (555) 345-6789",
+      email: "james.w@email.com",
       rating: 0,
       totalDeliveries: 0,
-      vehicleType: 'Bicycle',
-      joinDate: '2024-09-01',
-      status: 'available',
-      location: 'Suburban Area'
+      vehicleType: "Bicycle",
+      joinDate: "2024-09-01",
+      status: "available",
+      location: "Suburban Area",
     },
     {
-      id: '4',
-      fullName: 'Emma Thompson',
-      phone: '+1 (555) 456-7890',
-      email: 'emma.t@email.com',
+      id: "4",
+      fullName: "Emma Thompson",
+      phone: "+1 (555) 456-7890",
+      email: "emma.t@email.com",
       rating: 0,
       totalDeliveries: 0,
-      vehicleType: 'Motorcycle',
-      joinDate: '2024-09-05',
-      status: 'available',
-      location: 'City Center'
+      vehicleType: "Motorcycle",
+      joinDate: "2024-09-05",
+      status: "available",
+      location: "City Center",
     },
     // Terminated Drivers
     {
-      id: '5',
-      fullName: 'David Park',
-      phone: '+1 (555) 567-8901',
-      email: 'david.p@email.com',
+      id: "5",
+      fullName: "David Park",
+      phone: "+1 (555) 567-8901",
+      email: "david.p@email.com",
       rating: 4.2,
       totalDeliveries: 456,
-      vehicleType: 'Car',
-      joinDate: '2024-03-10',
-      status: 'terminated',
-      terminationDate: '2024-08-15',
-      terminationReason: 'Poor performance',
-      location: 'East District'
+      vehicleType: "Car",
+      joinDate: "2024-03-10",
+      status: "terminated",
+      terminationDate: "2024-08-15",
+      terminationReason: "Poor performance",
+      location: "East District",
     },
     {
-      id: '6',
-      fullName: 'Lisa Johnson',
-      phone: '+1 (555) 678-9012',
-      email: 'lisa.j@email.com',
+      id: "6",
+      fullName: "Lisa Johnson",
+      phone: "+1 (555) 678-9012",
+      email: "lisa.j@email.com",
       rating: 4.6,
       totalDeliveries: 789,
-      vehicleType: 'Motorcycle',
-      joinDate: '2024-02-01',
-      status: 'terminated',
-      terminationDate: '2024-07-20',
-      terminationReason: 'Policy violation',
-      location: 'West Side'
-    }
+      vehicleType: "Motorcycle",
+      joinDate: "2024-02-01",
+      status: "terminated",
+      terminationDate: "2024-07-20",
+      terminationReason: "Policy violation",
+      location: "West Side",
+    },
   ]);
 
-  const activeDrivers = drivers.filter(d => d.status === 'active');
-  const availableDrivers = drivers.filter(d => d.status === 'available');
-  const terminatedDrivers = drivers.filter(d => d.status === 'terminated');
+  const activeDrivers = drivers.filter((d) => d.status === "active");
+  const availableDrivers = drivers.filter((d) => d.status === "available");
+  const terminatedDrivers = drivers.filter((d) => d.status === "terminated");
 
   const getFilteredDrivers = (driverList: Driver[], searchTerm: string) => {
-    return driverList.filter(driver =>
-      driver.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.phone.includes(searchTerm) ||
-      driver.email.toLowerCase().includes(searchTerm.toLowerCase())
+    return driverList.filter(
+      (driver) =>
+        driver.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        driver.phone.includes(searchTerm) ||
+        driver.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
-  const handleAction = (driver: Driver, action: 'hire' | 'terminate' | 'rehire') => {
+  const handleAction = (driver: Driver, action: "hire" | "terminate" | "rehire") => {
     setSelectedDriver(driver);
     setActionType(action);
     setActionDialogOpen(true);
@@ -148,36 +187,38 @@ export const ManageDrivers = () => {
   const confirmAction = () => {
     if (!selectedDriver || !actionType) return;
 
-    setDrivers(prev => prev.map(driver => {
-      if (driver.id === selectedDriver.id) {
-        switch (actionType) {
-          case 'hire':
-            return { ...driver, status: 'active' as const };
-          case 'terminate':
-            return { 
-              ...driver, 
-              status: 'terminated' as const,
-              terminationDate: new Date().toISOString().split('T')[0],
-              terminationReason: 'Administrative action'
-            };
-          case 'rehire':
-            return { 
-              ...driver, 
-              status: 'active' as const,
-              terminationDate: undefined,
-              terminationReason: undefined
-            };
-          default:
-            return driver;
+    setDrivers((prev) =>
+      prev.map((driver) => {
+        if (driver.id === selectedDriver.id) {
+          switch (actionType) {
+            case "hire":
+              return { ...driver, status: "active" as const };
+            case "terminate":
+              return {
+                ...driver,
+                status: "terminated" as const,
+                terminationDate: new Date().toISOString().split("T")[0],
+                terminationReason: "Administrative action",
+              };
+            case "rehire":
+              return {
+                ...driver,
+                status: "active" as const,
+                terminationDate: undefined,
+                terminationReason: undefined,
+              };
+            default:
+              return driver;
+          }
         }
-      }
-      return driver;
-    }));
+        return driver;
+      })
+    );
 
     const actionMessages = {
       hire: `${selectedDriver.fullName} has been hired successfully`,
       terminate: `${selectedDriver.fullName} has been terminated`,
-      rehire: `${selectedDriver.fullName} has been rehired successfully`
+      rehire: `${selectedDriver.fullName} has been rehired successfully`,
     };
 
     toast.success(actionMessages[actionType]);
@@ -191,25 +232,25 @@ export const ManageDrivers = () => {
     setViewDetailsOpen(true);
   };
 
-  const getActionButtonConfig = (action: 'hire' | 'terminate' | 'rehire') => {
+  const getActionButtonConfig = (action: "hire" | "terminate" | "rehire") => {
     switch (action) {
-      case 'hire':
+      case "hire":
         return {
-          text: 'Hire',
+          text: "Hire",
           icon: UserPlus,
-          className: 'bg-green-600 hover:bg-green-700'
+          className: "bg-green-600 hover:bg-green-700",
         };
-      case 'terminate':
+      case "terminate":
         return {
-          text: 'Terminate',
+          text: "Terminate",
           icon: UserX,
-          className: 'bg-red-600 hover:bg-red-700'
+          className: "bg-red-600 hover:bg-red-700",
         };
-      case 'rehire':
+      case "rehire":
         return {
-          text: 'Hire Back',
+          text: "Hire Back",
           icon: UserCheck,
-          className: 'bg-blue-600 hover:bg-blue-700'
+          className: "bg-blue-600 hover:bg-blue-700",
         };
     }
   };
@@ -217,15 +258,13 @@ export const ManageDrivers = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={() => navigate('/driver-management')}>
+        <Button variant="outline" onClick={() => navigate("/employee/driver-management")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Driver Management
         </Button>
         <div>
           <h1>Manage Drivers</h1>
-          <p className="text-muted-foreground">
-            Hire, terminate, and manage driver accounts
-          </p>
+          <p className="text-muted-foreground">Hire, terminate, and manage driver accounts</p>
         </div>
       </div>
 
@@ -296,9 +335,7 @@ export const ManageDrivers = () => {
           <Card>
             <CardHeader>
               <CardTitle>Active Drivers</CardTitle>
-              <CardDescription>
-                Currently active drivers with termination options
-              </CardDescription>
+              <CardDescription>Currently active drivers with termination options</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-6">
@@ -307,7 +344,7 @@ export const ManageDrivers = () => {
                   <Input
                     placeholder="Search active drivers..."
                     value={searchTerms.active}
-                    onChange={(e) => setSearchTerms(prev => ({ ...prev, active: e.target.value }))}
+                    onChange={(e) => setSearchTerms((prev) => ({ ...prev, active: e.target.value }))}
                     className="pl-10"
                   />
                 </div>
@@ -343,10 +380,10 @@ export const ManageDrivers = () => {
                         <TableCell>{new Date(driver.joinDate).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleAction(driver, 'terminate')}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAction(driver, "terminate")}
                               className="text-red-600 hover:text-red-700"
                             >
                               <UserX className="h-4 w-4" />
@@ -367,9 +404,7 @@ export const ManageDrivers = () => {
           <Card>
             <CardHeader>
               <CardTitle>Ready to Hire</CardTitle>
-              <CardDescription>
-                Drivers available for hiring with hire action buttons
-              </CardDescription>
+              <CardDescription>Drivers available for hiring with hire action buttons</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-6">
@@ -378,7 +413,7 @@ export const ManageDrivers = () => {
                   <Input
                     placeholder="Search available drivers..."
                     value={searchTerms.available}
-                    onChange={(e) => setSearchTerms(prev => ({ ...prev, available: e.target.value }))}
+                    onChange={(e) => setSearchTerms((prev) => ({ ...prev, available: e.target.value }))}
                     className="pl-10"
                   />
                 </div>
@@ -410,9 +445,9 @@ export const ManageDrivers = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleAction(driver, 'hire')}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAction(driver, "hire")}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               <UserPlus className="h-4 w-4 mr-1" />
@@ -434,9 +469,7 @@ export const ManageDrivers = () => {
           <Card>
             <CardHeader>
               <CardTitle>Terminated Drivers</CardTitle>
-              <CardDescription>
-                Previously terminated drivers with rehire options
-              </CardDescription>
+              <CardDescription>Previously terminated drivers with rehire options</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-6">
@@ -445,7 +478,7 @@ export const ManageDrivers = () => {
                   <Input
                     placeholder="Search terminated drivers..."
                     value={searchTerms.terminated}
-                    onChange={(e) => setSearchTerms(prev => ({ ...prev, terminated: e.target.value }))}
+                    onChange={(e) => setSearchTerms((prev) => ({ ...prev, terminated: e.target.value }))}
                     className="pl-10"
                   />
                 </div>
@@ -480,18 +513,20 @@ export const ManageDrivers = () => {
                         </TableCell>
                         <TableCell>{driver.totalDeliveries}</TableCell>
                         <TableCell>
-                          {driver.terminationDate ? new Date(driver.terminationDate).toLocaleDateString() : 'N/A'}
+                          {driver.terminationDate
+                            ? new Date(driver.terminationDate).toLocaleDateString()
+                            : "N/A"}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-red-100 text-red-800">
-                            {driver.terminationReason || 'N/A'}
+                            {driver.terminationReason || "N/A"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleAction(driver, 'rehire')}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAction(driver, "rehire")}
                               className="bg-blue-600 hover:bg-blue-700"
                             >
                               <UserCheck className="h-4 w-4 mr-1" />
@@ -521,18 +556,18 @@ export const ManageDrivers = () => {
               {actionType && selectedDriver && (
                 <>
                   Are you sure you want to <strong>{actionType}</strong> {selectedDriver.fullName}?
-                  {actionType === 'terminate' && ' This action will remove the driver from active duty.'}
-                  {actionType === 'hire' && ' This action will activate the driver for deliveries.'}
-                  {actionType === 'rehire' && ' This action will reactivate the driver for deliveries.'}
+                  {actionType === "terminate" && " This action will remove the driver from active duty."}
+                  {actionType === "hire" && " This action will activate the driver for deliveries."}
+                  {actionType === "rehire" && " This action will reactivate the driver for deliveries."}
                 </>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmAction}
-              className={actionType ? getActionButtonConfig(actionType).className : ''}
+              className={actionType ? getActionButtonConfig(actionType).className : ""}
             >
               {actionType && (
                 <>
@@ -550,9 +585,7 @@ export const ManageDrivers = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Driver Details</DialogTitle>
-            <DialogDescription>
-              Complete information about the selected driver
-            </DialogDescription>
+            <DialogDescription>Complete information about the selected driver</DialogDescription>
           </DialogHeader>
           {selectedDriver && (
             <div className="space-y-6">
@@ -566,11 +599,15 @@ export const ManageDrivers = () => {
                   <h3 className="text-lg font-semibold">{selectedDriver.fullName}</h3>
                   <p className="text-muted-foreground">{selectedDriver.email}</p>
                   <p className="text-muted-foreground">{selectedDriver.phone}</p>
-                  <Badge className={
-                    selectedDriver.status === 'active' ? 'bg-green-100 text-green-800' :
-                    selectedDriver.status === 'available' ? 'bg-blue-100 text-blue-800' :
-                    'bg-red-100 text-red-800'
-                  }>
+                  <Badge
+                    className={
+                      selectedDriver.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : selectedDriver.status === "available"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-red-100 text-red-800"
+                    }
+                  >
                     {selectedDriver.status.charAt(0).toUpperCase() + selectedDriver.status.slice(1)}
                   </Badge>
                 </div>
@@ -610,7 +647,7 @@ export const ManageDrivers = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Termination Reason</label>
-                      <p>{selectedDriver.terminationReason || 'N/A'}</p>
+                      <p>{selectedDriver.terminationReason || "N/A"}</p>
                     </div>
                   </>
                 )}
