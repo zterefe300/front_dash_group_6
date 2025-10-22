@@ -1,0 +1,4 @@
+com/frontdash/controller/UserController.class
+com/frontdash/DashboardBackendApplication.class
+com/frontdash/entity/User.class
+com/frontdash/repository/UserRepository.class

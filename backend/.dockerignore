@@ -1,0 +1,42 @@
+# Build directories
+target/
+*/target/
+*/target/*
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Maven wrapper (if using)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Node modules (if any)
+node_modules/
+
+# Docker files
+.dockerignore
