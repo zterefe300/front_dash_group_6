@@ -25,3 +25,7 @@ replay_pid*
 
 # macOS desktop metadata files
 **/.DS_Store
+
+# Maven target directory
+target/
+backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
