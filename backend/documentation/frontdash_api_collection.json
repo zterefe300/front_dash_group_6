@@ -1,482 +1,610 @@
 {
-  "info": {
-    "name": "FrontDash API Collection",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "API collection for demonstrating FrontDash features"
-  },
-  "item": [
-    {
-      "name": "Staff Login",
-      "item": [
-        {
-          "name": "Successful login by a staff member",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\":\"staff_mike\",\"password\":\"staff123\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/auth/staff/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "auth", "staff", "login"]
-            }
-          }
-        },
-        {
-          "name": "Invalid login by a staff member",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\":\"staff_mike\",\"password\":\"wrongpass\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/auth/staff/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "auth", "staff", "login"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Order Management",
-      "item": [
-        {
-          "name": "A new order is created and saved",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"restaurantId\":1,\"customerName\":\"John Doe\",\"customerPhone\":\"555-1234\",\"addressId\":1,\"orderItems\":[{\"menuItemId\":1,\"quantity\":2}],\"subtotal\":9.98,\"tips\":2.00,\"totalAmount\":11.98}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/orders",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "orders"]
-            }
-          }
-        },
-        {
-          "name": "An existing order is retrieved, assigned a driver and saved",
-          "item": [
-            {
-              "name": "Retrieve order",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/orders/1",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "orders", "1"]
-                }
-              }
-            },
-            {
-              "name": "Assign driver",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "http://localhost:8080/api/orders/1/assign-driver?driverId=1",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "orders", "1", "assign-driver"],
-                  "query": [
-                    {
-                      "key": "driverId",
-                      "value": "1"
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "name": "An existing order is retrieved, updated with delivery time and saved",
-          "item": [
-            {
-              "name": "Retrieve order",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/orders/1",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "orders", "1"]
-                }
-              }
-            },
-            {
-              "name": "Update delivery time",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "http://localhost:8080/api/orders/1/delivery?deliveryTime=2025-10-30T15:30:00",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "orders", "1", "delivery"],
-                  "query": [
-                    {
-                      "key": "deliveryTime",
-                      "value": "2025-10-30T15:30:00"
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Staff Management",
-      "item": [
-        {
-          "name": "A new staff member account is created and saved",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\":\"smith01\",\"password\":\"pass123\",\"firstname\":\"John\",\"lastname\":\"Smith\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/staff",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "staff"]
-            }
-          }
-        },
-        {
-          "name": "A staff member account is deleted or inactivated",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/api/staff/smith01",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "staff", "smith01"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Driver Management",
-      "item": [
-        {
-          "name": "A new driver record added to the system",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"firstname\":\"New\",\"lastname\":\"Driver\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/drivers",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "drivers"]
-            }
-          }
-        },
-        {
-          "name": "An driver record is deleted or inactivated",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/api/drivers/4",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "drivers", "4"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Restaurant Owner Login",
-      "item": [
-        {
-          "name": "Successful login by a restaurant owner",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\":\"tacofiesta_admin\",\"password\":\"password123\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/auth/owner/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "auth", "owner", "login"]
-            }
-          }
-        },
-        {
-          "name": "Invalid login by a restaurant owner",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\":\"tacofiesta_admin\",\"password\":\"wrongpass\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/auth/owner/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "auth", "owner", "login"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Restaurant Management",
-      "item": [
-        {
-          "name": "Restaurant owner modifies a menu item and saves",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"menuItemId\":1,\"itemName\":\"Updated Chicken Taco\",\"price\":5.99,\"availability\":\"AVAILABLE\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/restaurant/1/menu",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "restaurant", "1", "menu"]
-            }
-          }
-        },
-        {
-          "name": "Restaurant owner modifies operating hours and saves",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"operatingHours\":[{\"weekDay\":\"Monday\",\"openTime\":\"10:00:00\",\"closeTime\":\"22:00:00\"}]}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/restaurant/1/hours",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "restaurant", "1", "hours"]
-            }
-          }
-        },
-        {
-          "name": "A new restaurant registration request is created and saved",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\":\"New Restaurant\",\"cuisineType\":\"Italian\",\"pictureUrl\":\"https://picsum.photos/200\",\"address\":{\"streetAddress\":\"123 New St\",\"city\":\"Austin\",\"state\":\"TX\",\"zipCode\":\"73301\"},\"phoneNumber\":\"512-555-9999\",\"contactPersonName\":\"New Owner\",\"emailAddress\":\"new@restaurant.com\",\"username\":\"new_rest\",\"password\":\"pass123\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/restaurant/registration",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "restaurant", "registration"]
-            }
-          }
-        },
-        {
-          "name": "A restaurant withdrawal request is created and saved",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"restaurantId\":1,\"reason\":\"Closing down\"}"
-            },
-            "url": {
-              "raw": "http://localhost:8080/api/restaurant/withdrawal",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "8080",
-              "path": ["api", "restaurant", "withdrawal"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Administrator Actions",
-      "item": [
-        {
-          "name": "Administrator approves or rejects a restaurant registration request",
-          "item": [
-            {
-              "name": "Approve registration",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/admin/registrations/3/approve",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "admin", "registrations", "3", "approve"]
-                }
-              }
-            },
-            {
-              "name": "Reject registration",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/admin/registrations/3/reject",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "admin", "registrations", "3", "reject"]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "name": "Administrator approves or rejects a restaurant withdrawal request",
-          "item": [
-            {
-              "name": "Approve withdrawal",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/admin/withdrawals/4/approve",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "admin", "withdrawals", "4", "approve"]
-                }
-              }
-            },
-            {
-              "name": "Reject withdrawal",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "url": {
-                  "raw": "http://localhost:8080/api/admin/withdrawals/4/reject",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "8080",
-                  "path": ["api", "admin", "withdrawals", "4", "reject"]
-                }
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "48d369c8-1295-4d80-b6b8-283777bd3a36",
+		"name": "FrontDash API Collection",
+		"description": "API collection for demonstrating FrontDash features",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49683694",
+		"_collection_link": "https://zcloudcomputing9-4682668.postman.co/workspace/ZCloudComputing-2025's-Workspac~8c2c5254-6b05-4e06-843c-b1ea9275419c/collection/49683694-48d369c8-1295-4d80-b6b8-283777bd3a36?action=share&source=collection_link&creator=49683694"
+	},
+	"item": [
+		{
+			"name": "Order Management",
+			"item": [
+				{
+					"name": "An existing order is retrieved, assigned a driver and saved",
+					"item": [
+						{
+							"name": "Retrieve order",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/orders/1",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Assign driver",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{baseURL}}/api/orders/1/assign-driver?driverId=1",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1",
+										"assign-driver"
+									],
+									"query": [
+										{
+											"key": "driverId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "An existing order is retrieved, updated with delivery time and saved",
+					"item": [
+						{
+							"name": "Retrieve order",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/orders/1",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update delivery time",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{baseURL}}/api/orders/1/delivery?deliveryTime=2025-10-30T15:30:00",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1",
+										"delivery"
+									],
+									"query": [
+										{
+											"key": "deliveryTime",
+											"value": "2025-10-30T15:30:00"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "A new order is created and saved",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"restaurantId\":1,\"customerName\":\"John Doe\",\"customerPhone\":\"555-1234\",\"addressId\":1,\"orderItems\":[{\"menuItemId\":1,\"quantity\":2}],\"subtotal\":9.98,\"tips\":2.00,\"totalAmount\":11.98}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/orders",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Staff Login",
+			"item": [
+				{
+					"name": "Successful login by a staff member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"staff_mike\",\"password\":\"staff123\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/auth/staff/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"staff",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid login by a staff member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"staff_mike\",\"password\":\"wrongpass\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/auth/staff/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"staff",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Staff Management",
+			"item": [
+				{
+					"name": "A new staff member account is created and saved",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"smith01\",\"password\":\"pass123\",\"firstname\":\"John\",\"lastname\":\"Smith\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/staff",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"staff"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A staff member account is deleted or inactivated",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/staff/smith01",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"staff",
+								"smith01"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Driver Management",
+			"item": [
+				{
+					"name": "A new driver record added to the system",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"firstname\":\"New\",\"lastname\":\"Driver\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/drivers",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"drivers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "An driver record is deleted or inactivated",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/drivers/4",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"drivers",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restaurant Owner Login",
+			"item": [
+				{
+					"name": "Successful login by a restaurant owner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"tacofiesta_admin\",\"password\":\"password123\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/auth/owner/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"owner",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid login by a restaurant owner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"tacofiesta_admin\",\"password\":\"wrongpass\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/auth/owner/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"owner",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restaurant Management",
+			"item": [
+				{
+					"name": "Restaurant owner modifies a menu item and saves",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"menuItemId\":1,\"itemName\":\"Updated Chicken Taco\",\"price\":5.99,\"availability\":\"AVAILABLE\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/restaurant/1/menu",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"restaurant",
+								"1",
+								"menu"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant owner modifies operating hours and saves",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"operatingHours\":[{\"weekDay\":\"Monday\",\"openTime\":\"10:00:00\",\"closeTime\":\"22:00:00\"}]}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/restaurant/1/hours",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"restaurant",
+								"1",
+								"hours"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A new restaurant registration request is created and saved",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"New Restaurant\",\"cuisineType\":\"Italian\",\"pictureUrl\":\"https://picsum.photos/200\",\"address\":{\"streetAddress\":\"123 New St\",\"city\":\"Austin\",\"state\":\"TX\",\"zipCode\":\"73301\"},\"phoneNumber\":\"512-555-9999\",\"contactPersonName\":\"New Owner\",\"emailAddress\":\"new@restaurant.com\",\"username\":\"new_rest\",\"password\":\"pass123\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/restaurant/registration",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"restaurant",
+								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A restaurant withdrawal request is created and saved",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"restaurantId\":1,\"reason\":\"Closing down\"}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/restaurant/withdrawal",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"restaurant",
+								"withdrawal"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Administrator Actions",
+			"item": [
+				{
+					"name": "Administrator approves or rejects a restaurant registration request",
+					"item": [
+						{
+							"name": "Approve registration",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/admin/registrations/3/approve",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"registrations",
+										"3",
+										"approve"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reject registration",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/admin/registrations/3/reject",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"registrations",
+										"3",
+										"reject"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Administrator approves or rejects a restaurant withdrawal request",
+					"item": [
+						{
+							"name": "Approve withdrawal",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/admin/withdrawals/4/approve",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"withdrawals",
+										"4",
+										"approve"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reject withdrawal",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/api/admin/withdrawals/4/reject",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"withdrawals",
+										"4",
+										"reject"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "",
+			"type": "default"
+		}
+	]
 }

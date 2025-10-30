@@ -116,3 +116,16 @@ This application provides a unified dashboard experience for three main user typ
 - **Customers**: Order food
 - **Restaurants**: Manage menus, and operations
 - **Employees**: Staff and admin functionality for system management
+
+## Testing
+docker compose rm -sf mysql && docker volume rm backend-only_mysql_data
+docker compose up -d
+
+## Freeing up space
+checking space: docker system df
+remove cache: docker builder prune -a --force
+remove image: docker image prune -a --force
+remove unused volume: docker volume prune --force
+remove container: docker container prune --force
+one-liner: docker system prune -a --volumes --force && docker builder prune -a --force
+

@@ -19,10 +19,10 @@ INSERT INTO Restaurant (name, cuisine_type, picture_url, address_id, phone_numbe
 
 -- Insert mock data into RestaurantLogin
 INSERT INTO RestaurantLogin (user_name, restaurant_id, password) VALUES
-('tacofiesta_admin', 1, 'password123'),
-('burgerbarn_owner', 2, 'securepass'),
-('sushizen_login', 3, 'sushi@2024'),
-('currypalace_admin', 4, 'currylover');
+('tacofiesta_admin', 1, 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'), -- password123
+('burgerbarn_owner', 2, 'fbb4a8a163ffa958b4f02bf9cabb30cfefb40de803f2c4c346a9d39b3be1b544'), -- securepass
+('sushizen_login', 3, '0ec430dca0d1f5627bcdfa36b42069404a45b13127fe8eaae8f67d4555466d4f'), -- sushi@2024
+('currypalace_admin', 4, '546329d8a769419d3c8287339ae75b54122ff95523a83f4320981ae808798b76'); -- currylover
 
 -- Insert mock data into MenuCategory
 INSERT INTO MenuCategory (restaurant_id, category_name) VALUES
@@ -55,15 +55,15 @@ INSERT INTO OperatingHour (restaurant_id, week_day, open_time, close_time) VALUE
 
 -- Insert mock data into EmployeeLogin
 INSERT INTO EmployeeLogin (username, password, employeeType) VALUES
-('admin_jane', 'adminpass', 'ADMIN'),
-('staff_mike', 'staff123', 'STAFF'),
-('staff_lisa', 'staff456', 'STAFF');
+('doe01', '713bfda78870bf9d1b261f565286f85e97ee614efe5f0faf7c34e7ca4f65baca', 'ADMIN'), -- adminpass
+('thompson02', '10176e7b7b24d317acfcf8d2064cfd2f24e154f7b5a96603077d5ef813d6a6b6', 'STAFF'), -- staff123
+('wong03', '8f5dada329d6ade1fdba5e207b5a81b312ae838801ca287a00e9428620808dce', 'STAFF'); -- staff456
 
 -- Insert mock data into StaffUsers
 INSERT INTO StaffUsers (username, firstname, lastname) VALUES
-('admin_jane', 'Jane', 'Doe'),
-('staff_mike', 'Mike', 'Thompson'),
-('staff_lisa', 'Lisa', 'Wong');
+('doe01', 'Jane', 'Doe'),
+('thompson02', 'Mike', 'Thompson'),
+('wong03', 'Lisa', 'Wong');
 
 -- Insert mock data into Driver
 INSERT INTO Driver (firstname, lastname, availability_status) VALUES
@@ -74,7 +74,7 @@ INSERT INTO Driver (firstname, lastname, availability_status) VALUES
 -- Insert mock data into Orders
 INSERT INTO Orders (restaurant_id, customer_name, customer_phone, address_id, total_amount, order_time, assigned_driver_id, estimated_delivery_time, order_status, tips, subtotal, delivery_time) VALUES
 (1, 'Alice Johnson', '512-123-4567', 5, 25.48, NOW(), 1, DATE_ADD(NOW(), INTERVAL 45 MINUTE), 'OUT_FOR_DELIVERY', 3.00, 22.48, NULL),
-(2, 'Bob Williams', '214-234-5678', 3, 18.98, NOW(), 2, DATE_ADD(NOW(), INTERVAL 30 MINUTE), 'PENDING', 2.00, 16.98, NULL),
+(2, 'Bob Williams', '214-234-5678', 3, 18.98, NOW(), NULL, DATE_ADD(NOW(), INTERVAL 30 MINUTE), 'PENDING', 2.00, 16.98, NULL),
 (4, 'Charlie Nguyen', '210-345-6789', 4, 14.99, NOW(), 3, DATE_ADD(NOW(), INTERVAL 50 MINUTE), 'DELIVERED', 1.00, 13.99, NOW());
 
 -- Insert mock data into OrderItem

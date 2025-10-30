@@ -7,6 +7,7 @@ import com.frontdash.entity.StaffUsers;
 import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.StaffUsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,9 @@ public class StaffService {
     @Autowired
     private StaffUsersRepository staffUsersRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Helper method to convert StaffUsers entity to StaffResponse DTO
     private StaffResponse convertToResponse(StaffUsers staff) {
         return new StaffResponse(staff.getUsername(), staff.getFirstname(), staff.getLastname());
@@ -33,7 +37,7 @@ public class StaffService {
     private EmployeeLogin convertRequestToEmployeeLogin(StaffRequest staffRequest) {
         return EmployeeLogin.builder()
                 .username(staffRequest.getUsername())
-                .password(staffRequest.getPassword())
+                .password(passwordEncoder.encode(staffRequest.getPassword()))
                 .employeeType(EmployeeLogin.EmployeeType.STAFF)
                 .build();
     }
@@ -96,6 +100,7 @@ public class StaffService {
      */
     public List<StaffResponse> getAllStaff() {
         List<StaffUsers> staffList = staffUsersRepository.findAll();
+        System.out.println("Total staff accounts found: " + staffList.size());
         return staffList.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
