@@ -1,0 +1,86 @@
+– Successful login by a restaurant owner
+/api/auth/owner/login
+{
+  "username": "sushizen_login",
+  "password": "sushi@2024"
+}
+
+select * from RestaurantLogin where username='sushizen_login';
+
+– Invalid login by a restaurant owner
+/api/auth/owner/login
+{
+  "username": "sushizen_login",
+  "password": "wrongpassword"
+}
+
+– Restaurant owner modifies a menu item and saves
+
+restaurant_id: 1
+{
+  "menuItemId": 0,
+  "categoryId": 0,
+  "itemName": "string",
+  "pictureUrl": "string",
+  "price": 0,
+  "availability": "string"
+}
+
+– Restaurant owner modifies operating hours and saves
+restaurant_id: 1
+
+{
+    "hours": [
+        {
+            "operatingHourId":1,
+            "weekDay": "Monday",
+            "openTime": "11:00",
+            "closeTime": "20:00"
+        },
+        {
+            "operatingHourId":1,
+            "weekDay": "Tuesday",
+            "openTime": "11:00",
+            "closeTime": "20:00"
+        },
+    ]
+}
+
+
+
+– A new restaurant registration request is created and saved
+/api/restaurant/registration
+{
+  "name": "Sichuan Passion",
+  "cuisineType": "Restaurant",
+  "pictureUrl": "https://picsum.photos/200?1",
+  "streetAddress": "3875 Mapleshade Ln",
+  "city":"Plano",
+  "state": "TX",
+  "zipCode":"75075",
+  "phoneNumber": "571-550-5724",
+  "contactPersonName": "Chen",
+  "emailAddress": "test@sichunpassion.com"
+}
+
+select * from Address;
+select * from Restaurant;
+
+– Administrator approves or rejects a restaurant registration request
+
+
+select * from Restaurant;
+select * from RestaurantLogin;
+
+– A restaurant withdrawal request is created and saved
+/api/restaurant/withdrawal
+{
+  "restaurantId": 0,
+  "reason": "no reason!!!"
+}
+
+select * from Restaurant;
+
+– Administrator approves or rejects a restaurant withdrawal request
+
+select * from Restaurant;
