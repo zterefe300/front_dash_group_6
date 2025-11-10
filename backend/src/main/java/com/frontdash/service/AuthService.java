@@ -32,9 +32,8 @@ public class AuthService {
     public LoginResponse loginStaff(LoginRequest request) {
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .filter(employeeLogin -> employeeLogin.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
-
-        if (!passwordEncoder.matches(request.getPassword(), login.getPassword())) {
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+        if (!request.getPassword().equals(login.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
@@ -49,7 +48,7 @@ public class AuthService {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), restaurantLogin.getPassword())) {
+        if (!request.getPassword().equals(restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
