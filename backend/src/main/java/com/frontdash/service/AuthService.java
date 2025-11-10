@@ -9,6 +9,7 @@ import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.RestaurantLoginRepository;
 import com.frontdash.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +26,14 @@ public class AuthService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public LoginResponse loginStaff(LoginRequest request) {
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .filter(employeeLogin -> employeeLogin.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
-
-        if (!login.getPassword().equals(request.getPassword())) {
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+        if (!request.getPassword().equals(login.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
@@ -45,7 +48,7 @@ public class AuthService {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        if (!restaurantLogin.getPassword().equals(request.getPassword())) {
+        if (!request.getPassword().equals(restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 

@@ -1,5 +1,6 @@
 package com.frontdash.dao.request;
 
+import com.frontdash.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,11 +15,7 @@ public class RestaurantRegistrationRequest {
     private String name;
     private String cuisineType;
     private String pictureUrl;
-    private String streetAddress;
-    private String city;
-    private String state;
-    private String zipCode;
-    private Integer addressId;
+    private Address address;
     private String phoneNumber;
     private String contactPersonName;
     private String emailAddress;

@@ -26,6 +26,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Integer id) {
+        System.out.println("Fetching order with ID: " + id);
         OrderResponse resp = orderService.getOrderById(id);
         if (resp == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(resp);

@@ -19,6 +19,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RestaurantService {
@@ -41,6 +42,7 @@ public class RestaurantService {
     @Autowired
     private OperatingHourRepository operatingHourRepository;
 
+    @Autowired
     private AddressRepository addressRepository;
 
     @Transactional
@@ -67,12 +69,7 @@ public class RestaurantService {
                     });
         }
 
-        Address address = addressRepository.save(Address.builder()
-                .streetAddress(request.getStreetAddress())
-                .city(request.getCity())
-                .state(request.getState())
-                .zipCode(request.getZipCode())
-                .build());
+        Address address = addressRepository.save(request.getAddress());
         System.out.println(address.toString());
 
         Restaurant restaurant = Restaurant.builder()
@@ -153,9 +150,15 @@ public class RestaurantService {
                     throw new IllegalArgumentException("Operating hour does not belong to restaurant");
                 }
             } else {
-                operatingHour = OperatingHour.builder()
-                        .restaurantId(restaurantId)
-                        .build();
+                // Check if operating hour already exists for this restaurant and week_day
+                Optional<OperatingHour> existingHour = operatingHourRepository.findByRestaurantIdAndWeekDay(restaurantId, entry.getWeekDay());
+                if (existingHour.isPresent()) {
+                    operatingHour = existingHour.get();
+                } else {
+                    operatingHour = OperatingHour.builder()
+                            .restaurantId(restaurantId)
+                            .build();
+                }
             }
 
             if (entry.getWeekDay() != null) {
