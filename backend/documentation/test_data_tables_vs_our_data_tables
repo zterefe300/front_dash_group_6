@@ -1,0 +1,12 @@
+# Test Data Tables vs Our Tables
+
+| Test Data table  | Our Tables    | Related tables                  |
+|------------------|---------------|---------------------------------|
+| Restaurants      | Restaurant    | Address                         |
+| RestaurantHours  | OperatingHour | Restaurant                      |
+| RestaurantMeals  | MenuItem      | MenuCategory                    |
+| OrdersCompleted  | Orders        | Restaurant, Driver and Address  |
+| OrdersPending    | Orders        | Restaurant, Driver and Address  |
+| Drivers          | Driver        |                                 |
+| Staff members    | StaffUsers    | EmployeeLogin                   |
+| Customers        | <N/A>         |                                 |
