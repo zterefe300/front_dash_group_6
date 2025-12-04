@@ -16,6 +16,7 @@ USE frontdash_db;
 CREATE TABLE IF NOT EXISTS Address (
     address_id INT PRIMARY KEY AUTO_INCREMENT,
     street_address VARCHAR(255) NOT NULL,
+    bldg VARCHAR(50),
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100) NOT NULL,
     zip_code VARCHAR(20) NOT NULL
@@ -109,7 +110,7 @@ CREATE TABLE IF NOT EXISTS Driver (
 
 -- Customer Section
 CREATE TABLE IF NOT EXISTS Orders (
-    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id VARCHAR(10) PRIMARY KEY,
     restaurant_id INT,
     customer_name VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(20),
@@ -131,7 +132,7 @@ CREATE INDEX idx_orders_restaurant ON Orders(restaurant_id);
 CREATE INDEX idx_orders_driver ON Orders(assigned_driver_id);
 
 CREATE TABLE IF NOT EXISTS OrderItem (
-    order_id INT,
+    order_id VARCHAR(10),
     menu_item_id INT,
     quantity INT NOT NULL,
     PRIMARY KEY (order_id, menu_item_id),
