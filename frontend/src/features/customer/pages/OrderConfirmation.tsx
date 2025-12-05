@@ -1,27 +1,12 @@
-import { CartItem, Restaurant, PaymentInfo, DeliveryAddress } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
 import { Separator } from '../../../components/common/separator';
 import { CheckCircle, Clock, MapPin, CreditCard, Phone, Star } from 'lucide-react';
+import { useCart } from '../../../contexts/CartContext';
 
-interface OrderConfirmationProps {
-  items: CartItem[];
-  restaurant: Restaurant | null;
-  paymentInfo: PaymentInfo | null;
-  deliveryAddress: DeliveryAddress | null;
-  onNewOrder: () => void;
-  onBack: () => void;
-}
-
-export function OrderConfirmation({ 
-  items, 
-  restaurant, 
-  paymentInfo, 
-  deliveryAddress,
-  onNewOrder,
-  onBack
-}: OrderConfirmationProps) {
+export function OrderConfirmation() {
+  const { items, restaurant, paymentInfo, deliveryAddress, goToNewOrder, goToPayment } = useCart();
   // Calculate totals
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
   const serviceCharge = subtotal * 0.0825;
@@ -255,9 +240,9 @@ export function OrderConfirmation({
 
       {/* Action Buttons */}
       <div className="flex justify-center">
-        <Button 
-          size="lg" 
-          onClick={onNewOrder}
+        <Button
+          size="lg"
+          onClick={goToNewOrder}
           className="w-full sm:w-auto min-w-[200px]"
         >
           <CheckCircle className="h-4 w-4 mr-2" />

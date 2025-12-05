@@ -1,7 +1,5 @@
-import React, { ReactNode } from "react";
 import { Routes, Route } from "react-router-dom";
-import { DashboardLayout } from "../components/layout/DashboardLayout.jsx";
-import { UserProvider, useUser } from "../contexts/UserContext.js";
+import { UserProvider } from "../contexts/UserContext.js";
 import { SettingsProvider } from "../contexts/SettingsContext.js";
 import { Dashboard } from "../features/employee/pages/Dashboard.js";
 import { RestaurantManagement } from "../features/employee/pages/RestaurantManagement.js";

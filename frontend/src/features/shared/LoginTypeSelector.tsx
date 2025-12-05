@@ -1,12 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
 import { Store, Users, Shield } from 'lucide-react';
 
-interface LoginTypeSelectorProps {
-  onSelectType: (type: 'restaurant' | 'staff' | 'admin') => void;
-}
+export function LoginTypeSelector() {
+  const navigate = useNavigate();
 
-export function LoginTypeSelector({ onSelectType }: LoginTypeSelectorProps) {
+  const handleSelectType = (type: 'restaurant' | 'staff' | 'admin') => {
+    if (type === 'restaurant') {
+      navigate('/restaurants');
+    } else {
+      navigate('/employee');
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -32,8 +38,8 @@ export function LoginTypeSelector({ onSelectType }: LoginTypeSelectorProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <Button 
-              onClick={() => onSelectType('restaurant')}
+            <Button
+              onClick={() => handleSelectType('restaurant')}
               className="w-full"
               variant="outline"
             >
@@ -57,8 +63,8 @@ export function LoginTypeSelector({ onSelectType }: LoginTypeSelectorProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <Button 
-              onClick={() => onSelectType('staff')}
+            <Button
+              onClick={() => handleSelectType('staff')}
               className="w-full"
               variant="outline"
             >
@@ -82,8 +88,8 @@ export function LoginTypeSelector({ onSelectType }: LoginTypeSelectorProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <Button 
-              onClick={() => onSelectType('admin')}
+            <Button
+              onClick={() => handleSelectType('admin')}
               className="w-full"
               variant="outline"
             >

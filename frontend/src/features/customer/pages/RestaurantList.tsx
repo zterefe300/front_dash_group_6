@@ -1,11 +1,31 @@
-import { Restaurant } from '../types';
 import { Card, CardContent } from '../../../components/common/card';
 import { Badge } from '../../../components/common/badge';
 import { Star, Clock, DollarSign } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
+import { useNavigate } from 'react-router-dom';
 
-interface RestaurantListProps {
-  onRestaurantSelect: (restaurant: Restaurant) => void;
+// Restaurant type definition
+interface Restaurant {
+  id: string;
+  name: string;
+  image: string;
+  logo?: string;
+  cuisine: string;
+  rating: number;
+  deliveryTime: string;
+  deliveryFee: number;
+  isOpen: boolean;
+  priceRange: string;
+  menu: MenuItem[];
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
 }
 
 // Mock restaurant data
@@ -196,14 +216,16 @@ const mockRestaurants: Restaurant[] = [
   }
 ];
 
-export function RestaurantList({ onRestaurantSelect }: RestaurantListProps) {
+export function RestaurantList() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl mb-2">Choose Your Restaurant</h2>
         <p className="text-muted-foreground">Discover amazing food from local restaurants</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mockRestaurants.map((restaurant) => (
           <Card
@@ -211,7 +233,7 @@ export function RestaurantList({ onRestaurantSelect }: RestaurantListProps) {
             className={`cursor-pointer hover:shadow-lg transition-all duration-200 ${
               !restaurant.isOpen ? 'opacity-75 grayscale' : ''
             }`}
-            onClick={() => restaurant.isOpen && onRestaurantSelect(restaurant)}
+            onClick={() => restaurant.isOpen && navigate(`/customer/restaurant/${restaurant.id}`)}
           >
             <CardContent className="p-0">
               <div className="relative">

@@ -17,17 +17,12 @@ export const EmployeePortalPublicRoute = ({ element }: { element: JSX.Element })
   return !isAuthenticated ? element : <Navigate to="/employee/dashboard" replace />;
 };
 
-/* RouteGuard for Customer portal*/
-export const CustomerPortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
-  return isAuthenticated ? (
-    <DashboardLayout>{element}</DashboardLayout>
-  ) : (
-    <Navigate to="/customer/login" replace />
-  );
+export const CustomerPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
+  return element
 };
 
-export const CustomerPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
-  return !isAuthenticated ? element : <Navigate to="/customer/restaurants" replace />;
+export const CustomerPortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
+  // For now, just return the element (no authentication required for customer portal)
+  // This can be updated later to include customer authentication logic
+  return element;
 };

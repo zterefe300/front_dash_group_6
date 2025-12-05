@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CartItem, Restaurant } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
@@ -8,15 +7,10 @@ import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/common/tabs';
 import { CheckCircle, Clock, MapPin, CreditCard, Receipt, Percent, DollarSign } from 'lucide-react';
+import { useCart } from '../../../contexts/CartContext';
 
-interface OrderSummaryProps {
-  items: CartItem[];
-  restaurant: Restaurant | null;
-  onNewOrder: () => void;
-  onProceedToPayment: (total: number) => void;
-}
-
-export function OrderSummary({ items, restaurant, onNewOrder, onProceedToPayment }: OrderSummaryProps) {
+export function OrderSummary() {
+  const { items, restaurant, goToNewOrder, goToDelivery } = useCart();
   const [tipAmount, setTipAmount] = useState<number>(0);
   const [tipType, setTipType] = useState<'percentage' | 'fixed'>('percentage');
   const [tipPercentage, setTipPercentage] = useState<string>('');
@@ -291,21 +285,19 @@ export function OrderSummary({ items, restaurant, onNewOrder, onProceedToPayment
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button 
-          size="lg" 
+        <Button
+          size="lg"
           className="flex-1"
-          onClick={() => {
-            onProceedToPayment(grandTotal);
-          }}
+          onClick={goToDelivery}
         >
           <CreditCard className="h-4 w-4 mr-2" />
           Continue to Payment
         </Button>
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           size="lg"
-          onClick={onNewOrder}
+          onClick={goToNewOrder}
           className="sm:w-auto"
         >
           Cancel Order

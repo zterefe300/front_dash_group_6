@@ -1,29 +1,15 @@
 import { useState } from 'react';
-import { CartItem, Restaurant, DeliveryAddress } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import { Alert, AlertDescription } from '../../../components/common/alert';
 import { MapPin, CheckCircle, AlertCircle, Truck } from 'lucide-react';
+import { useCart } from '../../../contexts/CartContext';
+import { DeliveryAddress } from '../types';
 
-interface DeliveryProps {
-  items: CartItem[];
-  restaurant: Restaurant | null;
-  deliveryAddress: DeliveryAddress | null;
-  setDeliveryAddress: (address: DeliveryAddress) => void;
-  onPlaceOrder: () => void;
-  onBack: () => void;
-}
-
-export function Delivery({ 
-  items, 
-  restaurant, 
-  deliveryAddress, 
-  setDeliveryAddress,
-  onPlaceOrder,
-  onBack
-}: DeliveryProps) {
+export function Delivery() {
+  const { items, restaurant, deliveryAddress, setDeliveryAddress, goToPayment, goToOrderSummary } = useCart();
   const [formData, setFormData] = useState<DeliveryAddress>({
     buildingNumber: deliveryAddress?.buildingNumber || '',
     streetName: deliveryAddress?.streetName || '',
@@ -129,7 +115,7 @@ export function Delivery({
         
         // Wait a moment to show success message
         setTimeout(() => {
-          onPlaceOrder();
+          goToPayment();
         }, 1500);
       } else {
         setValidationResult('error');
@@ -386,11 +372,11 @@ export function Delivery({
                 type="button"
                 variant="outline"
                 size="lg"
-                onClick={onBack}
+                onClick={goToOrderSummary}
                 disabled={isValidating}
                 className="sm:w-auto"
               >
-                Back to Payment
+                Back to Bill
               </Button>
             </div>
           </form>

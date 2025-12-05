@@ -1,32 +1,17 @@
-import { CartItem, Restaurant } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
 import { Separator } from '../../../components/common/separator';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
+import { useCart } from '../../../contexts/CartContext';
 
 interface CartProps {
-  items: CartItem[];
-  onUpdateQuantity: (itemId: string, quantity: number) => void;
-  onRemove: (itemId: string) => void;
-  onViewCart?: () => void;
-  onPlaceOrder?: () => void;
-  onClose?: () => void;
-  restaurant: Restaurant | null;
   isFullView?: boolean;
 }
 
-export function Cart({
-  items,
-  onUpdateQuantity,
-  onRemove,
-  onViewCart,
-  onPlaceOrder,
-  onClose,
-  restaurant,
-  isFullView = false
-}: CartProps) {
+export function Cart({ isFullView = false }: CartProps) {
+  const { items, updateQuantity, removeItem, goToCart, goToOrderSummary, restaurant } = useCart();
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
   const deliveryFee = restaurant?.deliveryFee || 0;
   const tax = subtotal * 0.08; // 8% tax
@@ -62,8 +47,8 @@ export function Cart({
               </Badge>
             )}
           </CardTitle>
-          {!isFullView && onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
+          {!isFullView && (
+            <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
               ×
             </Button>
           )}
@@ -94,28 +79,28 @@ export function Cart({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
                   className="h-8 w-8 p-0"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                
+
                 <span className="w-8 text-center text-sm">{item.quantity}</span>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
                   className="h-8 w-8 p-0"
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
-                
+
                 {isFullView && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => removeItem(item.id)}
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -155,17 +140,15 @@ export function Cart({
         
         {/* Action Buttons */}
         <div className="space-y-2 pt-2">
-          {!isFullView && onViewCart && (
-            <Button onClick={onViewCart} variant="outline" className="w-full">
+          {!isFullView && (
+            <Button onClick={goToCart} variant="outline" className="w-full">
               View Cart
             </Button>
           )}
-          
-          {onPlaceOrder && (
-            <Button onClick={onPlaceOrder} className="w-full">
-              {isFullView ? 'Place Order' : 'Checkout'}
-            </Button>
-          )}
+
+          <Button onClick={goToOrderSummary} className="w-full">
+            {isFullView ? 'Place Order' : 'Checkout'}
+          </Button>
         </div>
       </CardContent>
     </Card>
