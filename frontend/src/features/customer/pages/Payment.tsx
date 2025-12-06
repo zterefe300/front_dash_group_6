@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CartItem, Restaurant, PaymentInfo } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Input } from '../../../components/common/input';
@@ -8,24 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../../../components/common/textarea';
 import { Alert, AlertDescription } from '../../../components/common/alert';
 import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { useCart } from '../../../contexts/CartContext';
+import { PaymentInfo } from '../types';
 
-interface PaymentProps {
-  items: CartItem[];
-  restaurant: Restaurant | null;
-  paymentInfo: PaymentInfo | null;
-  setPaymentInfo: (info: PaymentInfo) => void;
-  onPlaceOrder: () => void;
-  onBack: () => void;
-}
-
-export function Payment({ 
-  items, 
-  restaurant, 
-  paymentInfo, 
-  setPaymentInfo,
-  onPlaceOrder,
-  onBack
-}: PaymentProps) {
+export function Payment() {
+  const { items, restaurant, paymentInfo, setPaymentInfo, goToOrderConfirmation, goToDelivery } = useCart();
   const [formData, setFormData] = useState<PaymentInfo>({
     cardType: paymentInfo?.cardType || '',
     cardNumber: paymentInfo?.cardNumber || '',
@@ -157,7 +143,7 @@ export function Payment({
         
         // Wait a moment to show success message
         setTimeout(() => {
-          onPlaceOrder();
+          goToOrderConfirmation();
         }, 1500);
       } else {
         setValidationResult('error');
@@ -425,11 +411,11 @@ export function Payment({
                 type="button"
                 variant="outline"
                 size="lg"
-                onClick={onBack}
+                onClick={goToDelivery}
                 disabled={isValidating}
                 className="sm:w-auto"
               >
-                Back to Bill
+                Back to Address
               </Button>
             </div>
           </form>

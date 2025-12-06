@@ -23,9 +23,9 @@ INSERT INTO Address (address_id, street_address, bldg, city, state, zip_code) VA
 
 -- Insert data into Restaurant
 INSERT INTO Restaurant (restaurant_id, name, cuisine_type, picture_url, address_id, phone_number, contact_person_name, email_address, status) VALUES
-(1, 'All Chicken Meals', '', '', 1, '617-478-3785', 'Laura Wimbleton', '?????????', 'ACTIVE'),
-(2, 'Pizza Only', '', '', 2, '857-477-2773', 'Russel Beverton', '?????????', 'ACTIVE'),
-(3, 'Best Burgers', '', '', 3, '781-467-0073', 'Eager Alloysis', '?????????', 'ACTIVE');
+(1, 'All Chicken Meals', '', '', 1, '617-478-3785', 'Laura Wimbleton', 'info@allchickenmeals.com', 'ACTIVE'),
+(2, 'Pizza Only', '', '', 2, '857-477-2773', 'Russel Beverton', 'info@pizzaonly.com', 'ACTIVE'),
+(3, 'Best Burgers', '', '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
 
 -- Insert data into RestaurantLogin
 INSERT INTO RestaurantLogin (user_name, restaurant_id, password) VALUES
@@ -119,7 +119,14 @@ INSERT INTO Orders (order_id, restaurant_id, customer_name, customer_phone, addr
 ('FD0103', 2, 'Ramon Swagger', '781-678-2552', 10, NULL, '2025-12-02 14:00:00', 2, '2025-12-02 14:30:00', 'DELIVERED', 0.00, NULL, '2025-12-02 14:22:00'),
 ('FD0104', 2, 'Ayesha Mohammad', '617-522-9965', 11, NULL, '2025-12-02 11:45:00', 5, '2025-12-02 12:10:00', 'DELIVERED', 0.00, NULL, '2025-12-02 12:30:00'),
 ('FD0201', 3, 'William Dean', '781-666-2416', 12, NULL, '2025-12-01 13:27:00', 4, '2025-12-01 13:42:00', 'DELIVERED', 0.00, NULL, '2025-12-01 13:38:00'),
-('FD0202', 3, 'Sean Oxford', '617-832-5554', 13, NULL, '2025-12-01 09:32:00', 3, '2025-12-01 10:57:00', 'DELIVERED', 0.00, NULL, '2025-12-01 15:30:00');
+('FD0202', 3, 'Sean Oxford', '617-832-5554', 13, NULL, '2025-12-01 09:32:00', 3, '2025-12-01 10:57:00', 'DELIVERED', 0.00, NULL, '2025-12-01 15:30:00'),
+('FD0108', 2, 'Rachel Meyer', '857-273-1010', 14, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 10.00, NULL, NULL),
+('FD0043', 1, 'Fu Wang', '617-357-7772', 15, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 22.00, NULL, NULL),
+('FD0044', 1, 'Cliff Hans', '857-256-9863', 16, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 5.00, NULL, NULL),
+('FD0208', 3, 'Graham Walter', '781-491-0166', 17, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 15.00, NULL, NULL),
+('FD0209', 3, 'Lisa Manters', '617-413-5588', 18, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 5.00, NULL, NULL),
+('FD0109', 2, 'Aram Shankar', '857-289-2774', 9, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 18.00, NULL, NULL),
+('FD0045', 1, 'Brian Anderson', '339-688-0896', 6, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 10.00, NULL, NULL);
 
 -- Insert data into OrderItem
 INSERT INTO OrderItem (order_id, menu_item_id, quantity) VALUES
@@ -146,4 +153,22 @@ INSERT INTO OrderItem (order_id, menu_item_id, quantity) VALUES
 ('FD0202', 11, 10),
 ('FD0202', 12, 5),
 ('FD0202', 14, 12),
-('FD0202', 15, 7);
+('FD0202', 15, 7),
+('FD0108', 9, 3),
+('FD0108', 8, 2),
+('FD0043', 3, 5),
+('FD0043', 5, 12),
+('FD0044', 4, 8),
+('FD0208', 14, 10),
+('FD0208', 15, 6),
+('FD0208', 12, 2),
+('FD0209', 13, 5),
+('FD0209', 12, 5),
+('FD0209', 11, 2),
+('FD0109', 6, 2),
+('FD0109', 7, 2),
+('FD0109', 9, 2),
+('FD0109', 8, 2),
+('FD0045', 4, 5),
+('FD0045', 3, 5),
+('FD0045', 5, 5);

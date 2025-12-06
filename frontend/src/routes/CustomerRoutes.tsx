@@ -1,49 +1,55 @@
-// import React from 'react';
-// import { Routes, Route } from 'react-router-dom';
-// import { DashboardLayout } from '../components/layout/DashboardLayout';
-// import { UserProvider, useUser } from '../contexts/UserContext';
-// import { SettingsProvider } from '../contexts/SettingsContext';
-// import { RestaurantList } from '../features/customer/pages/RestaurantList';
-// import { RestaurantDetail } from '../features/customer/pages/RestaurantDetail';
-// import { Cart } from '../features/customer/pages/Cart';
-// import { OrderSummary } from '../features/customer/pages/OrderSummary';
-// import { Delivery } from '../features/customer/pages/Delivery';
-// import { Payment } from '../features/customer/pages/Payment';
-// import { OrderConfirmation } from '../features/customer/pages/OrderConfirmation';
-// import { Orders } from '../features/customer/pages/Orders';
-// import { LoginTypeSelector } from '../features/shared/LoginTypeSelector';
-// import { CustomerPortalProtectedRoute, CustomerPortalPublicRoute } from './RouteGuards';
+import React from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { RestaurantList } from "../features/customer/pages/RestaurantList.js";
+import { RestaurantDetailPage } from "../features/customer/pages/RestaurantDetail.js";
+import { Cart } from "../features/customer/pages/Cart.js";
+import { OrderSummary } from "../features/customer/pages/OrderSummary.js";
+import { Delivery } from "../features/customer/pages/Delivery.js";
+import { Payment } from "../features/customer/pages/Payment.js";
+import { OrderConfirmation } from "../features/customer/pages/OrderConfirmation.js";
+import { Orders } from "../features/customer/pages/Orders.js";
+import { LoginTypeSelector } from "../features/shared/LoginTypeSelector.js";
+import { CustomerPortalProtectedRoute, CustomerPortalPublicRoute } from "./RouteGuards.js";
+import { CartProvider, useCart } from "../contexts/CartContext.js";
+import { CustomerLayout } from "../components/layout/CustomerLayout.js";
 
-// const protectedRoutes = [
-//   { path: '/restaurants', element: <RestaurantList /> },
-//   { path: '/restaurant/:id', element: <RestaurantDetail /> },
-//   { path: '/cart', element: <Cart /> },
-//   { path: '/order-summary', element: <OrderSummary /> },
-//   { path: '/delivery', element: <Delivery /> },
-//   { path: '/payment', element: <Payment /> },
-//   { path: '/order-confirmation', element: <OrderConfirmation /> },
-//   { path: '/orders', element: <Orders /> },
-// ];
+type PublicRoute = {
+  path: string | string[];
+  element: () => JSX.Element;
+};
 
-// const CustomerPortalRoutes = () => (
-//   <Routes>
-//     <Route path="/login" element={<CustomerPortalPublicRoute element={<LoginTypeSelector />} />} />
-//     {protectedRoutes.map(({ path, element }) => (
-//       <Route key={path} path={path} element={<CustomerPortalProtectedRoute element={element} />} />
-//     ))}
-//     <Route path="/" element={<CustomerPortalProtectedRoute element={<RestaurantList />} />} />
-//     <Route path="*" element={<CustomerPortalProtectedRoute element={<RestaurantList />} />} />
-//   </Routes>
-// );
+const publicRoutes: PublicRoute[] = [
+  { path: "/login", element: () => <LoginTypeSelector /> },
+  { path: ["/restaurants", "/", "*"], element: () => <RestaurantList /> },
+  { path: "/restaurant/:id", element: () => <RestaurantDetailPage /> },
+  { path: "/cart", element: () => <Cart /> },
+  { path: "/order-summary", element: () => <OrderSummary /> },
+  { path: "/delivery", element: () => <Delivery /> },
+  { path: "/payment", element: () => <Payment /> },
+  { path: "/order-confirmation", element: () => <OrderConfirmation /> },
+  { path: "/orders", element: () => <Orders /> },
+];
 
-// const CustomerRoutes = () => (
-//   <UserProvider>
-//     <SettingsProvider>
-//       <div className="min-h-screen bg-background">
-//         <CustomerPortalRoutes />
-//       </div>
-//     </SettingsProvider>
-//   </UserProvider>
-// );
+const CustomerPortalRoutes = () => (
+  <Routes>
+    {publicRoutes.map(({ path, element: createElement }) =>
+      Array.isArray(path) ? (
+        path.map((p) => (
+          <Route key={p} path={p} element={<CustomerPortalPublicRoute element={createElement()} />} />
+        ))
+      ) : (
+        <Route key={path} path={path} element={<CustomerPortalPublicRoute element={createElement()} />} />
+      )
+    )}
+  </Routes>
+);
 
-// export default CustomerRoutes;
+const CustomerRoutes = () => (
+  <CartProvider>
+    <CustomerLayout>
+      <CustomerPortalRoutes />
+    </CustomerLayout>
+  </CartProvider>
+);
+
+export default CustomerRoutes;

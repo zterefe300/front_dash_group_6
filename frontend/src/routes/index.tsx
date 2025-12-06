@@ -1,13 +1,15 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import CustomerRoutes from './CustomerRoutes';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import CustomerRoutes from './CustomerRoutes';
 import RestaurantRoutes from './RestaurantRoutes';
 import EmployeeRoutes from './EmployeeRoutes';
 
 const AppRoutes: React.FC = () => (
   <Router>
     <Routes>
-      {/* <Route path="*" element={<CustomerRoutes />} /> */}
+      <Route path="/customer/*" element={<CustomerRoutes />} />
+      <Route path="/" element={<Navigate to="/customer" replace />} />
+      <Route path="*" element={<Navigate to="/customer" replace />} />
+
       <Route path="/restaurant/*" element={<RestaurantRoutes />} />
       <Route path="/employee/*" element={<EmployeeRoutes />} />
     </Routes>
