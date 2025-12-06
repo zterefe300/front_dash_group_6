@@ -272,12 +272,8 @@ export const WithdrawalRequests = () => {
                                       <p className="text-sm mt-1">{selectedRequest.restaurantName}</p>
                                     </div>
                                     <div>
-                                      <Label>Owner Name</Label>
+                                      <Label>Contact Person Name</Label>
                                       <p className="text-sm mt-1">{selectedRequest.ownerName}</p>
-                                    </div>
-                                    <div>
-                                      <Label>Restaurant ID</Label>
-                                      <p className="text-sm mt-1">{selectedRequest.restaurantId}</p>
                                     </div>
                                     <div>
                                       <Label>Withdrawal Reason</Label>
@@ -291,27 +287,11 @@ export const WithdrawalRequests = () => {
                                   <h3 className="text-lg font-semibold mb-3">Contract & Activity Details</h3>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <Label>Join Date</Label>
-                                      <p className="text-sm mt-1">{selectedRequest.joinDate}</p>
-                                    </div>
-                                    <div>
-                                      <Label>Contract End Date</Label>
-                                      <p className="text-sm mt-1">{selectedRequest.contractEndDate}</p>
-                                    </div>
-                                    <div>
-                                      <Label>Last Active Date</Label>
-                                      <p className="text-sm mt-1">{selectedRequest.lastActiveDate}</p>
-                                    </div>
-                                    <div>
                                       <Label>Outstanding Orders</Label>
                                       <p className="text-sm mt-1">
                                         {selectedRequest.outstandingOrders}{" "}
                                         {selectedRequest.outstandingOrders === 1 ? "order" : "orders"}
                                       </p>
-                                    </div>
-                                    <div>
-                                      <Label>Request Date</Label>
-                                      <p className="text-sm mt-1">{selectedRequest.requestDate}</p>
                                     </div>
                                     <div>
                                       <Label>Current Status</Label>
@@ -333,17 +313,7 @@ export const WithdrawalRequests = () => {
                                     </div>
                                   )}
                                 </div>
-
-                                {/* Additional Details */}
-                                {selectedRequest.description && (
-                                  <div>
-                                    <Label>Additional Details</Label>
-                                    <p className="text-sm mt-1 p-3 bg-gray-50 rounded">
-                                      {selectedRequest.description}
-                                    </p>
-                                  </div>
-                                )}
-
+                                
                                 {/* Rejection Reason */}
                                 {selectedRequest.status === "rejected" && selectedRequest.rejectionReason && (
                                   <div>

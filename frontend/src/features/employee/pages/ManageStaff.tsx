@@ -47,10 +47,6 @@ interface StaffMember {
   id: string;
   fullName: string;
   username: string;
-  status: "active" | "inactive";
-  dateCreated: string;
-  lastLogin: string;
-  role: string;
 }
 
 export const ManageStaff = () => {
@@ -75,46 +71,26 @@ export const ManageStaff = () => {
       id: "1",
       fullName: "John Smith",
       username: "smith01",
-      status: "active",
-      dateCreated: "2024-01-15",
-      lastLogin: "2024-09-08",
-      role: "Order Manager",
     },
     {
       id: "2",
       fullName: "Emily Johnson",
       username: "johnson02",
-      status: "active",
-      dateCreated: "2024-02-20",
-      lastLogin: "2024-09-09",
-      role: "Delivery Coordinator",
     },
     {
       id: "3",
       fullName: "Michael Brown",
       username: "brown03",
-      status: "inactive",
-      dateCreated: "2024-01-10",
-      lastLogin: "2024-08-15",
-      role: "Customer Service",
     },
     {
       id: "4",
       fullName: "Sarah Davis",
       username: "davis04",
-      status: "active",
-      dateCreated: "2024-03-05",
-      lastLogin: "2024-09-09",
-      role: "Operations Manager",
     },
     {
       id: "5",
       fullName: "David Wilson",
       username: "wilson05",
-      status: "active",
-      dateCreated: "2024-02-28",
-      lastLogin: "2024-09-08",
-      role: "Support Staff",
     },
   ]);
 
@@ -182,20 +158,6 @@ export const ManageStaff = () => {
                 className="pl-10"
               />
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}
-            >
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="border rounded-lg">
@@ -204,18 +166,14 @@ export const ManageStaff = () => {
                 <TableRow>
                   <TableHead>Full Name</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Last Login</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStaff.map((staff) => (
+                {staffMembers.map((staff) => (
                   <TableRow key={staff.id}>
                     <TableCell className="font-medium">{staff.fullName}</TableCell>
                     <TableCell className="font-mono text-sm">{staff.username}</TableCell>
-                    <TableCell>{staff.role}</TableCell>
-                    <TableCell>{new Date(staff.lastLogin).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Button
@@ -234,7 +192,7 @@ export const ManageStaff = () => {
             </Table>
           </div>
 
-          {filteredStaff.length === 0 && (
+          {staffMembers.length === 0 && (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No staff members found matching your criteria.</p>

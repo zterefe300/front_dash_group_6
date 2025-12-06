@@ -34,65 +34,39 @@ interface StaffMember {
   id: string;
   fullName: string;
   username: string;
-  status: "active" | "inactive";
-  dateCreated: string;
-  lastLogin: string;
-  role: string;
 }
 
 export const StaffAccounts = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
-
+  
   // Mock staff data
   const mockStaff: StaffMember[] = [
     {
       id: "1",
       fullName: "John Smith",
       username: "smith01",
-      status: "active",
-      dateCreated: "2024-01-15",
-      lastLogin: "2024-09-08",
-      role: "Order Manager",
     },
     {
       id: "2",
       fullName: "Emily Johnson",
       username: "johnson02",
-      status: "active",
-      dateCreated: "2024-02-20",
-      lastLogin: "2024-09-09",
-      role: "Delivery Coordinator",
     },
     {
       id: "3",
       fullName: "Michael Brown",
       username: "brown03",
-      status: "inactive",
-      dateCreated: "2024-01-10",
-      lastLogin: "2024-08-15",
-      role: "Customer Service",
     },
     {
       id: "4",
       fullName: "Sarah Davis",
       username: "davis04",
-      status: "active",
-      dateCreated: "2024-03-05",
-      lastLogin: "2024-09-09",
-      role: "Operations Manager",
     },
     {
       id: "5",
       fullName: "David Wilson",
       username: "wilson05",
-      status: "active",
-      dateCreated: "2024-02-28",
-      lastLogin: "2024-09-08",
-      role: "Support Staff",
     },
   ];
 
@@ -119,11 +93,6 @@ export const StaffAccounts = () => {
 
   const activeStaffCount = staffMembers.filter((s) => s.status === "active").length;
   const inactiveStaffCount = staffMembers.filter((s) => s.status === "inactive").length;
-
-  const handleViewDetails = (staff: StaffMember) => {
-    setSelectedStaff(staff);
-    setViewDetailsOpen(true);
-  };
 
   return (
     <div className="space-y-6">
@@ -158,20 +127,6 @@ export const StaffAccounts = () => {
                 className="pl-10"
               />
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}
-            >
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Staff Table */}
@@ -181,8 +136,6 @@ export const StaffAccounts = () => {
                 <TableRow>
                   <TableHead>Full Name</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead>Date Created</TableHead>
-                  <TableHead>Last Login</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -190,8 +143,6 @@ export const StaffAccounts = () => {
                   <TableRow key={staff.id}>
                     <TableCell className="font-medium">{staff.fullName}</TableCell>
                     <TableCell className="font-mono text-sm">{staff.username}</TableCell>
-                    <TableCell>{new Date(staff.dateCreated).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(staff.lastLogin).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -243,64 +194,6 @@ export const StaffAccounts = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Staff Details Dialog */}
-      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Staff Account Details</DialogTitle>
-            <DialogDescription>Detailed information about the selected staff member</DialogDescription>
-          </DialogHeader>
-          {selectedStaff && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                  <p className="font-medium">{selectedStaff.fullName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Username</label>
-                  <p className="font-mono text-sm">{selectedStaff.username}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Role</label>
-                  <p>{selectedStaff.role}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <Badge
-                    variant={selectedStaff.status === "active" ? "default" : "secondary"}
-                    className={
-                      selectedStaff.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }
-                  >
-                    {selectedStaff.status === "active" ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Date Created</label>
-                  <p>{new Date(selectedStaff.dateCreated).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Last Login</label>
-                  <p>{new Date(selectedStaff.lastLogin).toLocaleDateString()}</p>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDetailsOpen(false)}>
-              Close
-            </Button>
-            <Button>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Account
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

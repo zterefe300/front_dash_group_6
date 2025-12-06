@@ -34,6 +34,7 @@ interface Order {
   deliveryAddress: string;
   driver?: string;
   estimatedDelivery?: string;
+  deliveryTime?: string;
 }
 
 interface Driver {
@@ -211,10 +212,17 @@ export const OrderManagement: React.FC = () => {
   };
 
   const updateOrderETA = (orderId: string, newETA: string) => {
-    setActiveOrders(prev => prev.map(order => 
+    setActiveOrders(prev => prev.map(order =>
       order.id === orderId ? { ...order, estimatedDelivery: newETA } : order
     ));
     toast.success('ETA updated successfully');
+  };
+
+  const updateOrderDeliveryTime = (orderId: string, newDeliveryTime: string) => {
+    setActiveOrders(prev => prev.map(order =>
+      order.id === orderId ? { ...order, deliveryTime: newDeliveryTime } : order
+    ));
+    toast.success('Delivery time updated successfully');
   };
 
   return (
@@ -422,6 +430,7 @@ export const OrderManagement: React.FC = () => {
                       <TableHead>Restaurant</TableHead>
                       <TableHead>Driver</TableHead>
                       <TableHead>ETA</TableHead>
+                      <TableHead>Delivery Time</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -449,18 +458,21 @@ export const OrderManagement: React.FC = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {order.estimatedDelivery ? (
+                          <span className="text-sm">{order.estimatedDelivery || 'Not set'}</span>
+                        </TableCell>
+                        <TableCell>
+                          {order.deliveryTime ? (
                             <Input
                               type="time"
-                              value={order.estimatedDelivery}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderETA(order.id, e.target.value)}
+                              value={order.deliveryTime}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderDeliveryTime(order.id, e.target.value)}
                               className="w-32"
                             />
                           ) : (
                             <Input
                               type="time"
-                              placeholder="Set ETA"
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderETA(order.id, e.target.value)}
+                              placeholder="Set delivery time"
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderDeliveryTime(order.id, e.target.value)}
                               className="w-32"
                             />
                           )}

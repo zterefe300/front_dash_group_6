@@ -21,6 +21,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../../components/common/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../../../components/common/collapsible";
 import { Label } from "../../../components/common/label";
 import { Textarea } from "../../../components/common/textarea";
 import {
@@ -47,6 +52,15 @@ interface Restaurant {
   cuisine: string;
   status: "pending" | "active" | "suspended";
   registrationDate: string;
+  operatingHours: {
+    monday: { open: string; close: string };
+    tuesday: { open: string; close: string };
+    wednesday: { open: string; close: string };
+    thursday: { open: string; close: string };
+    friday: { open: string; close: string };
+    saturday: { open: string; close: string };
+    sunday: { open: string; close: string };
+  };
   documents?: string[];
   businessLicense?: string;
   taxId?: string;
@@ -64,6 +78,15 @@ const mockRegistrationRequests: Restaurant[] = [
     cuisine: "Italian",
     status: "pending",
     registrationDate: "2024-01-15",
+    operatingHours: {
+      monday: { open: "11:00 AM", close: "10:00 PM" },
+      tuesday: { open: "11:00 AM", close: "10:00 PM" },
+      wednesday: { open: "11:00 AM", close: "10:00 PM" },
+      thursday: { open: "11:00 AM", close: "10:00 PM" },
+      friday: { open: "11:00 AM", close: "11:00 PM" },
+      saturday: { open: "12:00 PM", close: "11:00 PM" },
+      sunday: { open: "12:00 PM", close: "9:00 PM" },
+    },
     documents: ["license.pdf", "insurance.pdf", "tax-cert.pdf"],
     businessLicense: "BL123456789",
     taxId: "TX987654321",
@@ -79,6 +102,15 @@ const mockRegistrationRequests: Restaurant[] = [
     cuisine: "American",
     status: "pending",
     registrationDate: "2024-01-14",
+    operatingHours: {
+      monday: { open: "10:00 AM", close: "9:00 PM" },
+      tuesday: { open: "10:00 AM", close: "9:00 PM" },
+      wednesday: { open: "10:00 AM", close: "9:00 PM" },
+      thursday: { open: "10:00 AM", close: "9:00 PM" },
+      friday: { open: "10:00 AM", close: "10:00 PM" },
+      saturday: { open: "11:00 AM", close: "10:00 PM" },
+      sunday: { open: "11:00 AM", close: "8:00 PM" },
+    },
     documents: ["license.pdf", "health-cert.pdf", "insurance.pdf"],
     businessLicense: "BL987654321",
     taxId: "TX123456789",
@@ -94,6 +126,15 @@ const mockRegistrationRequests: Restaurant[] = [
     cuisine: "Indian",
     status: "pending",
     registrationDate: "2024-01-13",
+    operatingHours: {
+      monday: { open: "11:30 AM", close: "9:30 PM" },
+      tuesday: { open: "11:30 AM", close: "9:30 PM" },
+      wednesday: { open: "11:30 AM", close: "9:30 PM" },
+      thursday: { open: "11:30 AM", close: "9:30 PM" },
+      friday: { open: "11:30 AM", close: "10:30 PM" },
+      saturday: { open: "12:00 PM", close: "10:30 PM" },
+      sunday: { open: "12:00 PM", close: "9:00 PM" },
+    },
     documents: ["license.pdf", "health-cert.pdf", "fire-safety.pdf"],
     businessLicense: "BL456789123",
     taxId: "TX654321987",
@@ -109,6 +150,15 @@ const mockRegistrationRequests: Restaurant[] = [
     cuisine: "Chinese",
     status: "pending",
     registrationDate: "2024-01-12",
+    operatingHours: {
+      monday: { open: "10:30 AM", close: "9:00 PM" },
+      tuesday: { open: "10:30 AM", close: "9:00 PM" },
+      wednesday: { open: "10:30 AM", close: "9:00 PM" },
+      thursday: { open: "10:30 AM", close: "9:00 PM" },
+      friday: { open: "10:30 AM", close: "10:00 PM" },
+      saturday: { open: "11:00 AM", close: "10:00 PM" },
+      sunday: { open: "11:00 AM", close: "8:30 PM" },
+    },
     documents: ["license.pdf", "health-cert.pdf"],
     businessLicense: "BL321654987",
     taxId: "TX987321654",
@@ -125,8 +175,7 @@ export const RegistrationRequests = () => {
   const filteredRequests = mockRegistrationRequests.filter(
     (restaurant) =>
       restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      restaurant.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
+      restaurant.owner.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleApprove = (id: string) => {
@@ -172,7 +221,7 @@ export const RegistrationRequests = () => {
             <div className="flex items-center space-x-2">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by restaurant name, owner, or cuisine..."
+                placeholder="Search by restaurant name or owner..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -184,7 +233,6 @@ export const RegistrationRequests = () => {
                 <TableRow>
                   <TableHead>Restaurant</TableHead>
                   <TableHead>Owner</TableHead>
-                  <TableHead>Cuisine</TableHead>
                   <TableHead>Request Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -214,9 +262,6 @@ export const RegistrationRequests = () => {
                           {restaurant.phone}
                         </p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{restaurant.cuisine}</Badge>
                     </TableCell>
                     <TableCell>{restaurant.registrationDate}</TableCell>
                     <TableCell>
@@ -282,6 +327,62 @@ export const RegistrationRequests = () => {
                                       <p className="text-sm mt-1">{selectedRequest.registrationDate}</p>
                                     </div>
                                   </div>
+                                </div>
+
+                                {/* Operating Hours */}
+                                <div>
+                                  <Collapsible>
+                                    <CollapsibleTrigger className="flex items-center justify-between w-full">
+                                      <h3 className="text-lg font-semibold">Operating Hours</h3>
+                                      <Clock className="h-4 w-4" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="space-y-2 mt-3">
+                                      <div className="grid grid-cols-1 gap-2">
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Monday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.monday.open} - {selectedRequest.operatingHours.monday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Tuesday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.tuesday.open} - {selectedRequest.operatingHours.tuesday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Wednesday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.wednesday.open} - {selectedRequest.operatingHours.wednesday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Thursday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.thursday.open} - {selectedRequest.operatingHours.thursday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Friday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.friday.open} - {selectedRequest.operatingHours.friday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b">
+                                          <span className="font-medium">Saturday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.saturday.open} - {selectedRequest.operatingHours.saturday.close}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1">
+                                          <span className="font-medium">Sunday</span>
+                                          <span className="text-sm text-muted-foreground">
+                                            {selectedRequest.operatingHours.sunday.open} - {selectedRequest.operatingHours.sunday.close}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </CollapsibleContent>
+                                  </Collapsible>
                                 </div>
 
                                 {/* Rejection Reason */}
