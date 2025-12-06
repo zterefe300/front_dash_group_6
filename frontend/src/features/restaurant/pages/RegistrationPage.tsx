@@ -47,20 +47,15 @@ export function RegistrationPage() {
   const createInitialApplicationData = () => ({
     restaurantName: '',
     businessType: '',
-    cuisineType: '',
     description: '',
     ownerName: '',
     email: '',
     phone: '',
-    businessAddress: '',
+    building: '',
+    street: '',
     city: '',
     state: '',
     zipCode: '',
-    businessLicense: '',
-    taxId: '',
-    yearsInBusiness: '',
-    averageOrderValue: '',
-    expectedOrderVolume: '',
     agreeToTerms: true,
     agreeToCommission: true,
     confirmAccuracy: true,
@@ -153,12 +148,6 @@ export function RegistrationPage() {
   };
 
   const generatedUsername = generateUsername(applicationData.ownerName);
-
-  const cuisineTypes = [
-    'American', 'Italian', 'Chinese', 'Mexican', 'Japanese', 'Indian', 
-    'Thai', 'Mediterranean', 'French', 'Greek', 'Korean', 'Vietnamese',
-    'Pizza', 'Burgers', 'Seafood', 'Vegetarian/Vegan', 'Fast Food', 'Other'
-  ];
 
   const businessTypes = [
     'Restaurant', 'Fast Casual', 'Quick Service', 'Food Truck', 
@@ -355,10 +344,9 @@ export function RegistrationPage() {
 
   const validateForm = () => {
     const requiredFields = [
-      'restaurantName', 'businessType', 'cuisineType', 'description',
+      'restaurantName', 'businessType', 'description',
       'ownerName', 'email', 'phone',
-      'businessAddress', 'city', 'state', 'zipCode',
-      'yearsInBusiness', 'averageOrderValue', 'expectedOrderVolume'
+      'building', 'street', 'city', 'state', 'zipCode',
     ];
     
     const missingFields = requiredFields.filter(field => !applicationData[field as keyof typeof applicationData]);
@@ -389,26 +377,13 @@ export function RegistrationPage() {
       return false;
     }
 
-    // Validate address format (should include building number, street name, city, and state)
-    const addressParts = applicationData.businessAddress.trim().split(/\s+/);
-    if (addressParts.length < 3) {
-      toast.error('Address must include building number, street name (minimum 3 parts)');
-      return false;
-    }
-    
-    // Check if first part contains a number (building number)
-    if (!/\d/.test(addressParts[0])) {
-      toast.error('Address must start with a building number');
+    if (!/\d/.test(applicationData.building)) {
+      toast.error('Building must include a number');
       return false;
     }
 
-    if (!applicationData.city.trim()) {
-      toast.error('City is required for a valid address');
-      return false;
-    }
-
-    if (!applicationData.state.trim()) {
-      toast.error('State is required for a valid address');
+    if (!applicationData.street.trim()) {
+      toast.error('Street is required for a valid address');
       return false;
     }
     
@@ -489,28 +464,15 @@ export function RegistrationPage() {
     const submissionPayload: RegistrationPayload = {
       restaurantName: applicationData.restaurantName.trim(),
       businessType: applicationData.businessType,
-      cuisineType: applicationData.cuisineType,
-      description: applicationData.description,
-      ownerName: applicationData.ownerName,
-      email: applicationData.email,
-      phone: applicationData.phone,
-      businessAddress: applicationData.businessAddress,
-      city: applicationData.city,
-      state: applicationData.state,
-      zipCode: applicationData.zipCode,
-      ...(applicationData.businessLicense
-        ? { businessLicense: applicationData.businessLicense }
-        : {}),
-      ...(applicationData.taxId ? { taxId: applicationData.taxId } : {}),
-      ...(applicationData.yearsInBusiness
-        ? { yearsInBusiness: applicationData.yearsInBusiness }
-        : {}),
-      ...(applicationData.averageOrderValue
-        ? { averageOrderValue: applicationData.averageOrderValue }
-        : {}),
-      ...(applicationData.expectedOrderVolume
-        ? { expectedOrderVolume: applicationData.expectedOrderVolume }
-        : {}),
+      description: applicationData.description.trim(),
+      ownerName: applicationData.ownerName.trim(),
+      email: applicationData.email.trim(),
+      phone: applicationData.phone.trim(),
+      building: applicationData.building.trim(),
+      street: applicationData.street.trim(),
+      city: applicationData.city.trim(),
+      state: applicationData.state.trim(),
+      zipCode: applicationData.zipCode.trim(),
       agreeToTerms: applicationData.agreeToTerms,
       agreeToCommission: applicationData.agreeToCommission,
       confirmAccuracy: applicationData.confirmAccuracy,
@@ -624,11 +586,11 @@ export function RegistrationPage() {
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-10">
             {/* Basic Restaurant Information */}
             <div className="space-y-4">
               <div>
-                <h3>Basic Restaurant Information</h3>
+                <h3 className="text-xl font-semibold">Basic Restaurant Information</h3>
                 <p className="text-sm text-muted-foreground">Tell us about your restaurant</p>
               </div>
               
@@ -658,20 +620,6 @@ export function RegistrationPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="cuisineType">Cuisine Type *</Label>
-                <Select value={applicationData.cuisineType} onValueChange={(value) => handleInputChange('cuisineType', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select cuisine type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cuisineTypes.map(cuisine => (
-                      <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="description">Restaurant Description *</Label>
                 <Textarea
                   id="description"
@@ -683,12 +631,12 @@ export function RegistrationPage() {
               </div>
             </div>
 
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
             {/* Contact Information */}
             <div className="space-y-4">
               <div>
-                <h3>Contact Information</h3>
+                <h3 className="text-xl font-semibold">Contact Information</h3>
                 <p className="text-sm text-muted-foreground">Primary contact details for your business</p>
               </div>
               
@@ -743,27 +691,38 @@ export function RegistrationPage() {
               )}
             </div>
 
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
-            {/* Business Address & Legal */}
+            {/* Business Address */}
             <div className="space-y-4">
               <div>
-                <h3>Business Address & Legal Information</h3>
+                <h3 className="text-xl font-semibold">Business Address</h3>
                 <p className="text-sm text-muted-foreground">Where your restaurant is located</p>
               </div>
               
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="businessAddress">Business Address *</Label>
-                  <Input
-                    id="businessAddress"
-                    placeholder="123 Main Street"
-                    value={applicationData.businessAddress}
-                    onChange={(e) => handleInputChange('businessAddress', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Must include building number and street name (e.g., 123 Main Street)
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="building">Building *</Label>
+                    <Input
+                      id="building"
+                      placeholder="123 or Suite 500"
+                      value={applicationData.building}
+                      onChange={(e) => handleInputChange('building', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Include building or unit number for accurate delivery.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="street">Street *</Label>
+                    <Input
+                      id="street"
+                      placeholder="Main Street"
+                      value={applicationData.street}
+                      onChange={(e) => handleInputChange('street', e.target.value)}
+                    />
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -795,98 +754,17 @@ export function RegistrationPage() {
                     />
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="businessLicense">Business License # (Optional)</Label>
-                    <Input
-                      id="businessLicense"
-                      placeholder="License number"
-                      value={applicationData.businessLicense}
-                      onChange={(e) => handleInputChange('businessLicense', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="taxId">Tax ID/EIN (Optional)</Label>
-                    <Input
-                      id="taxId"
-                      placeholder="Tax identification number"
-                      value={applicationData.taxId}
-                      onChange={(e) => handleInputChange('taxId', e.target.value)}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 
-            <Separator />
-
-            {/* Business Operations */}
-            <div className="space-y-4">
-              <div>
-                <h3>Business Operations</h3>
-                <p className="text-sm text-muted-foreground">Help us understand your business scale</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="yearsInBusiness">Years in Business *</Label>
-                  <Select value={applicationData.yearsInBusiness} onValueChange={(value) => handleInputChange('yearsInBusiness', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select years" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="less-than-1">Less than 1 year</SelectItem>
-                      <SelectItem value="1-2">1-2 years</SelectItem>
-                      <SelectItem value="3-5">3-5 years</SelectItem>
-                      <SelectItem value="6-10">6-10 years</SelectItem>
-                      <SelectItem value="more-than-10">More than 10 years</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="averageOrderValue">Average Order Value *</Label>
-                  <Select value={applicationData.averageOrderValue} onValueChange={(value) => handleInputChange('averageOrderValue', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="under-15">Under $15</SelectItem>
-                      <SelectItem value="15-25">$15 - $25</SelectItem>
-                      <SelectItem value="25-40">$25 - $40</SelectItem>
-                      <SelectItem value="40-60">$40 - $60</SelectItem>
-                      <SelectItem value="over-60">Over $60</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="expectedOrderVolume">Expected Daily Orders *</Label>
-                  <Select value={applicationData.expectedOrderVolume} onValueChange={(value) => handleInputChange('expectedOrderVolume', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select volume" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="under-20">Under 20 orders</SelectItem>
-                      <SelectItem value="20-50">20-50 orders</SelectItem>
-                      <SelectItem value="50-100">50-100 orders</SelectItem>
-                      <SelectItem value="100-200">100-200 orders</SelectItem>
-                      <SelectItem value="over-200">Over 200 orders</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
             {/* Required Documents */}
             <div className="space-y-4">
               <div>
                 <div className="flex items-center space-x-2 mb-2">
                   <FileText className="h-5 w-5 text-primary" />
-                  <h3>Documents</h3>
+                  <h3 className="text-xl font-semibold">Documents</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Upload your essential business documents. Only Business License and Health Permit are required.
@@ -927,10 +805,10 @@ export function RegistrationPage() {
 
             </div>
 
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
             {/* Menu Planning */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Card>
                 <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
@@ -1087,10 +965,10 @@ export function RegistrationPage() {
               </DialogContent>
             </Dialog>
 
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
             {/* Operating Hours */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1197,12 +1075,12 @@ export function RegistrationPage() {
               </Card>
             </div>
 
-            <Separator />
+            <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />
 
             {/* Terms & Agreements */}
             <div className="space-y-4">
               <div>
-                <h3>Terms & Agreements</h3>
+                <h3 className="text-xl font-semibold">Terms & Agreements</h3>
                 <p className="text-sm text-muted-foreground">Please review and accept the following terms</p>
               </div>
               
