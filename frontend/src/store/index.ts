@@ -2,6 +2,26 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { restaurantApi, type LoginCredentials, type RegistrationPayload, type RestaurantSummary } from '@/api/restaurant';
 
+// Menu Item type
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  isAvailable: boolean;
+  imageUrl?: string | null;
+}
+
+// Withdrawal Request type
+interface WithdrawalRequest {
+  id: string;
+  reason: string;
+  details: string;
+  status: string;
+  createdAt: string;
+}
+
 interface AppState {
   // Auth state
   isAuthenticated: boolean;
@@ -15,12 +35,35 @@ interface AppState {
   registrationResult: { message: string } | null;
   registrationError: string | null;
 
+  // Restaurant state
+  restaurant: RestaurantSummary | null;
+
+  // Menu state
+  menu: MenuItem[];
+  isMenuLoading: boolean;
+  isMenuSaving: boolean;
+
+  // Withdrawal state
+  withdrawalRequests: WithdrawalRequest[];
+  isSubmittingWithdrawal: boolean;
+  withdrawalError: string | null;
+
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
   clearAuthError: () => void;
   submitRegistration: (payload: RegistrationPayload) => Promise<void>;
   clearRegistrationResult: () => void;
+
+  // Menu actions
+  refreshMenu: (restaurantId: string) => Promise<void>;
+  saveMenuItem: (params: { restaurantId: string; item: Partial<MenuItem> }) => Promise<void>;
+  deleteMenuItem: (restaurantId: string, itemId: string) => Promise<void>;
+
+  // Withdrawal actions
+  fetchWithdrawalRequests: () => Promise<void>;
+  createWithdrawalRequest: (restaurantId: string, data: { reason: string; details: string }) => Promise<void>;
+  clearWithdrawalError: () => void;
 }
 
 export const useAppStore = create<AppState>()(

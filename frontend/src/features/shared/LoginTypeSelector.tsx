@@ -8,7 +8,7 @@ export function LoginTypeSelector() {
 
   const handleSelectType = (type: 'restaurant' | 'staff' | 'admin') => {
     if (type === 'restaurant') {
-      navigate('/restaurants');
+      navigate('/restaurant');
     } else {
       navigate('/employee');
     }

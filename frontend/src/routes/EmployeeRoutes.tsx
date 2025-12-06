@@ -1,23 +1,24 @@
 import { Routes, Route } from "react-router-dom";
-import { UserProvider } from "../contexts/UserContext.js";
-import { SettingsProvider } from "../contexts/SettingsContext.js";
-import { Dashboard } from "../features/employee/pages/Dashboard.js";
-import { RestaurantManagement } from "../features/employee/pages/RestaurantManagement.js";
-import { StaffManagement } from "../features/employee/pages/StaffManagement.js";
-import { OrderManagement } from "../features/employee/pages/OrderManagement.js";
-import { AccountSettings } from "../features/employee/pages/AccountSettings.js";
-import { RegistrationRequests } from "../features/employee/pages/RegistrationRequests.js";
-import { ActiveRestaurants } from "../features/employee/pages/ActiveRestaurants.js";
-import { WithdrawalRequests } from "../features/employee/pages/WithdrawalRequests.js";
-import { StaffAccounts } from "../features/employee/pages/StaffAccounts.js";
-import { AddNewStaff } from "../features/employee/pages/AddNewStaff.js";
-import { ManageStaff } from "../features/employee/pages/ManageStaff.js";
-import { ActiveDrivers } from "../features/employee/pages/ActiveDrivers.js";
-import { ManageDrivers } from "../features/employee/pages/ManageDrivers.js";
-import { DriverManagement } from "../features/employee/pages/DriverManagement.js";
-import { Settings } from "../features/employee/pages/Settings.js";
-import { EmployeePortalProtectedRoute, EmployeePortalPublicRoute } from "./RouteGuards.tsx";
-import { LoginPage } from "../features/employee/pages/LoginPage.js";
+import { DashboardLayout } from "../components/layout/DashboardLayout";
+import { UserProvider, useUser } from "../contexts/UserContext";
+import { SettingsProvider } from "../contexts/SettingsContext";
+import { Dashboard } from "../features/employee/pages/Dashboard";
+import { RestaurantManagement } from "../features/employee/pages/RestaurantManagement";
+import { StaffManagement } from "../features/employee/pages/StaffManagement";
+import { OrderManagement } from "../features/employee/pages/OrderManagement";
+import { AccountSettings } from "../features/employee/pages/AccountSettings";
+import { RegistrationRequests } from "../features/employee/pages/RegistrationRequests";
+import { ActiveRestaurants } from "../features/employee/pages/ActiveRestaurants";
+import { WithdrawalRequests } from "../features/employee/pages/WithdrawalRequests";
+import { StaffAccounts } from "../features/employee/pages/StaffAccounts";
+import { AddNewStaff } from "../features/employee/pages/AddNewStaff";
+import { ManageStaff } from "../features/employee/pages/ManageStaff";
+import { ActiveDrivers } from "../features/employee/pages/ActiveDrivers";
+import { ManageDrivers } from "../features/employee/pages/ManageDrivers";
+import { DriverManagement } from "../features/employee/pages/DriverManagement";
+import { Settings } from "../features/employee/pages/Settings";
+import { EmployeePortalProtectedRoute, EmployeePortalPublicRoute } from "./RouteGuards";
+import { LoginPage } from "../features/employee/pages/LoginPage";
 
 const protectedRoutes = [
   { path: "/dashboard", element: <Dashboard /> },

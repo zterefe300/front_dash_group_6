@@ -35,21 +35,31 @@ export interface OperatingDay {
   closeTime?: string;
 }
 
+export interface MenuItemPayload {
+  name: string;
+  category: string;
+  price: number;
+  description?: string;
+}
+
 export interface RegistrationPayload {
   restaurantName: string;
   businessType: string;
-  cuisineType: string;
+  description: string;
+  ownerName: string;
   email: string;
   phone: string;
-  website?: string;
-  description: string;
+  building: string;
   street: string;
   city: string;
   state: string;
   zipCode: string;
-  country: string;
+  agreeToTerms: boolean;
+  agreeToCommission: boolean;
+  confirmAccuracy: boolean;
   operatingHours: OperatingDay[];
-  documents: any[];
+  menuItems: MenuItemPayload[];
+  supportingFiles?: string[];
 }
 
 export interface LoginCredentials {

@@ -5,6 +5,7 @@ import { Star, Clock, DollarSign, Plus, Minus } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
+import { useCart } from '../../../contexts/CartContext';
 
 // Restaurant type definition
 interface Restaurant {
@@ -75,55 +76,52 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
     <div className="space-y-8">
       {/* Restaurant Header */}
       <Card>
-        <CardContent className="p-0">
-          <div className="relative">
-            <ImageWithFallback
-              src={restaurant.image}
-              alt={restaurant.name}
-              className="w-full h-64 md:h-80 object-cover rounded-t-lg"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-t-lg" />
-            
-            {/* Restaurant Logo */}
-            {restaurant.logo && (
-              <div className="absolute top-6 left-6 w-16 h-16 rounded-full overflow-hidden border-3 border-white bg-white shadow-lg">
-                <ImageWithFallback
-                  src={restaurant.logo}
-                  alt={`${restaurant.name} logo`}
-                  className="w-full h-full object-cover"
-                />
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                {/* Restaurant Logo */}
+                {restaurant.logo && (
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border bg-white shadow-sm">
+                    <ImageWithFallback
+                      src={restaurant.logo}
+                      alt={`${restaurant.name} logo`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-2">{restaurant.name}</h1>
+                  <Badge variant="secondary">
+                    {restaurant.cuisine}
+                  </Badge>
+                </div>
               </div>
-            )}
-            
-            {/* Open/Closed Status */}
-            <Badge 
-              className={`absolute top-6 right-6 ${
-                restaurant.isOpen 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-red-500 text-white'
-              }`}
-            >
-              {restaurant.isOpen ? 'Open' : 'Closed'}
-            </Badge>
-            
-            <div className="absolute bottom-6 left-6 text-white">
-              <h1 className="text-3xl mb-2">{restaurant.name}</h1>
-              <Badge variant="secondary" className="mb-4">
-                {restaurant.cuisine}
+              
+              {/* Open/Closed Status */}
+              <Badge 
+                className={`${
+                  restaurant.isOpen 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-red-500 text-white'
+                }`}
+              >
+                {restaurant.isOpen ? 'Open' : 'Closed'}
               </Badge>
-              <div className="flex items-center gap-6 text-sm">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>{restaurant.rating}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{restaurant.deliveryTime}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span>Delivery: ${restaurant.deliveryFee}</span>
-                </div>
+            </div>
+            
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-foreground font-medium">{restaurant.rating}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>{restaurant.deliveryTime}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4" />
+                <span>Delivery: ${restaurant.deliveryFee}</span>
               </div>
             </div>
           </div>
@@ -421,7 +419,7 @@ const mockRestaurants: Restaurant[] = [
 // Wrapper component that handles routing and state management
 export function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { items, addItem, updateQuantity, setRestaurant } = useCart();
 
   const restaurant = mockRestaurants.find(r => r.id === id);
 
@@ -435,39 +433,29 @@ export function RestaurantDetailPage() {
   }
 
   const handleAddToCart = (item: MenuItem) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        return prevItems.map(cartItem =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      } else {
-        return [...prevItems, {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: 1,
-          image: item.image
-        }];
-      }
+    // Set the restaurant in context when adding first item
+    if (items.length === 0) {
+      setRestaurant(restaurant);
+    }
+    
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      image: item.image
     });
   };
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === itemId ? { ...item, quantity } : item
-      ).filter(item => item.quantity > 0)
-    );
+    updateQuantity(itemId, quantity);
   };
 
   return (
     <RestaurantDetail
       restaurant={restaurant}
       onAddToCart={handleAddToCart}
-      cartItems={cartItems}
+      cartItems={items}
       onUpdateQuantity={handleUpdateQuantity}
     />
   );

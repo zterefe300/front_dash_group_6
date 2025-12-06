@@ -3,7 +3,7 @@ import CustomerRoutes from './CustomerRoutes';
 import RestaurantRoutes from './RestaurantRoutes';
 import EmployeeRoutes from './EmployeeRoutes';
 
-const AppRoutes = () => (
+const AppRoutes: React.FC = () => (
   <Router>
     <Routes>
       <Route path="/customer/*" element={<CustomerRoutes />} />

@@ -15,18 +15,14 @@ import { FrontDashLogo } from "./FrontDashLogo";
 import { BackgroundPattern } from "./BackgroundPattern";
 import { toast } from "sonner";
 import { Info, Truck, Clock, Shield } from "lucide-react";
-import { useAppStore } from "@/store";
+import { useUser } from "@/contexts/UserContext";
 
 export function LoginPage() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [usernameError, setUsernameError] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const navigate = useNavigate();
-
-  // ✅ 用“分开取”或“元组+shallow”，避免每次返回新对象导致重复渲染/更新风暴
-  const login = useAppStore((s) => s.login);
-  const isAuthenticating = useAppStore((s) => s.isAuthenticating);
-  const clearAuthError = useAppStore((s) => s.clearAuthError);
-  // 也可以这样：
+  const { login } = useUser();
 
   const validateUsername = useCallback((username: string) => {
     if (!username) return "Username is required";
@@ -50,7 +46,6 @@ export function LoginPage() {
 
   const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    clearAuthError();
 
     const usernameValidationError = validateUsername(loginData.username);
     setUsernameError(usernameValidationError);
@@ -65,15 +60,17 @@ export function LoginPage() {
     }
 
     try {
-      await login({ username: loginData.username, password: loginData.password });
+      setIsAuthenticating(true);
+      await login(loginData.username, loginData.password);
       toast.success("Login successful!");
-      // ✅ 只在成功后跳转，避免条件跳转引发依赖抖动
       navigate("/restaurant/dashboard", { replace: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed. Please try again.";
       toast.error(message);
+    } finally {
+      setIsAuthenticating(false);
     }
-  }, [clearAuthError, validateUsername, loginData.username, loginData.password, login, navigate]);
+  }, [validateUsername, loginData.username, loginData.password, login, navigate]);
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-background via-background to-primary/5">

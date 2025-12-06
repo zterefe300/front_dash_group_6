@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CartItem, Restaurant, DeliveryAddress, PaymentInfo } from '../features/customer/types';
 
 interface CartContextType {
@@ -20,6 +21,10 @@ interface CartContextType {
   // Checkout actions
   setDeliveryAddress: (address: DeliveryAddress) => void;
   setPaymentInfo: (info: PaymentInfo) => void;
+
+  // Calculation helpers
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
 
   // Navigation helpers
   goToCart: () => void;
@@ -49,6 +54,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [restaurant, setRestaurantState] = useState<Restaurant | null>(null);
   const [deliveryAddress, setDeliveryAddressState] = useState<DeliveryAddress | null>(null);
   const [paymentInfo, setPaymentInfoState] = useState<PaymentInfo | null>(null);
+  const navigate = useNavigate();
 
   const addItem = (item: CartItem) => {
     setItems(prev => {
@@ -99,30 +105,22 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setPaymentInfoState(info);
   };
 
-  // Navigation helpers (using window.location for simplicity)
-  const goToCart = () => {
-    window.location.href = '/cart';
+  // Calculation helpers
+  const getTotalItems = () => {
+    return items.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const goToOrderSummary = () => {
-    window.location.href = '/order-summary';
+  const getTotalPrice = () => {
+    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const goToDelivery = () => {
-    window.location.href = '/delivery';
-  };
-
-  const goToPayment = () => {
-    window.location.href = '/payment';
-  };
-
-  const goToOrderConfirmation = () => {
-    window.location.href = '/order-confirmation';
-  };
-
-  const goToNewOrder = () => {
-    window.location.href = '/restaurants';
-  };
+  // Navigation helpers using SPA navigation to preserve context/state
+  const goToCart = () => navigate('/customer/cart');
+  const goToOrderSummary = () => navigate('/customer/order-summary');
+  const goToDelivery = () => navigate('/customer/delivery');
+  const goToPayment = () => navigate('/customer/payment');
+  const goToOrderConfirmation = () => navigate('/customer/order-confirmation');
+  const goToNewOrder = () => navigate('/customer/restaurants');
 
   return (
     <CartContext.Provider value={{
@@ -137,6 +135,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       setRestaurant,
       setDeliveryAddress,
       setPaymentInfo,
+      getTotalItems,
+      getTotalPrice,
       goToCart,
       goToOrderSummary,
       goToDelivery,

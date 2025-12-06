@@ -13,7 +13,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FrontDashLogo } from "./FrontDashLogo";
 import { BackgroundPattern } from "./BackgroundPattern";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { ArrowLeft, Mail } from "lucide-react";
 
 export function ForgotPasswordPage() {
