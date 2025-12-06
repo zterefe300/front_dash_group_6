@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext.js";
-import { DashboardLayout } from "../components/layout/DashboardLayout.js";
+import { useUser } from "../contexts/UserContext";
+import { DashboardLayout } from "../components/layout/DashboardLayout";
 
 /* RouteGuard for Employee portal*/
 export const EmployeePortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
@@ -30,4 +30,15 @@ export const CustomerPortalProtectedRoute = ({ element }: { element: JSX.Element
 export const CustomerPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
   const { isAuthenticated } = useUser();
   return !isAuthenticated ? element : <Navigate to="/customer/restaurants" replace />;
+};
+
+/* RouteGuard for Restaurant portal*/
+export const RestaurantPortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
+  const { isAuthenticated } = useUser();
+  return isAuthenticated ? element : <Navigate to="/restaurant/login" replace />;
+};
+
+export const RestaurantPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
+  const { isAuthenticated } = useUser();
+  return !isAuthenticated ? element : <Navigate to="/restaurant/dashboard" />;
 };

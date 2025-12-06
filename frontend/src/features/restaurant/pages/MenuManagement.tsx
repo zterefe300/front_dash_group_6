@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from './ImageUpload';
 import { Plus, Edit, Trash2, ImageIcon, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAppStore } from '@/store';
 
 interface MenuItem {
   id: string;
@@ -35,35 +34,34 @@ interface MenuItem {
 
 export function MenuManagement() {
 
-  const restaurant = useAppStore((state) => state.restaurant);
-  const menu = useAppStore((state) => state.menu);
-  const isMenuLoading = useAppStore((state) => state.isMenuLoading);
-  const isMenuSaving = useAppStore((state) => state.isMenuSaving);
-  const refreshMenu = useAppStore((state) => state.refreshMenu);
-  const persistMenuItem = useAppStore((state) => state.saveMenuItem);
-  const removeMenuItem = useAppStore((state) => state.deleteMenuItem);
+  // TODO: Replace with real store data later
+  const restaurant = { id: 'mock-restaurant-id', name: 'Mock Restaurant' };
+  const isMenuLoading = false;
+  const isMenuSaving = false;
+
+  // Mock menu data
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
+    {
+      id: '1',
+      name: 'Margherita Pizza',
+      description: 'Classic tomato sauce, mozzarella, and fresh basil',
+      price: 12.99,
+      category: 'Pizza',
+      isAvailable: true,
+      imageUrl: null,
+    },
+    {
+      id: '2',
+      name: 'Caesar Salad',
+      description: 'Romaine lettuce, croutons, parmesan, and Caesar dressing',
+      price: 8.99,
+      category: 'Salads',
+      isAvailable: true,
+      imageUrl: null,
+    },
+  ]);
 
   const restaurantId = restaurant?.id ?? '';
-  const hasFetchedMenu = useRef(false);
-
-  useEffect(() => {
-    if (!restaurantId || hasFetchedMenu.current) {
-      return;
-    }
-    hasFetchedMenu.current = true;
-    refreshMenu(restaurantId).catch(() => {
-      hasFetchedMenu.current = false;
-    });
-  }, [restaurantId, refreshMenu]);
-
-  const menuItems: MenuItem[] = useMemo(
-    () =>
-      menu.map((item) => ({
-        ...item,
-        imageUrl: item.imageUrl ?? null,
-      })),
-    [menu]
-  );
 
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: '',
@@ -111,12 +109,7 @@ export function MenuManagement() {
   };
   // ------------------------------------------------------------
 
-  const handleAddItem = async () => {
-    if (!restaurantId) {
-      toast.error('Restaurant information not available. Please try again.');
-      return;
-    }
-
+  const handleAddItem = () => {
     if (
       !newItem.name ||
       !newItem.description ||
@@ -129,84 +122,60 @@ export function MenuManagement() {
       return;
     }
 
-    try {
-      await persistMenuItem({
-        restaurantId,
-        item: {
-          name: newItem.name,
-          description: newItem.description,
-          price: Number(newItem.price),
-          category: newItem.category,
-          isAvailable: newItem.isAvailable ?? true,
-          imageUrl: newItem.imageUrl ?? null,
-        },
-      });
-      setNewItem({
-        name: '',
-        description: '',
-        price: 0,
-        category: '',
-        isAvailable: true,
-        imageUrl: null,
-      });
-      setIsAddDialogOpen(false);
-      toast.success('Menu item added successfully!');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to add menu item';
-      toast.error(message);
-    }
+    // Mock: Add item to local state
+    const newMenuItem: MenuItem = {
+      id: Date.now().toString(),
+      name: newItem.name,
+      description: newItem.description,
+      price: Number(newItem.price),
+      category: newItem.category,
+      isAvailable: newItem.isAvailable ?? true,
+      imageUrl: newItem.imageUrl ?? null,
+    };
+
+    setMenuItems([...menuItems, newMenuItem]);
+    setNewItem({
+      name: '',
+      description: '',
+      price: 0,
+      category: '',
+      isAvailable: true,
+      imageUrl: null,
+    });
+    setIsAddDialogOpen(false);
+    toast.success('Menu item added successfully!');
   };
 
-  const handleEditItem = async () => {
-    if (!restaurantId || !editingItem) {
+  const handleEditItem = () => {
+    if (!editingItem) {
       return;
     }
 
-    try {
-      await persistMenuItem({
-        restaurantId,
-        item: {
-          ...editingItem,
-          price: Number(editingItem.price),
-        },
-      });
-      setEditingItem(null);
-      setIsEditDialogOpen(false);
-      toast.success('Menu item updated successfully!');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update menu item';
-      toast.error(message);
-    }
+    // Mock: Update item in local state
+    setMenuItems(menuItems.map(item =>
+      item.id === editingItem.id ? { ...editingItem, price: Number(editingItem.price) } : item
+    ));
+    setEditingItem(null);
+    setIsEditDialogOpen(false);
+    toast.success('Menu item updated successfully!');
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!restaurantId) {
-      return;
-    }
-
-    try {
-      await removeMenuItem(restaurantId, id);
-      toast.success('Menu item deleted successfully!');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete menu item';
-      toast.error(message);
-    }
+  const handleDeleteItem = (id: string) => {
+    // Mock: Remove item from local state
+    setMenuItems(menuItems.filter(item => item.id !== id));
+    toast.success('Menu item deleted successfully!');
   };
 
-  const confirmDeleteItem = async () => {
+  const confirmDeleteItem = () => {
     if (!pendingDeleteId) {
       return;
     }
 
-    await handleDeleteItem(pendingDeleteId);
+    handleDeleteItem(pendingDeleteId);
     setPendingDeleteId(null);
   };
 
-  const toggleAvailability = async (item: MenuItem) => {
-    if (!restaurantId) {
-      return;
-    }
-
+  const toggleAvailability = (item: MenuItem) => {
     if (editingItem && editingItem.id === item.id) {
       setEditingItem({
         ...editingItem,
@@ -214,20 +183,11 @@ export function MenuManagement() {
       });
     }
 
-    try {
-      await persistMenuItem({
-        restaurantId,
-        item: {
-          ...item,
-          isAvailable: !item.isAvailable,
-        },
-      });
-      toast.success('Availability updated');
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to update availability';
-      toast.error(message);
-    }
+    // Mock: Update item availability in local state
+    setMenuItems(menuItems.map(menuItem =>
+      menuItem.id === item.id ? { ...menuItem, isAvailable: !menuItem.isAvailable } : menuItem
+    ));
+    toast.success('Availability updated');
   };
 
   // Filtered items using useMemo for performance

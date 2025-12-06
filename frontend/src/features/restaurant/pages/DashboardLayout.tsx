@@ -1,6 +1,6 @@
 // src/features/restaurant/pages/DashboardLayout.tsx
 import { useMemo } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -38,10 +38,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface DashboardLayoutProps {
-  onLogout?: () => void;
-}
+import { useUser } from '@/contexts/UserContext';
 
 type NavigationItem = {
   title: string;
@@ -54,9 +51,15 @@ type NavigationItem = {
   }[];
 };
 
-export default function DashboardLayout({ onLogout }: DashboardLayoutProps) {
+export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useUser();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/restaurant/login');
+  };
 
   const basePath = '/restaurant';
 
@@ -165,7 +168,7 @@ export default function DashboardLayout({ onLogout }: DashboardLayoutProps) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={onLogout}
+              onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
