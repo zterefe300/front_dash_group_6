@@ -11,6 +11,7 @@ import { Orders } from "../features/customer/pages/Orders.js";
 import { LoginTypeSelector } from "../features/shared/LoginTypeSelector.js";
 import { CustomerPortalProtectedRoute, CustomerPortalPublicRoute } from "./RouteGuards.js";
 import { CartProvider, useCart } from "../contexts/CartContext.js";
+import { CustomerLayout } from "../components/layout/CustomerLayout.js";
 
 type PublicRoute = {
   path: string | string[];
@@ -45,9 +46,9 @@ const CustomerPortalRoutes = () => (
 
 const CustomerRoutes = () => (
   <CartProvider>
-    <div className="min-h-screen bg-background">
+    <CustomerLayout>
       <CustomerPortalRoutes />
-    </div>
+    </CustomerLayout>
   </CartProvider>
 );
 
