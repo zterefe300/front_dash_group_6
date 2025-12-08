@@ -16,8 +16,10 @@ import com.frontdash.dao.response.DriverResponse;
 import com.frontdash.dao.response.MenuItemResponse;
 import com.frontdash.dao.response.OrderResponse;
 import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.entity.Driver;
 import com.frontdash.entity.OrderItem;
 import com.frontdash.entity.Orders;
+import com.frontdash.repository.DriverRepository;
 import com.frontdash.repository.OrderItemRepository;
 import com.frontdash.repository.OrdersRepository;
 
@@ -30,6 +32,9 @@ public class OrderService {
 
     @Autowired
     private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     @Autowired
     private RestaurantService restaurantService;
@@ -95,6 +100,11 @@ public class OrderService {
         order.setAssignedDriverId(driverId);
         order.setOrderStatus(Orders.OrderStatus.OUT_FOR_DELIVERY);
         Orders updated = ordersRepository.save(order);
+
+        Driver driver = driverRepository.findById(driverId).orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+        driver.setAvailabilityStatus(Driver.AvailabilityStatus.BUSY);
+        driverRepository.save(driver);
+        
         return toResponse(updated);
     }
 
@@ -110,6 +120,16 @@ public class OrderService {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setOrderStatus(status);
         Orders updated = ordersRepository.save(order);
+
+        // If order is completed (delivered or not delivered), set driver back to available
+        if ((status == Orders.OrderStatus.DELIVERED || status == Orders.OrderStatus.NOT_DELIVERED) && order.getAssignedDriverId() != null) {
+            Driver driver = driverRepository.findById(order.getAssignedDriverId()).orElse(null);
+            if (driver != null) {
+                driver.setAvailabilityStatus(Driver.AvailabilityStatus.AVAILABLE);
+                driverRepository.save(driver);
+            }
+        }
+
         return toResponse(updated);
     }
 

@@ -1,0 +1,19 @@
+USE frontdash_db;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+
+TRUNCATE TABLE `Address`;
+TRUNCATE TABLE `Driver`;
+TRUNCATE TABLE `EmployeeLogin`;
+TRUNCATE TABLE `MenuCategory`;
+TRUNCATE TABLE `MenuItem`;
+TRUNCATE TABLE `OperatingHour`;
+TRUNCATE TABLE `OrderItem`;
+TRUNCATE TABLE `Orders`;
+TRUNCATE TABLE `Restaurant`;
+TRUNCATE TABLE `RestaurantLogin`;
+TRUNCATE TABLE `StaffUsers`;
+TRUNCATE TABLE `ServiceCharge`; 
+
+SET FOREIGN_KEY_CHECKS = 1;

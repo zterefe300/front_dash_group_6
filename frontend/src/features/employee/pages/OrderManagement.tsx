@@ -128,6 +128,14 @@ export const OrderManagement: React.FC = () => {
     currentStatus: "",
   });
 
+  const [errorDialog, setErrorDialog] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
+  });
+
   const [orderData, setOrderData] = useState({
     orderQueue: [] as Order[],
     activeOrders: [] as Order[],
@@ -143,10 +151,11 @@ export const OrderManagement: React.FC = () => {
         setOrderData((prev) => ({ ...prev, loading: true, error: null }));
 
         // Fetch orders and drivers
-        const [pendingNoDriver, pendingWithDriver, deliveredOrders, drivers] = await Promise.all([
+        const [pendingNoDriver, outForDeliveryOrders, deliveredOrders, notDeliveredOrders, drivers] = await Promise.all([
           orderService.getOrdersByStatus("PENDING", false), // orderQueue: PENDING orders with no drivers
-          orderService.getOrdersByStatus("PENDING", true), // activeOrders: PENDING orders with drivers
+          orderService.getOrdersByStatus("OUT_FOR_DELIVERY", true), //activeOrders: OUT_FOR_DELIVERY orders with drivers
           orderService.getOrdersByStatus("DELIVERED", true), // orderHistory: DELIVERED orders
+          orderService.getOrdersByStatus("NOT_DELIVERED", true), // orderHistory: NOT_DELIVERED orders
           driverService.getAllDrivers(),
         ]);
 
@@ -168,8 +177,8 @@ export const OrderManagement: React.FC = () => {
 
         setOrderData({
           orderQueue: pendingNoDriver.map(transformOrder),
-          activeOrders: pendingWithDriver.map(transformOrder),
-          orderHistory: deliveredOrders.map(transformOrder),
+          activeOrders: outForDeliveryOrders.map(transformOrder),
+          orderHistory: [...deliveredOrders.map(transformOrder), ...notDeliveredOrders.map(transformOrder)],
           drivers: drivers || [],
           loading: false,
           error: null,
@@ -222,25 +231,33 @@ export const OrderManagement: React.FC = () => {
         await orderService.assignDriver(selectedOrder.orderId, driverId);
 
         // Update local state optimistically
-        setOrderData((prev) => ({
-          ...prev,
-          orderQueue: prev.orderQueue.filter((order) => order.orderId !== selectedOrder.orderId),
-          activeOrders: [
-            ...prev.activeOrders,
-            {
-              ...selectedOrder,
-              assignedDriver: orderData.drivers.find((d) => d.driverId === driverId)
-                ? {
-                    driverId: driverId,
-                    firstname: orderData.drivers.find((d) => d.driverId === driverId)?.firstname || "",
-                    lastname: orderData.drivers.find((d) => d.driverId === driverId)?.lastname || "",
-                    availabilityStatus: "BUSY",
-                  }
-                : null,
-              status: "out_for_delivery" as Order["status"],
-            },
-          ],
-        }));
+        setOrderData((prev) => {
+          const updatedOrder = {
+            ...selectedOrder,
+            assignedDriver: orderData.drivers.find((d) => d.driverId === driverId)
+              ? {
+                  driverId: driverId,
+                  firstname: orderData.drivers.find((d) => d.driverId === driverId)?.firstname || "",
+                  lastname: orderData.drivers.find((d) => d.driverId === driverId)?.lastname || "",
+                  availabilityStatus: "BUSY",
+                }
+              : null,
+            status: "out_for_delivery" as Order["status"],
+          };
+
+          // Remove from orderQueue and add/update in activeOrders (prevent duplicates)
+          const filteredOrderQueue = prev.orderQueue.filter((order) => order.orderId !== selectedOrder.orderId);
+          const filteredActiveOrders = prev.activeOrders.filter((order) => order.orderId !== selectedOrder.orderId);
+
+          return {
+            ...prev,
+            orderQueue: filteredOrderQueue,
+            activeOrders: [...filteredActiveOrders, updatedOrder],
+            drivers: prev.drivers.map((driver) =>
+              driver.driverId === driverId ? { ...driver, availabilityStatus: "BUSY" } : driver
+            ),
+          };
+        });
 
         toast.success(`Order ${selectedOrder.orderId} assigned to driver`);
         setSelectedOrder(null);
@@ -277,7 +294,10 @@ export const OrderManagement: React.FC = () => {
     if (newStatus === "delivered") {
       const order = orderData.activeOrders.find((o) => o.orderId === orderId);
       if (!order?.deliveryTime) {
-        toast.error("Please update the Delivery Time before marking as Delivered");
+        setErrorDialog({
+          isOpen: true,
+          message: "Please update the Delivery Time before marking as Delivered.",
+        });
         setStatusChangeDialog({ isOpen: false, orderId: "", newStatus: "", currentStatus: "" });
         return;
       }
@@ -289,16 +309,38 @@ export const OrderManagement: React.FC = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      // Call API to update status
-      await orderService.updateOrderStatus(orderId, newStatus);
+      // Send status in uppercase to match backend expectations
+      const uppercaseStatus = newStatus.toUpperCase();
+      await orderService.updateOrderStatus(orderId, uppercaseStatus);
 
       // Update local state
-      setOrderData((prev) => ({
-        ...prev,
-        activeOrders: prev.activeOrders.map((order) =>
-          order.orderId === orderId ? { ...order, status: newStatus as Order["status"] } : order
-        ),
-      }));
+      setOrderData((prev) => {
+        const orderToMove = prev.activeOrders.find((order) => order.orderId === orderId);
+        if (!orderToMove) return prev;
+
+        const updatedOrder = { ...orderToMove, status: newStatus as Order["status"] };
+
+        // If status is delivered or not_delivered, move to orderHistory and set driver back to available
+        if (newStatus === "delivered" || newStatus === "not_delivered") {
+          const driverId = orderToMove.assignedDriver?.driverId;
+          return {
+            ...prev,
+            activeOrders: prev.activeOrders.filter((order) => order.orderId !== orderId),
+            orderHistory: [...prev.orderHistory, updatedOrder],
+            drivers: driverId ? prev.drivers.map((driver) =>
+              driver.driverId === driverId ? { ...driver, availabilityStatus: "AVAILABLE" } : driver
+            ) : prev.drivers,
+          };
+        } else {
+          // Otherwise, just update the status in activeOrders
+          return {
+            ...prev,
+            activeOrders: prev.activeOrders.map((order) =>
+              order.orderId === orderId ? updatedOrder : order
+            ),
+          };
+        }
+      });
 
       toast.success("Order status updated successfully");
     } catch (error) {
@@ -730,7 +772,7 @@ export const OrderManagement: React.FC = () => {
               Are you sure you want to change the order status from "{statusChangeDialog.currentStatus.replace('_', ' ')}" to "{statusChangeDialog.newStatus.replace('_', ' ')}"?
               {statusChangeDialog.newStatus === "delivered" && (
                 <span className="block mt-2 font-medium text-amber-600">
-                  Note: Please ensure the Delivery Time is set before marking as Delivered.
+                   Note: Please ensure the Delivery Time is set before marking as Delivered.
                 </span>
               )}
             </AlertDialogDescription>
@@ -739,6 +781,22 @@ export const OrderManagement: React.FC = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmStatusChange}>
               Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={errorDialog.isOpen} onOpenChange={(open) => !open && setErrorDialog({ isOpen: false, message: "" })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="text-red-600 font-medium">{errorDialog.message}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction autoFocus onClick={() => setErrorDialog({ isOpen: false, message: "" })}>
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
