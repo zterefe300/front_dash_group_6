@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../common/button";
 import { Badge } from "../common/badge";
-import { ShoppingCart, User, Menu } from "lucide-react";
+import { ShoppingCart, User, ArrowLeft, Home } from "lucide-react";
 import { useCart } from "../../contexts/CartContext";
 import { Sheet, SheetContent, SheetTrigger } from "../common/sheet";
 
@@ -19,32 +19,54 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   const cartCount = items.reduce((sum, it) => sum + (it.quantity || 0), 0);
   const cartTotal = items.reduce((sum, it) => sum + (it.quantity || 0) * (it.price || 0), 0);
   
-  // Show back button on detail pages
-  const isDetailPage = location.pathname.includes('/restaurant/');
+  // Determine if we should show back button or home button
+  const isOrderConfirmation = location.pathname === '/customer/order-confirmation';
+  const showBackButton = !isOrderConfirmation &&
+                         location.pathname !== '/customer' && 
+                         location.pathname !== '/customer/restaurants' &&
+                         !location.pathname.startsWith('/customer/login');
+  const showHomeButton = isOrderConfirmation;
+
+  // Determine if we should show cart button in header
+  const showCartButton = cartCount > 0 && 
+                        !['/customer/cart'].some(p => location.pathname.startsWith(p));
+
+  const handleBack = () => {
+    if (location.pathname.startsWith('/customer/restaurant/')) {
+      navigate('/customer/restaurants');
+    } else if (location.pathname === '/customer/order-summary') {
+      navigate('/customer/cart');
+    } else if (location.pathname === '/customer/payment') {
+      navigate('/customer/order-summary');
+    } else if (location.pathname === '/customer/delivery') {
+      navigate('/customer/payment');
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleHome = () => {
+    navigate('/customer/restaurants');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background customer-theme">
       <header className="w-full bg-card border-b sticky top-0 z-40 shadow-sm">
         <div className="h-16 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-full gap-4">
-            <div className="flex items-center">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="mr-3">
-                    <Menu className="h-5 w-5" />
+            <div className="flex items-center gap-3">
+              <div className="w-10">
+                {showBackButton && (
+                  <Button variant="ghost" size="sm" onClick={handleBack}>
+                    <ArrowLeft className="h-5 w-5" />
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <nav className="space-y-4">
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/customer/restaurants')}>
-                      Restaurants
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/customer/orders')}>
-                      Orders
-                    </Button>
-                  </nav>
-                </SheetContent>
-              </Sheet>
+                )}
+                {showHomeButton && (
+                  <Button variant="ghost" size="sm" onClick={handleHome}>
+                    <Home className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
 
               <button onClick={() => navigate('/customer')} className="flex items-center hover:opacity-80 transition">
                 <h1 className="text-2xl font-bold text-primary">FrontDash</h1>
@@ -52,6 +74,18 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-4">
+              {showCartButton && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/customer/cart')}
+                  className="gap-2"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="text-sm font-medium">{cartCount}</span>
+                </Button>
+              )}
+              
               <Button variant="outline" size="sm" onClick={() => navigate('/customer/login')}>
                 <User className="h-4 w-4 mr-2" />
                 Login

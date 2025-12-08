@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
-import { Star, Clock, DollarSign, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
@@ -108,21 +108,6 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
               >
                 {restaurant.isOpen ? 'Open' : 'Closed'}
               </Badge>
-            </div>
-            
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-foreground font-medium">{restaurant.rating}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{restaurant.deliveryTime}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4" />
-                <span>Delivery: ${restaurant.deliveryFee}</span>
-              </div>
             </div>
           </div>
         </CardContent>

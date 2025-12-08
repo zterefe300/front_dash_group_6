@@ -242,7 +242,7 @@ export function RestaurantList() {
                   alt={restaurant.name}
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
-                <Badge className="absolute top-4 right-4 bg-white text-foreground">
+                <Badge className="absolute top-4 right-4 bg-white/90 text-white backdrop-blur-sm border border-white/20">
                   {restaurant.cuisine}
                 </Badge>
                 
@@ -258,8 +258,8 @@ export function RestaurantList() {
                 </Badge>
               </div>
               
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="p-2">
+                <div className="flex items-center gap-4">
                   {/* Restaurant Logo */}
                   {restaurant.logo && (
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border bg-white flex-shrink-0">
@@ -277,23 +277,6 @@ export function RestaurantList() {
                     {!restaurant.isOpen && (
                       <p className="text-xs text-muted-foreground mt-1">Currently closed</p>
                     )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{restaurant.rating}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{restaurant.deliveryTime}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4" />
-                    <span>{restaurant.priceRange}</span>
                   </div>
                 </div>
               </div>
