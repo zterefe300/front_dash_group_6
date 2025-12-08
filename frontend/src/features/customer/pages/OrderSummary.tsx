@@ -10,7 +10,7 @@ import { CheckCircle, Clock, MapPin, CreditCard, Receipt, Percent, DollarSign } 
 import { useCart } from '../../../contexts/CartContext';
 
 export function OrderSummary() {
-  const { items, restaurant, goToNewOrder, goToDelivery } = useCart();
+  const { items, restaurant, goToNewOrder, goToDelivery, clearCart } = useCart();
   const [tipAmount, setTipAmount] = useState<number>(0);
   const [tipType, setTipType] = useState<'percentage' | 'fixed'>('percentage');
   const [tipPercentage, setTipPercentage] = useState<string>('');
@@ -297,7 +297,10 @@ export function OrderSummary() {
         <Button
           variant="outline"
           size="lg"
-          onClick={goToNewOrder}
+          onClick={() => {
+            clearCart();
+            goToNewOrder();
+          }}
           className="sm:w-auto"
         >
           Cancel Order
