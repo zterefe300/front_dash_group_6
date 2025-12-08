@@ -1,45 +1,73 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Label } from '../../../components/common/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { useUser } from '../../../contexts/UserContext';
-import { useSettings } from '../../../contexts/SettingsContext';
-import { Lock, Settings2, DollarSign, Activity, ToggleLeft, Monitor, Save, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { AlertCircle, DollarSign, Lock, Save, Settings2, ToggleLeft } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "../../../components/common/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
+import { useUser } from "../../../contexts/UserContext";
+import { adminService } from "../../../service/employee/adminService";
 
-export const Settings: React.FC = () => {
+export const AdminSettings: React.FC = () => {
   const { user, currentView, switchView } = useUser();
-  const { serviceChargePercentage, dashboardConfig, updateServiceCharge, updateDashboardCardVisibility } = useSettings();
-  
-  const [tempServiceCharge, setTempServiceCharge] = useState<string>(serviceChargePercentage.toString());
+
+  const [serviceChargePercentage, setServiceChargePercentage] = useState<number>(8.25);
+  const [tempServiceCharge, setTempServiceCharge] = useState<string>("8.25");
   const [serviceChargeDialogOpen, setServiceChargeDialogOpen] = useState(false);
-  const [dashboardConfigDialogOpen, setDashboardConfigDialogOpen] = useState(false);
   const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
   const [passwordSuccessDialogOpen, setPasswordSuccessDialogOpen] = useState(false);
   const [passwordValidationDialogOpen, setPasswordValidationDialogOpen] = useState(false);
-  const [validationErrorMessage, setValidationErrorMessage] = useState('');
+  const [validationErrorMessage, setValidationErrorMessage] = useState("");
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [passwordErrors, setPasswordErrors] = useState({
-    confirmMismatch: false
+    confirmMismatch: false,
   });
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchServiceCharge = async () => {
+      try {
+        const serviceCharge = await adminService.getServiceCharge();
+        const percentage = parseFloat(serviceCharge.percentage);
+        setServiceChargePercentage(percentage);
+        setTempServiceCharge(percentage.toString());
+      } catch (error) {
+        console.error("Failed to fetch service charge:", error);
+        toast.error("Failed to load service charge settings");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleServiceChargeSave = () => {
+    fetchServiceCharge();
+  }, []);
+
+  const handleServiceChargeSave = async () => {
     const newPercentage = parseFloat(tempServiceCharge);
     if (!isNaN(newPercentage) && newPercentage >= 0 && newPercentage <= 100) {
-      updateServiceCharge(newPercentage);
-      setServiceChargeDialogOpen(false);
+      try {
+        await adminService.updateServiceCharge(newPercentage);
+        setServiceChargePercentage(newPercentage);
+        setServiceChargeDialogOpen(false);
+        toast.success("Service charge updated successfully");
+      } catch (error) {
+        console.error("Failed to update service charge:", error);
+        toast.error("Failed to update service charge");
+      }
     }
-  };
-
-  const handleCardToggle = (viewType: 'admin' | 'staff', cardId: string, enabled: boolean) => {
-    updateDashboardCardVisibility(viewType, cardId, enabled);
   };
 
   const validatePassword = (password: string): boolean => {
@@ -52,19 +80,21 @@ export const Settings: React.FC = () => {
     return minLength && hasUpperCase && hasLowerCase && hasNumber;
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     // Reset errors
     setPasswordErrors({ confirmMismatch: false });
 
     // Validate passwords
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      setValidationErrorMessage('All fields are required');
+    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setValidationErrorMessage("All fields are required");
       setPasswordValidationDialogOpen(true);
       return;
     }
 
     if (!validatePassword(passwordForm.newPassword)) {
-      setValidationErrorMessage('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      setValidationErrorMessage(
+        "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+      );
       setPasswordValidationDialogOpen(true);
       return;
     }
@@ -74,30 +104,31 @@ export const Settings: React.FC = () => {
       return;
     }
 
-    if (passwordForm.currentPassword === passwordForm.newPassword) {
-      setValidationErrorMessage('New password must be different from current password');
+    try {
+      await adminService.updateAdminPassword({
+        username: user?.username || "",
+        newPassword: passwordForm.newPassword,
+      });
+      setPasswordSuccessDialogOpen(true);
+      setChangePasswordDialogOpen(false);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      toast.success("Password updated successfully");
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      setValidationErrorMessage("Failed to update password. Please try again.");
       setPasswordValidationDialogOpen(true);
-      return;
     }
-
-    // In a real app, this would validate the current password against the backend
-    // For demo purposes, we'll simulate a successful password change
-    setPasswordSuccessDialogOpen(true);
-    setChangePasswordDialogOpen(false);
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
 
   const resetPasswordForm = () => {
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1>Settings</h1>
-        <p className="text-muted-foreground">
-          Manage account security and system configuration
-        </p>
+        <p className="text-muted-foreground">Manage account security and system configuration</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -108,19 +139,13 @@ export const Settings: React.FC = () => {
               <Lock className="h-5 w-5" />
               <span>Account Security</span>
             </CardTitle>
-            <CardDescription>
-              Manage your account security settings
-            </CardDescription>
+            <CardDescription>Manage your account security settings</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <Dialog open={changePasswordDialogOpen} onOpenChange={setChangePasswordDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={resetPasswordForm}
-                  >
+                  <Button variant="outline" className="w-full justify-start" onClick={resetPasswordForm}>
                     <Lock className="h-4 w-4 mr-2" />
                     Change Password
                   </Button>
@@ -140,7 +165,9 @@ export const Settings: React.FC = () => {
                         id="current-password"
                         type="password"
                         value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))
+                        }
                         placeholder="Enter your current password"
                       />
                     </div>
@@ -152,7 +179,9 @@ export const Settings: React.FC = () => {
                         id="new-password"
                         type="password"
                         value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))
+                        }
                         placeholder="Enter your new password"
                       />
                       <p className="text-xs text-muted-foreground">
@@ -167,7 +196,9 @@ export const Settings: React.FC = () => {
                         id="confirm-password"
                         type="password"
                         value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                        }
                         placeholder="Confirm your new password"
                       />
                       {passwordErrors.confirmMismatch && (
@@ -193,8 +224,8 @@ export const Settings: React.FC = () => {
                     )}
                   </div>
                   <DialogFooter>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setChangePasswordDialogOpen(false);
                         resetPasswordForm();
@@ -220,17 +251,15 @@ export const Settings: React.FC = () => {
               <Settings2 className="h-5 w-5" />
               <span>System Configuration</span>
             </CardTitle>
-            <CardDescription>
-              System settings and preferences
-            </CardDescription>
+            <CardDescription>System settings and preferences</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {/* Service Charge Configuration */}
               <Dialog open={serviceChargeDialogOpen} onOpenChange={setServiceChargeDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     onClick={() => setTempServiceCharge(serviceChargePercentage.toString())}
                   >
@@ -242,7 +271,8 @@ export const Settings: React.FC = () => {
                   <DialogHeader>
                     <DialogTitle>Service Charge Configuration</DialogTitle>
                     <DialogDescription>
-                      Set the service charge percentage applied to all orders. This affects restaurant commission calculations.
+                      Set the service charge percentage applied to all orders. This affects restaurant
+                      commission calculations.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -278,16 +308,14 @@ export const Settings: React.FC = () => {
                 </DialogContent>
               </Dialog>
 
-
-
-              {user?.role === 'admin' && (
-                <Button 
-                  onClick={() => switchView(currentView === 'admin' ? 'staff' : 'admin')}
-                  variant="outline" 
+              {user?.role === "admin" && (
+                <Button
+                  onClick={() => switchView(currentView === "admin" ? "staff" : "admin")}
+                  variant="outline"
                   className="w-full justify-start"
                 >
                   <ToggleLeft className="h-4 w-4 mr-2" />
-                  Switch to {currentView === 'admin' ? 'Staff' : 'Admin'} View
+                  Switch to {currentView === "admin" ? "Staff" : "Admin"} View
                 </Button>
               )}
             </div>
@@ -305,9 +333,7 @@ export const Settings: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setPasswordSuccessDialogOpen(false)}>
-              OK
-            </Button>
+            <Button onClick={() => setPasswordSuccessDialogOpen(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -317,14 +343,10 @@ export const Settings: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Validation Error</DialogTitle>
-            <DialogDescription>
-              {validationErrorMessage}
-            </DialogDescription>
+            <DialogDescription>{validationErrorMessage}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setPasswordValidationDialogOpen(false)}>
-              OK
-            </Button>
+            <Button onClick={() => setPasswordValidationDialogOpen(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

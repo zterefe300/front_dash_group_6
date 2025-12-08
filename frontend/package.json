@@ -64,10 +64,11 @@
     "@typescript-eslint/parser": "^8.44.1",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.10.2",
-    "eslint": "^8.55.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "eslint-plugin-unused-imports": "^4.3.0",
     "vite": "^7.1.7"
   }
 }

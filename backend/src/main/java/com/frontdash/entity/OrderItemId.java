@@ -10,6 +10,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemId implements Serializable {
-    private Integer orderId;
+    private String orderId;
     private Integer menuItemId;
 }

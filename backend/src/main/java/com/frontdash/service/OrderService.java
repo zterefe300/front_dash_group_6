@@ -1,19 +1,25 @@
 package com.frontdash.service;
 
-import com.frontdash.dao.request.OrderRequest;
-import com.frontdash.dao.response.OrderResponse;
-import com.frontdash.entity.OrderItem;
-import com.frontdash.entity.Orders;
-import com.frontdash.repository.OrderItemRepository;
-import com.frontdash.repository.OrdersRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.frontdash.dao.request.OrderRequest;
+import com.frontdash.dao.response.AddressResponse;
+import com.frontdash.dao.response.DriverResponse;
+import com.frontdash.dao.response.MenuItemResponse;
+import com.frontdash.dao.response.OrderResponse;
+import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.entity.OrderItem;
+import com.frontdash.entity.Orders;
+import com.frontdash.repository.OrderItemRepository;
+import com.frontdash.repository.OrdersRepository;
 
 @Service
 @Transactional
@@ -25,6 +31,15 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private RestaurantService restaurantService;
+
+    @Autowired
+    private AddressService addressService;
+
+    @Autowired
+    private DriverService driverService;
+
     
 
     public OrderResponse createOrder(OrderRequest request) {
@@ -34,7 +49,11 @@ public class OrderService {
         BigDecimal tips = request.getTips() == null ? BigDecimal.ZERO : request.getTips();
         BigDecimal total = subtotal.add(tips);
 
+        // Generate orderId in format "FD0001", "FD0002", etc.
+        String orderId = generateOrderId();
+
         Orders order = Orders.builder()
+                .orderId(orderId)
                 .restaurantId(request.getRestaurantId())
                 .customerName(request.getCustomerName())
                 .customerPhone(request.getCustomerPhone())
@@ -63,7 +82,7 @@ public class OrderService {
         return toResponse(saved);
     }
 
-    public OrderResponse getOrderById(Integer id) {
+    public OrderResponse getOrderById(String id) {
         return ordersRepository.findById(id).map(this::toResponse).orElse(null);
     }
 
@@ -71,7 +90,7 @@ public class OrderService {
         return ordersRepository.findByRestaurantId(restaurantId).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public OrderResponse assignDriver(Integer orderId, Integer driverId) {
+    public OrderResponse assignDriver(String orderId, Integer driverId) {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setAssignedDriverId(driverId);
         order.setOrderStatus(Orders.OrderStatus.OUT_FOR_DELIVERY);
@@ -79,10 +98,17 @@ public class OrderService {
         return toResponse(updated);
     }
 
-    public OrderResponse updateDeliveryTime(Integer orderId, LocalDateTime deliveryTime) {
+    public OrderResponse updateDeliveryTime(String orderId, LocalDateTime deliveryTime) {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setDeliveryTime(deliveryTime);
         order.setOrderStatus(Orders.OrderStatus.DELIVERED);
+        Orders updated = ordersRepository.save(order);
+        return toResponse(updated);
+    }
+
+    public OrderResponse updateOrderStatus(String orderId, Orders.OrderStatus status) {
+        Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        order.setOrderStatus(status);
         Orders updated = ordersRepository.save(order);
         return toResponse(updated);
     }
@@ -91,22 +117,83 @@ public class OrderService {
         return ordersRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    public List<OrderResponse> getOrdersByStatus(Orders.OrderStatus status, Boolean hasDriver) {
+        List<Orders> orders;
+        if (hasDriver == null) {
+            orders = ordersRepository.findByOrderStatus(status);
+        } else if (hasDriver) {
+            orders = ordersRepository.findByOrderStatusAndAssignedDriverIdIsNotNull(status);
+        } else {
+            orders = ordersRepository.findByOrderStatusAndAssignedDriverIdIsNull(status);
+        }
+        return orders.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    private String generateOrderId() {
+        long rowCount = ordersRepository.count();
+        int nextNumber = (int) rowCount + 1;
+        if (nextNumber <= 999) {
+            return String.format("FD%04d", nextNumber);
+        } else if (nextNumber <= 9999) {
+            return String.format("FD%04d", nextNumber);
+        } else {
+            return String.format("FD%05d", nextNumber);
+        }
+    }
+
     private OrderResponse toResponse(Orders o) {
+        // Fetch order items and menu item details
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(o.getOrderId());
+        List<MenuItemResponse> items = orderItems.stream()
+                .map(oi -> {
+                    try {
+                        return restaurantService.getMenuItemById(oi.getMenuItemId());
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(item -> item != null)
+                .collect(Collectors.toList());
+
+        // Fetch restaurant, address, and driver details
+        RestaurantResponse restaurant = null;
+        try {
+            restaurant = restaurantService.getRestaurantById(o.getRestaurantId());
+        } catch (Exception e) {
+            // Restaurant not found
+        }
+
+        AddressResponse deliveryAddress = null;
+        try {
+            deliveryAddress = addressService.getAddressById(o.getAddressId());
+        } catch (Exception e) {
+            // Address not found
+        }
+
+        DriverResponse assignedDriver = null;
+        if (o.getAssignedDriverId() != null) {
+            try {
+                assignedDriver = driverService.getDriverById(o.getAssignedDriverId());
+            } catch (Exception e) {
+                // Driver not found
+            }
+        }
+
         return OrderResponse.builder()
                 .orderId(o.getOrderId())
-                .restaurantId(o.getRestaurantId())
+                .restaurant(restaurant)
                 .customerName(o.getCustomerName())
                 .customerPhone(o.getCustomerPhone())
-                .addressId(o.getAddressId())
+                .deliveryAddress(deliveryAddress)
                 .totalAmount(o.getTotalAmount())
                 .orderTime(o.getOrderTime())
-                .assignedDriverId(o.getAssignedDriverId())
+                .assignedDriver(assignedDriver)
                 .estimatedDeliveryTime(o.getEstimatedDeliveryTime())
                 .orderStatus(o.getOrderStatus())
                 .tips(o.getTips())
                 .subtotal(o.getSubtotal())
                 .deliveryTime(o.getDeliveryTime())
-                .items(null)
+                .items(items)
                 .build();
     }
 }

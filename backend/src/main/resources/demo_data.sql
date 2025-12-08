@@ -28,10 +28,14 @@ INSERT INTO Restaurant (restaurant_id, name, cuisine_type, picture_url, address_
 (3, 'Best Burgers', '', '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
 
 -- Insert data into RestaurantLogin
+-- Passwords are BCrypt encrypted
+-- restaurant1 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
+-- restaurant2 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
+-- restaurant3 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 INSERT INTO RestaurantLogin (user_name, restaurant_id, password) VALUES
-('restaurant1', 1, 'password'),
-('restaurant2', 2, 'password'),
-('restaurant3', 3, 'password');
+('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
+('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
+('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe');
 
 -- Insert data into OperatingHour
 INSERT INTO OperatingHour (operating_hour_id, restaurant_id, week_day, open_time, close_time) VALUES
@@ -92,12 +96,20 @@ INSERT INTO Driver (driver_id, firstname, lastname, availability_status) VALUES
 (7, 'Lucy', 'Gordon', 'AVAILABLE');
 
 -- Insert data into EmployeeLogin
+-- Passwords are BCrypt encrypted
+-- richard01 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
+-- cox02 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
+-- deckon03 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
+-- cox04 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
+-- mullard05 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
+-- administrator password: 'password' -> $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
 INSERT INTO EmployeeLogin (username, password, employeeType, dateCreated) VALUES
-('richard01', '', 'STAFF', NULL),
-('cox02', '', 'STAFF', NULL),
-('deckon03', '', 'STAFF', NULL),
-('cox04', '', 'STAFF', NULL),
-('mullard05', '', 'STAFF', NULL);
+('richard01', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
+('cox02', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
+('deckon03', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
+('cox04', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
+('mullard05', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
+('administrator', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN', NULL);
 
 -- Insert data into StaffUsers
 INSERT INTO StaffUsers (username, firstname, lastname) VALUES
@@ -109,24 +121,24 @@ INSERT INTO StaffUsers (username, firstname, lastname) VALUES
 
 -- Insert data into Orders
 INSERT INTO Orders (order_id, restaurant_id, customer_name, customer_phone, address_id, total_amount, order_time, assigned_driver_id, estimated_delivery_time, order_status, tips, subtotal, delivery_time) VALUES
-('FD0001', 1, 'Martha Washington', '617-478-5869', 4, NULL, '2025-11-30 17:32:00', 1, '2025-11-30 18:07:00', 'DELIVERED', 3.00, NULL, '2025-11-30 18:10:00'),
-('FD0002', 1, 'Raven Clinch', '617-707-4682', 5, NULL, '2025-11-30 21:21:00', 2, '2025-11-30 22:06:00', 'DELIVERED', 5.00, NULL, '2025-11-30 22:32:00'),
-('FD0003', 1, 'Brian Anderson', '339-688-0896', 6, NULL, '2025-11-30 12:41:00', 1, '2025-11-30 12:56:00', 'DELIVERED', 0.00, NULL, '2025-11-30 12:51:00'),
-('FD0004', 1, 'Elaine Mikowsky', '857-478-0267', 7, NULL, '2025-12-01 13:03:00', 3, '2025-12-01 14:43:00', 'DELIVERED', 0.00, NULL, '2025-12-01 15:01:00'),
-('FD0005', 1, 'Raj Sinha', '617-936-1143', 8, NULL, '2025-11-30 20:45:00', 2, '2025-11-30 21:00:00', 'DELIVERED', 5.00, NULL, '2025-11-30 21:03:00'),
-('FD0101', 2, 'Aram Shankar', '857-289-2774', 9, NULL, '2025-12-01 17:40:00', 1, '2025-12-01 18:10:00', 'DELIVERED', 2.00, NULL, '2025-12-01 18:13:00'),
-('FD0102', 2, 'Aram Shankar', '857-289-2774', 9, NULL, '2025-12-02 15:30:00', 2, '2025-12-02 15:58:00', 'DELIVERED', 2.00, NULL, '2025-12-02 15:58:00'),
-('FD0103', 2, 'Ramon Swagger', '781-678-2552', 10, NULL, '2025-12-02 14:00:00', 2, '2025-12-02 14:30:00', 'DELIVERED', 0.00, NULL, '2025-12-02 14:22:00'),
-('FD0104', 2, 'Ayesha Mohammad', '617-522-9965', 11, NULL, '2025-12-02 11:45:00', 5, '2025-12-02 12:10:00', 'DELIVERED', 0.00, NULL, '2025-12-02 12:30:00'),
-('FD0201', 3, 'William Dean', '781-666-2416', 12, NULL, '2025-12-01 13:27:00', 4, '2025-12-01 13:42:00', 'DELIVERED', 0.00, NULL, '2025-12-01 13:38:00'),
-('FD0202', 3, 'Sean Oxford', '617-832-5554', 13, NULL, '2025-12-01 09:32:00', 3, '2025-12-01 10:57:00', 'DELIVERED', 0.00, NULL, '2025-12-01 15:30:00'),
-('FD0108', 2, 'Rachel Meyer', '857-273-1010', 14, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 10.00, NULL, NULL),
-('FD0043', 1, 'Fu Wang', '617-357-7772', 15, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 22.00, NULL, NULL),
-('FD0044', 1, 'Cliff Hans', '857-256-9863', 16, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 5.00, NULL, NULL),
-('FD0208', 3, 'Graham Walter', '781-491-0166', 17, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 15.00, NULL, NULL),
-('FD0209', 3, 'Lisa Manters', '617-413-5588', 18, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 5.00, NULL, NULL),
-('FD0109', 2, 'Aram Shankar', '857-289-2774', 9, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 18.00, NULL, NULL),
-('FD0045', 1, 'Brian Anderson', '339-688-0896', 6, NULL, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 10.00, NULL, NULL);
+('FD0001', 1, 'Martha Washington', '617-478-5869', 4, 32.20, '2025-11-30 17:32:00', 1, '2025-11-30 18:07:00', 'DELIVERED', 3.00, 26.97, '2025-11-30 18:10:00'),
+('FD0002', 1, 'Raven Clinch', '617-707-4682', 5, 69.84, '2025-11-30 21:21:00', 2, '2025-11-30 22:06:00', 'DELIVERED', 5.00, 59.90, '2025-11-30 22:32:00'),
+('FD0003', 1, 'Brian Anderson', '339-688-0896', 6, 34.49, '2025-11-30 12:41:00', 1, '2025-11-30 12:56:00', 'DELIVERED', 3.14, 28.96, '2025-11-30 12:51:00'),
+('FD0004', 1, 'Elaine Mikowsky', '857-478-0267', 7, 497.39, '2025-12-01 13:03:00', 3, '2025-12-01 14:43:00', 'DELIVERED', 64.88, 399.70, '2025-12-01 15:01:00'),
+('FD0005', 1, 'Raj Sinha', '617-936-1143', 8, 60.14, '2025-11-30 20:45:00', 2, '2025-11-30 21:00:00', 'DELIVERED', 5.00, 50.94, '2025-11-30 21:03:00'),
+('FD0101', 2, 'Aram Shankar', '857-289-2774', 9, 52.37, '2025-12-01 17:40:00', 1, '2025-12-01 18:10:00', 'DELIVERED', 4.76, 43.98, '2025-12-01 18:13:00'),
+('FD0102', 2, 'Aram Shankar', '857-289-2774', 9, 42.86, '2025-12-02 15:30:00', 2, '2025-12-02 15:58:00', 'DELIVERED', 3.90, 35.98, '2025-12-02 15:58:00'),
+('FD0103', 2, 'Ramon Swagger', '781-678-2552', 10, 109.49, '2025-12-02 14:00:00', 2, '2025-12-02 14:30:00', 'DELIVERED', 14.28, 87.96, '2025-12-02 14:22:00'),
+('FD0104', 2, 'Ayesha Mohammad', '617-522-9965', 11, 178.11, '2025-12-02 11:45:00', 5, '2025-12-02 12:10:00', 'DELIVERED', 19.08, 146.91, '2025-12-02 12:30:00'),
+('FD0201', 3, 'William Dean', '781-666-2416', 12, 59.26, '2025-12-01 13:27:00', 4, '2025-12-01 13:42:00', 'DELIVERED', 2.00, 52.90, '2025-12-01 13:38:00'),
+('FD0202', 3, 'Sean Oxford', '617-832-5554', 13, 500.26, '2025-12-01 09:32:00', 3, '2025-12-01 10:57:00', 'DELIVERED', 100.05, 369.66, '2025-12-01 15:30:00'),
+('FD0108', 2, 'Rachel Meyer', '857-273-1010', 14, 138.78, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 10.00, 118.95, NULL),
+('FD0043', 1, 'Fu Wang', '617-357-7772', 15, 242.65, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 22.00, 203.83, NULL),
+('FD0044', 1, 'Cliff Hans', '857-256-9863', 16, 81.75, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 3.89, 71.92, NULL),
+('FD0208', 3, 'Graham Walter', '781-491-0166', 17, 266.18, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 34.72, 213.82, NULL),
+('FD0209', 3, 'Lisa Manters', '617-413-5588', 18, 85.08, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 4.05, 74.88, NULL),
+('FD0109', 2, 'Aram Shankar', '857-289-2774', 9, 199.09, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 30.37, 155.92, NULL),
+('FD0045', 1, 'Brian Anderson', '339-688-0896', 6, 237.95, '2025-12-02 00:00:00', NULL, NULL, 'PENDING', 21.63, 199.85, NULL);
 
 -- Insert data into OrderItem
 INSERT INTO OrderItem (order_id, menu_item_id, quantity) VALUES
@@ -172,3 +184,7 @@ INSERT INTO OrderItem (order_id, menu_item_id, quantity) VALUES
 ('FD0045', 4, 5),
 ('FD0045', 3, 5),
 ('FD0045', 5, 5);
+
+-- Insert data into ServiceCharge
+INSERT INTO ServiceCharge (service_charge_id, percentage) VALUES
+(1, 8.25);

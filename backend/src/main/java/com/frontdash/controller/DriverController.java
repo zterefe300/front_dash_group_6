@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/drivers")
 @Tag(name = "Driver Management", description = "APIs for managing drivers")
@@ -21,6 +23,16 @@ public class DriverController {
 
     @Autowired
     private DriverService driverService;
+
+    @GetMapping
+    @Operation(summary = "Get all drivers", description = "Retrieve a list of all drivers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved drivers")
+    })
+    public ResponseEntity<List<DriverResponse>> getAllDrivers() {
+        List<DriverResponse> responseList = driverService.getAllDrivers();
+        return ResponseEntity.ok(responseList);
+    }
 
     @PostMapping
     @Operation(summary = "Add a new driver", description = "Add a new driver with the provided information")

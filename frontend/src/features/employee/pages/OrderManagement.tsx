@@ -1,172 +1,201 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
-import { Badge } from '../../../components/common/badge';
-import { Button } from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/common/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/common/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../../components/common/dialog';
-import { Label } from '../../../components/common/label';
-import { toast } from 'sonner';
-import { 
-  ShoppingCart, 
-  Search, 
-  Clock, 
-  CheckCircle, 
-  History,
-  MapPin,
-  User,
+import {
+  CheckCircle,
+  Clock,
   DollarSign,
+  History,
+  Loader2,
+  MapPin,
   Package,
-  UserCheck
-} from 'lucide-react';
+  Search,
+  User,
+  UserCheck,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "../../../components/common/badge";
+import { Button } from "../../../components/common/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/common/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/common/dialog";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/common/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/common/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/common/tabs";
+import { driverService } from "../../../service/employee/driverService";
+import { orderService } from "../../../service/employee/orderService";
 
 interface Order {
-  id: string;
-  orderNumber: string;
+  orderId: string;
+  restaurant: {
+    restaurantId: number;
+    name: string;
+    cuisineType: string;
+    pictureUrl?: string;
+    addressId: number;
+    phoneNumber?: string;
+    contactPersonName?: string;
+    emailAddress?: string;
+    status: string;
+  } | null;
   customer: string;
-  restaurant: string;
-  items: string[];
+  customerPhone?: string;
+  deliveryAddress: {
+    addressId: number;
+    streetAddress: string;
+    bldg?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  } | null;
+  items: {
+    menuItemId: number;
+    categoryId: number;
+    itemName: string;
+    pictureUrl?: string;
+    price: number;
+    availability: boolean;
+  }[];
   total: number;
-  status: 'pending' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'not_delivered' | 'cancelled';
+  status:
+    | "pending"
+    | "preparing"
+    | "ready"
+    | "out_for_delivery"
+    | "delivered"
+    | "not_delivered"
+    | "cancelled";
   orderTime: string;
-  deliveryAddress: string;
-  driver?: string;
+  assignedDriver: {
+    driverId: number;
+    firstname: string;
+    lastname: string;
+    availabilityStatus: string;
+  } | null;
   estimatedDelivery?: string;
   deliveryTime?: string;
 }
 
 interface Driver {
-  id: string;
-  name: string;
-  status: 'available' | 'busy' | 'offline';
-  phone: string;
+  driverId: number;
+  firstname: string;
+  lastname: string;
+  availabilityStatus: string;
 }
 
-const mockDrivers: Driver[] = [
-  {
-    id: '1',
-    name: 'Mike Wilson',
-    status: 'available',
-    phone: '+1 (555) 0101'
-  },
-  {
-    id: '2',
-    name: 'Sarah Garcia',
-    status: 'available',
-    phone: '+1 (555) 0102'
-  },
-  {
-    id: '3',
-    name: 'Tom Chen',
-    status: 'busy',
-    phone: '+1 (555) 0103'
-  },
-  {
-    id: '4',
-    name: 'Lisa Brown',
-    status: 'available',
-    phone: '+1 (555) 0104'
-  }
-];
-
 export const OrderManagement: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [selectedDriver, setSelectedDriver] = useState<string>('');
-  const [isProcessDialogOpen, setIsProcessDialogOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<string>("");
+  const [statusChangeDialog, setStatusChangeDialog] = useState<{
+    isOpen: boolean;
+    orderId: string;
+    newStatus: string;
+    currentStatus: string;
+  }>({
+    isOpen: false,
+    orderId: "",
+    newStatus: "",
+    currentStatus: "",
+  });
 
-  const [orderQueue, setOrderQueue] = useState<Order[]>([
-    {
-      id: '1',
-      orderNumber: 'ORD-001',
-      customer: 'John Smith',
-      restaurant: 'Pizza Palace',
-      items: ['Large Pepperoni Pizza', 'Garlic Bread', 'Coke'],
-      total: 28.50,
-      status: 'pending',
-      orderTime: '2024-01-15 14:30',
-      deliveryAddress: '123 Main St, City, State'
-    },
-    {
-      id: '2',  
-      orderNumber: 'ORD-002',
-      customer: 'Jane Doe',
-      restaurant: 'Sushi Zen',
-      items: ['California Roll', 'Salmon Sashimi', 'Miso Soup'],
-      total: 35.00,
-      status: 'pending',
-      orderTime: '2024-01-15 14:25',
-      deliveryAddress: '456 Oak Ave, City, State'
-    }
-  ]);
+  const [orderData, setOrderData] = useState({
+    orderQueue: [] as Order[],
+    activeOrders: [] as Order[],
+    orderHistory: [] as Order[],
+    drivers: [] as Driver[],
+    loading: true,
+    error: null as string | null,
+  });
 
-  const [activeOrders, setActiveOrders] = useState<Order[]>([
-    {
-      id: '3',
-      orderNumber: 'ORD-003',
-      customer: 'Mike Johnson',
-      restaurant: 'Burger House',
-      items: ['Cheeseburger', 'Fries', 'Milkshake'],
-      total: 22.75,
-      status: 'out_for_delivery',
-      orderTime: '2024-01-15 14:00',
-      deliveryAddress: '789 Pine St, City, State',
-      driver: 'Tom Wilson',
-      estimatedDelivery: '15:00'
-    },
-    {
-      id: '4',
-      orderNumber: 'ORD-004',
-      customer: 'Sarah Wilson',
-      restaurant: 'Taco Fiesta',
-      items: ['Chicken Tacos (3)', 'Guacamole', 'Mexican Rice'],
-      total: 18.25,
-      status: 'out_for_delivery',
-      orderTime: '2024-01-15 13:45',
-      deliveryAddress: '321 Elm St, City, State',
-      driver: 'Lisa Garcia',
-      estimatedDelivery: '14:45'
-    }
-  ]);
+  useEffect(() => {
+    const fetchOrderData = async () => {
+      try {
+        setOrderData((prev) => ({ ...prev, loading: true, error: null }));
 
-  const [orderHistory] = useState<Order[]>([
-    {
-      id: '5',
-      orderNumber: 'ORD-005',
-      customer: 'Robert Brown',
-      restaurant: 'Pizza Palace',
-      items: ['Margherita Pizza', 'Caesar Salad'],
-      total: 24.00,
-      status: 'delivered',
-      orderTime: '2024-01-14 19:30',
-      deliveryAddress: '555 Maple Dr, City, State',
-      driver: 'Lisa Garcia'
-    },
-    {
-      id: '6',
-      orderNumber: 'ORD-006',
-      customer: 'Emily Davis',
-      restaurant: 'Sushi Zen',
-      items: ['Spicy Tuna Roll', 'Chicken Teriyaki'],
-      total: 32.50,
-      status: 'delivered',
-      orderTime: '2024-01-14 18:15',
-      deliveryAddress: '777 Cedar Ln, City, State',
-      driver: 'Mike Chen'
-    }
-  ]);
+        // Fetch orders and drivers
+        const [pendingNoDriver, pendingWithDriver, deliveredOrders, drivers] = await Promise.all([
+          orderService.getOrdersByStatus("PENDING", false), // orderQueue: PENDING orders with no drivers
+          orderService.getOrdersByStatus("PENDING", true), // activeOrders: PENDING orders with drivers
+          orderService.getOrdersByStatus("DELIVERED", true), // orderHistory: DELIVERED orders
+          driverService.getAllDrivers(),
+        ]);
+
+        // Transform API data to match our Order interface
+        const transformOrder = (apiOrder: any): Order => ({
+          orderId: apiOrder.orderId,
+          customer: apiOrder.customerName,
+          customerPhone: apiOrder.customerPhone,
+          restaurant: apiOrder.restaurant,
+          deliveryAddress: apiOrder.deliveryAddress,
+          items: apiOrder.items || [],
+          total: parseFloat(apiOrder.totalAmount),
+          status: apiOrder.orderStatus.toLowerCase(),
+          orderTime: apiOrder.orderTime,
+          assignedDriver: apiOrder.assignedDriver,
+          estimatedDelivery: apiOrder.estimatedDeliveryTime,
+          deliveryTime: apiOrder.deliveryTime,
+        });
+
+        setOrderData({
+          orderQueue: pendingNoDriver.map(transformOrder),
+          activeOrders: pendingWithDriver.map(transformOrder),
+          orderHistory: deliveredOrders.map(transformOrder),
+          drivers: drivers || [],
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        console.error("Failed to fetch order data:", error);
+        setOrderData((prev) => ({
+          ...prev,
+          loading: false,
+          error: "Failed to load order data",
+        }));
+      }
+    };
+
+    fetchOrderData();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { variant: 'secondary' as const, icon: Clock, text: 'Pending' },
-      preparing: { variant: 'outline' as const, icon: Package, text: 'Preparing' },
-      ready: { variant: 'default' as const, icon: CheckCircle, text: 'Ready' },
-      out_for_delivery: { variant: 'default' as const, icon: MapPin, text: 'Out for Delivery' },
-      delivered: { variant: 'default' as const, icon: CheckCircle, text: 'Delivered' },
-      not_delivered: { variant: 'destructive' as const, icon: Clock, text: 'Not Delivered' },
-      cancelled: { variant: 'destructive' as const, icon: Clock, text: 'Cancelled' }
+      pending: { variant: "secondary" as const, icon: Clock, text: "Pending" },
+      preparing: { variant: "outline" as const, icon: Package, text: "Preparing" },
+      ready: { variant: "default" as const, icon: CheckCircle, text: "Ready" },
+      out_for_delivery: { variant: "default" as const, icon: MapPin, text: "Out for Delivery" },
+      delivered: { variant: "default" as const, icon: CheckCircle, text: "Delivered" },
+      not_delivered: { variant: "destructive" as const, icon: Clock, text: "Not Delivered" },
+      cancelled: { variant: "destructive" as const, icon: Clock, text: "Cancelled" },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig];
@@ -180,58 +209,119 @@ export const OrderManagement: React.FC = () => {
     );
   };
 
-  const handleAssignDriver = () => {
+  const handleAssignDriver = async () => {
     if (selectedOrder && selectedDriver) {
-      const driverName = mockDrivers.find(d => d.id === selectedDriver)?.name;
-      
-      // Remove from order queue
-      setOrderQueue(prev => prev.filter(order => order.id !== selectedOrder.id));
-      
-      // Add to active orders with driver assigned and status as "out_for_delivery"
-      const updatedOrder: Order = {
-        ...selectedOrder,
-        driver: driverName,
-        status: 'out_for_delivery',
-        estimatedDelivery: '16:00' // Default ETA
-      };
-      
-      setActiveOrders(prev => [...prev, updatedOrder]);
-      
-      toast.success(`Order ${selectedOrder.orderNumber} assigned to ${driverName}`);
-      setIsProcessDialogOpen(false);
-      setSelectedOrder(null);
-      setSelectedDriver('');
+      try {
+        const driverId = parseInt(selectedDriver);
+        if (isNaN(driverId)) {
+          toast.error("Invalid driver selected");
+          return;
+        }
+
+        // Call API to assign driver
+        await orderService.assignDriver(selectedOrder.orderId, driverId);
+
+        // Update local state optimistically
+        setOrderData((prev) => ({
+          ...prev,
+          orderQueue: prev.orderQueue.filter((order) => order.orderId !== selectedOrder.orderId),
+          activeOrders: [
+            ...prev.activeOrders,
+            {
+              ...selectedOrder,
+              assignedDriver: orderData.drivers.find((d) => d.driverId === driverId)
+                ? {
+                    driverId: driverId,
+                    firstname: orderData.drivers.find((d) => d.driverId === driverId)?.firstname || "",
+                    lastname: orderData.drivers.find((d) => d.driverId === driverId)?.lastname || "",
+                    availabilityStatus: "BUSY",
+                  }
+                : null,
+              status: "out_for_delivery" as Order["status"],
+            },
+          ],
+        }));
+
+        toast.success(`Order ${selectedOrder.orderId} assigned to driver`);
+        setSelectedOrder(null);
+        setSelectedDriver("");
+      } catch (error) {
+        console.error("Failed to assign driver:", error);
+        toast.error("Failed to assign driver");
+      }
     }
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: string) => {
-    setActiveOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus as Order['status'] } : order
-    ));
-    toast.success('Order status updated successfully');
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    const order = orderData.activeOrders.find((o) => o.orderId === orderId);
+    if (!order) return;
+
+    // Show confirmation dialog for status changes from "out_for_delivery"
+    if (order.status === "out_for_delivery" && (newStatus === "delivered" || newStatus === "not_delivered")) {
+      setStatusChangeDialog({
+        isOpen: true,
+        orderId,
+        newStatus,
+        currentStatus: order.status,
+      });
+    } else {
+      // Direct update for other status changes
+      updateOrderStatus(orderId, newStatus);
+    }
   };
 
-  const updateOrderETA = (orderId: string, newETA: string) => {
-    setActiveOrders(prev => prev.map(order =>
-      order.id === orderId ? { ...order, estimatedDelivery: newETA } : order
-    ));
-    toast.success('ETA updated successfully');
+  const confirmStatusChange = async () => {
+    const { orderId, newStatus } = statusChangeDialog;
+
+    // Check if delivery time is set when changing to "delivered"
+    if (newStatus === "delivered") {
+      const order = orderData.activeOrders.find((o) => o.orderId === orderId);
+      if (!order?.deliveryTime) {
+        toast.error("Please update the Delivery Time before marking as Delivered");
+        setStatusChangeDialog({ isOpen: false, orderId: "", newStatus: "", currentStatus: "" });
+        return;
+      }
+    }
+
+    await updateOrderStatus(orderId, newStatus);
+    setStatusChangeDialog({ isOpen: false, orderId: "", newStatus: "", currentStatus: "" });
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      // Call API to update status
+      await orderService.updateOrderStatus(orderId, newStatus);
+
+      // Update local state
+      setOrderData((prev) => ({
+        ...prev,
+        activeOrders: prev.activeOrders.map((order) =>
+          order.orderId === orderId ? { ...order, status: newStatus as Order["status"] } : order
+        ),
+      }));
+
+      toast.success("Order status updated successfully");
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      toast.error("Failed to update order status");
+    }
   };
 
   const updateOrderDeliveryTime = (orderId: string, newDeliveryTime: string) => {
-    setActiveOrders(prev => prev.map(order =>
-      order.id === orderId ? { ...order, deliveryTime: newDeliveryTime } : order
-    ));
-    toast.success('Delivery time updated successfully');
+    setOrderData((prev) => ({
+      ...prev,
+      activeOrders: prev.activeOrders.map((order) =>
+        order.orderId === orderId ? { ...order, deliveryTime: newDeliveryTime } : order
+      ),
+    }));
+    toast.success("Delivery time updated successfully");
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1>Order Management</h1>
-        <p className="text-muted-foreground">
-          Manage orders from queue to delivery completion.
-        </p>
+        <p className="text-muted-foreground">Manage orders from queue to delivery completion.</p>
       </div>
 
       <Tabs defaultValue="queue" className="space-y-4">
@@ -247,11 +337,9 @@ export const OrderManagement: React.FC = () => {
               <CardTitle className="flex items-center space-x-2">
                 <Clock className="h-5 w-5" />
                 <span>Order Queue</span>
-                <Badge variant="secondary">{orderQueue.length}</Badge>
+                <Badge variant="secondary">{orderData.loading ? "..." : orderData.orderQueue.length}</Badge>
               </CardTitle>
-              <CardDescription>
-                New orders waiting to be processed
-              </CardDescription>
+              <CardDescription>New orders waiting to be processed</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -271,6 +359,7 @@ export const OrderManagement: React.FC = () => {
                       <TableHead>Order</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Restaurant</TableHead>
+                      <TableHead>Delivery Address</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Time</TableHead>
                       <TableHead>Status</TableHead>
@@ -278,119 +367,150 @@ export const OrderManagement: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orderQueue.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{order.orderNumber}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {order.items.length} items
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                            {order.customer}
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.restaurant}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                            ${order.total.toFixed(2)}
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.orderTime}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                        <TableCell>
-                          <Dialog open={isProcessDialogOpen} onOpenChange={setIsProcessDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => setSelectedOrder(order)}
-                              >
-                                Process
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Process Order</DialogTitle>
-                                <DialogDescription>
-                                  Review order details and assign a driver
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                {selectedOrder && (
-                                  <div className="p-4 bg-muted rounded-lg">
-                                    <h4 className="font-medium mb-2">Order Summary</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                          <p><strong>Order:</strong> {selectedOrder.orderNumber}</p>
-                                          <p><strong>Customer:</strong> {selectedOrder.customer}</p>
-                                          <p><strong>Restaurant:</strong> {selectedOrder.restaurant}</p>
-                                        </div>
-                                        <div>
-                                          <p><strong>Total:</strong> ${selectedOrder.total.toFixed(2)}</p>
-                                          <p><strong>Time:</strong> {selectedOrder.orderTime}</p>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <p><strong>Delivery Address:</strong> {selectedOrder.deliveryAddress}</p>
-                                      </div>
-                                      <div>
-                                        <p><strong>Items:</strong></p>
-                                        <ul className="list-disc list-inside ml-2 space-y-1">
-                                          {selectedOrder.items.map((item, index) => (
-                                            <li key={index}>{item}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                <div className="space-y-2">
-                                  <Label>Assign Driver</Label>
-                                  <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Choose a driver" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {mockDrivers
-                                        .filter(driver => driver.status === 'available')
-                                        .map((driver) => (
-                                        <SelectItem key={driver.id} value={driver.id}>
-                                          {driver.name} - {driver.phone}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                <div className="flex justify-end space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    onClick={() => setIsProcessDialogOpen(false)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button 
-                                    onClick={handleAssignDriver}
-                                    disabled={!selectedDriver}
-                                  >
-                                    <UserCheck className="h-4 w-4 mr-2" />
-                                    Assign Driver
-                                  </Button>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                    {orderData.loading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                          <p className="text-muted-foreground">Loading orders...</p>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : orderData.orderQueue.length > 0 ? (
+                      orderData.orderQueue.map((order) => (
+                        <TableRow key={order.orderId}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{order.orderId}</p>
+                              <p className="text-sm text-muted-foreground">{order.items.length} items</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                              {order.customer}
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.restaurant?.name || "Unknown Restaurant"}</TableCell>
+                          <TableCell>
+                            {order.deliveryAddress
+                              ? `${order.deliveryAddress.bldg ? order.deliveryAddress.bldg + " " : ""}${order.deliveryAddress.streetAddress}, ${order.deliveryAddress.city}, ${order.deliveryAddress.state}`
+                              : "Unknown"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />$
+                              {order.total.toFixed(2)}
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.orderTime}</TableCell>
+                          <TableCell>{getStatusBadge(order.status)}</TableCell>
+                          <TableCell>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="default" size="sm" onClick={() => setSelectedOrder(order)}>
+                                  Process
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Process Order</DialogTitle>
+                                  <DialogDescription>
+                                    Review order details and assign a driver
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  {selectedOrder && (
+                                    <div className="p-4 bg-muted rounded-lg">
+                                      <h4 className="font-medium mb-2">Order Summary</h4>
+                                      <div className="space-y-2 text-sm">
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <p>
+                                              <strong>Order:</strong> {selectedOrder.orderId}
+                                            </p>
+                                            <p>
+                                              <strong>Customer:</strong> {selectedOrder.customer}
+                                            </p>
+                                            <p>
+                                              <strong>Restaurant:</strong>{" "}
+                                              {selectedOrder.restaurant?.name || "Unknown Restaurant"}
+                                            </p>
+                                          </div>
+                                          <div>
+                                            <p>
+                                              <strong>Total:</strong> ${selectedOrder.total.toFixed(2)}
+                                            </p>
+                                            <p>
+                                              <strong>Time:</strong> {selectedOrder.orderTime}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <p>
+                                            <strong>Delivery Address:</strong>{" "}
+                                            {selectedOrder.deliveryAddress
+                                              ? `${selectedOrder.deliveryAddress.streetAddress}, ${selectedOrder.deliveryAddress.city}, ${selectedOrder.deliveryAddress.state} ${selectedOrder.deliveryAddress.zipCode}`
+                                              : "Unknown Address"}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p>
+                                            <strong>Items:</strong>
+                                          </p>
+                                          <ul className="list-disc list-inside ml-2 space-y-1">
+                                            {selectedOrder.items.map((item, index) => (
+                                              <li key={index}>{item.itemName}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <div className="space-y-2">
+                                    <Label>Assign Driver</Label>
+                                    <Select
+                                      key={selectedOrder?.orderId}
+                                      value={selectedDriver}
+                                      onValueChange={setSelectedDriver}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Choose a driver" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {orderData.drivers
+                                          .filter((driver) => driver.availabilityStatus === "AVAILABLE")
+                                          .map((driver) => (
+                                            <SelectItem
+                                              key={driver.driverId}
+                                              value={driver.driverId.toString()}
+                                            >
+                                              {driver.firstname} {driver.lastname}
+                                            </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className="flex justify-end space-x-2">
+                                    <Button variant="outline">Cancel</Button>
+                                    <Button onClick={handleAssignDriver} disabled={!selectedDriver}>
+                                      <UserCheck className="h-4 w-4 mr-2" />
+                                      Assign Driver
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          <p className="text-muted-foreground">No orders in queue</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -404,11 +524,9 @@ export const OrderManagement: React.FC = () => {
               <CardTitle className="flex items-center space-x-2">
                 <CheckCircle className="h-5 w-5" />
                 <span>Active Orders</span>
-                <Badge variant="default">{activeOrders.length}</Badge>
+                <Badge variant="default">{orderData.loading ? "..." : orderData.activeOrders.length}</Badge>
               </CardTitle>
-              <CardDescription>
-                Orders currently being delivered
-              </CardDescription>
+              <CardDescription>Orders currently being delivered</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -435,62 +553,82 @@ export const OrderManagement: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {activeOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{order.orderNumber}</p>
-                            <p className="text-sm text-muted-foreground">
-                              ${order.total.toFixed(2)}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.customer}</TableCell>
-                        <TableCell>{order.restaurant}</TableCell>
-                        <TableCell>
-                          {order.driver ? (
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                              {order.driver}
-                            </div>
-                          ) : (
-                            <Badge variant="secondary">Not Assigned</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">{order.estimatedDelivery || 'Not set'}</span>
-                        </TableCell>
-                        <TableCell>
-                          {order.deliveryTime ? (
-                            <Input
-                              type="time"
-                              value={order.deliveryTime}
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderDeliveryTime(order.id, e.target.value)}
-                              className="w-32"
-                            />
-                          ) : (
-                            <Input
-                              type="time"
-                              placeholder="Set delivery time"
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateOrderDeliveryTime(order.id, e.target.value)}
-                              className="w-32"
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select value={order.status} onValueChange={(value: string) => updateOrderStatus(order.id, value)}>
-                            <SelectTrigger className="w-40">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
-                              <SelectItem value="delivered">Delivered</SelectItem>
-                              <SelectItem value="not_delivered">Not Delivered</SelectItem>
-                            </SelectContent>
-                          </Select>
+                    {orderData.loading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                          <p className="text-muted-foreground">Loading active orders...</p>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : orderData.activeOrders.length > 0 ? (
+                      orderData.activeOrders.map((order) => (
+                        <TableRow key={order.orderId}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{order.orderId}</p>
+                              <p className="text-sm text-muted-foreground">${order.total.toFixed(2)}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.customer}</TableCell>
+                          <TableCell>{order.restaurant?.name || "Unknown Restaurant"}</TableCell>
+                          <TableCell>
+                            {order.assignedDriver ? (
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                                {order.assignedDriver.firstname} {order.assignedDriver.lastname}
+                              </div>
+                            ) : (
+                              <Badge variant="secondary">Not Assigned</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">{order.estimatedDelivery || "Not set"}</span>
+                          </TableCell>
+                          <TableCell>
+                            {order.deliveryTime ? (
+                              <Input
+                                type="time"
+                                value={order.deliveryTime}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                  updateOrderDeliveryTime(order.orderId, e.target.value)
+                                }
+                                className="w-32"
+                              />
+                            ) : (
+                              <Input
+                                type="time"
+                                placeholder="Set delivery time"
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                  updateOrderDeliveryTime(order.orderId, e.target.value)
+                                }
+                                className="w-32"
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={order.status}
+                              onValueChange={(value: string) => handleStatusChange(order.orderId, value)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                                <SelectItem value="delivered">Delivered</SelectItem>
+                                <SelectItem value="not_delivered">Not Delivered</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <p className="text-muted-foreground">No active orders</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -504,11 +642,9 @@ export const OrderManagement: React.FC = () => {
               <CardTitle className="flex items-center space-x-2">
                 <History className="h-5 w-5" />
                 <span>Order History</span>
-                <Badge variant="secondary">{orderHistory.length}</Badge>
+                <Badge variant="secondary">{orderData.loading ? "..." : orderData.orderHistory.length}</Badge>
               </CardTitle>
-              <CardDescription>
-                Completed and cancelled orders
-              </CardDescription>
+              <CardDescription>Completed and cancelled orders</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -535,36 +671,49 @@ export const OrderManagement: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orderHistory.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{order.orderNumber}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {order.items.length} items
-                            </p>
-                          </div>
+                    {orderData.loading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                          <p className="text-muted-foreground">Loading order history...</p>
                         </TableCell>
-                        <TableCell>{order.customer}</TableCell>
-                        <TableCell>{order.restaurant}</TableCell>
-                        <TableCell>
-                          {order.driver && (
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                              {order.driver}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                            ${order.total.toFixed(2)}
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.orderTime}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
                       </TableRow>
-                    ))}
+                    ) : orderData.orderHistory.length > 0 ? (
+                      orderData.orderHistory.map((order) => (
+                        <TableRow key={order.orderId}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{order.orderId}</p>
+                              <p className="text-sm text-muted-foreground">{order.items.length} items</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.customer}</TableCell>
+                          <TableCell>{order.restaurant?.name || "Unknown Restaurant"}</TableCell>
+                          <TableCell>
+                            {order.assignedDriver && (
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                                {order.assignedDriver.firstname} {order.assignedDriver.lastname}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />$
+                              {order.total.toFixed(2)}
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.orderTime}</TableCell>
+                          <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <p className="text-muted-foreground">No order history</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -572,6 +721,28 @@ export const OrderManagement: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={statusChangeDialog.isOpen} onOpenChange={(open) => !open && setStatusChangeDialog({ isOpen: false, orderId: "", newStatus: "", currentStatus: "" })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to change the order status from "{statusChangeDialog.currentStatus.replace('_', ' ')}" to "{statusChangeDialog.newStatus.replace('_', ' ')}"?
+              {statusChangeDialog.newStatus === "delivered" && (
+                <span className="block mt-2 font-medium text-amber-600">
+                  Note: Please ensure the Delivery Time is set before marking as Delivered.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStatusChange}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

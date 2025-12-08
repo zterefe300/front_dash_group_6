@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot application
-FROM openjdk:23-jdk-slim AS BUILDER
+FROM eclipse-temurin:21-jdk AS BUILDER
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y maven && \
     cp target/*.jar app.jar
 
 # Production stage
-FROM openjdk:23-jdk-slim
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 

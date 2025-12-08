@@ -1,19 +1,66 @@
-import React from "react";
+import { ArrowRight, Truck, UserCheck, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
-import { Button } from "../../../components/common/button";
 import { Badge } from "../../../components/common/badge";
-import { Truck, Users, UserCheck, UserX, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { driverService } from "../../../service/employee/driverService";
 
 export const DriverManagement = () => {
   const navigate = useNavigate();
-  // Mock data for dashboard overview
-  const driverStats = {
-    activeDrivers: 5,
-    readyToHire: 2,
-    terminated: 2,
-    totalDeliveries: 156,
-  };
+
+  const [driverData, setDriverData] = useState({
+    drivers: [] as any[],
+    loading: true,
+    error: null as string | null
+  });
+
+  useEffect(() => {
+    const fetchDriverData = async () => {
+      try {
+        setDriverData(prev => ({ ...prev, loading: true, error: null }));
+        const drivers = await driverService.getAllDrivers();
+
+        setDriverData({
+          drivers: drivers || [],
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        console.error('Failed to fetch driver data:', error);
+        setDriverData(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Failed to load driver data'
+        }));
+      }
+    };
+
+    fetchDriverData();
+  }, []);
+
+  // Calculate stats from API data
+  const activeDrivers = driverData.drivers.length;
+  const availableDrivers = driverData.drivers.filter((d: any) => d.availabilityStatus === 'AVAILABLE').length;
+  const busyDrivers = driverData.drivers.filter((d: any) => d.availabilityStatus === 'BUSY').length;
+
+  if (driverData.error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1>Driver Management</h1>
+          <p className="text-muted-foreground">
+            Manage active drivers, hire new drivers, and handle terminations
+          </p>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-red-600 font-medium">Error loading driver data</div>
+            <p className="text-sm text-muted-foreground mt-2">{driverData.error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -22,51 +69,6 @@ export const DriverManagement = () => {
         <p className="text-muted-foreground">
           Manage active drivers, hire new drivers, and handle terminations
         </p>
-      </div>
-
-      {/* Driver Statistics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="stat-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Drivers</p>
-                <p className="text-2xl font-bold text-primary">{driverStats.activeDrivers}</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <UserCheck className="h-6 w-6 text-primary-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="stat-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Ready to Hire</p>
-                <p className="text-2xl font-bold text-blue-600">{driverStats.readyToHire}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="stat-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Terminated</p>
-                <p className="text-2xl font-bold text-gray-600">{driverStats.terminated}</p>
-              </div>
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <UserX className="h-6 w-6 text-gray-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Quick Actions */}
@@ -86,14 +88,14 @@ export const DriverManagement = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  {driverStats.activeDrivers} drivers currently active
+                  {driverData.loading ? '...' : `${activeDrivers} drivers currently active`}
                 </p>
                 <div className="flex space-x-2">
                   <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    Online: 18
+                    Available: {driverData.loading ? '...' : availableDrivers}
                   </Badge>
                   <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                    Busy: 6
+                    Busy: {driverData.loading ? '...' : busyDrivers}
                   </Badge>
                 </div>
               </div>
@@ -117,14 +119,14 @@ export const DriverManagement = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  {driverStats.readyToHire} drivers ready to hire
+                  {driverData.loading ? '...' : `${activeDrivers} total drivers`}
                 </p>
                 <div className="flex space-x-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    Available: {driverStats.readyToHire}
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    Available: {driverData.loading ? '...' : availableDrivers}
                   </Badge>
-                  <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-                    Terminated: {driverStats.terminated}
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                    Busy: {driverData.loading ? '...' : busyDrivers}
                   </Badge>
                 </div>
               </div>

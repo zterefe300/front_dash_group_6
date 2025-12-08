@@ -22,6 +22,9 @@ public class Address {
     @Column(name = "street_address", nullable = false)
     private String streetAddress;
 
+    @Column
+    private String bldg;
+
     @Column(nullable = false)
     private String city;
 

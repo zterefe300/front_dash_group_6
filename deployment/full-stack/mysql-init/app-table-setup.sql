@@ -137,3 +137,9 @@ CREATE TABLE IF NOT EXISTS OrderItem (
 );
 
 CREATE INDEX idx_order_item_order ON OrderItem(order_id);
+
+-- Service Charge
+CREATE TABLE IF NOT EXISTS ServiceCharge (
+    service_charge_id INT PRIMARY KEY AUTO_INCREMENT,
+    percentage DECIMAL(5, 2) NOT NULL DEFAULT 8.25
+);

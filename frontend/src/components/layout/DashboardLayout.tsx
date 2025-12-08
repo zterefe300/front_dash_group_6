@@ -1,28 +1,41 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '../common/sidebar.js';
-import { Button } from '../common/button.js';
-import { Badge } from '../common/badge.js';
-import { useUser } from '../../contexts/UserContext.js';
 import {
-  LayoutDashboard,
   Building2,
-  Users,
-  Truck,
-  Settings,
-  ShoppingCart,
-  MapPin,
-  LogOut,
-  ChevronDown,
-  FileText,
-  UserPlus,
-  Settings2,
   CheckCircle,
+  ChevronDown,
   Clock,
-  History
-} from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../common/dropdown-menu.js';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../common/collapsible.js';
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Settings2,
+  ShoppingCart,
+  Truck,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../contexts/UserContext.js";
+import { Badge } from "../common/badge.js";
+import { Button } from "../common/button.js";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../common/collapsible.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../common/dropdown-menu.js";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "../common/sidebar.js";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -41,72 +54,71 @@ interface MenuItem {
   submenu?: SubMenuItem[];
 }
 
-
 const adminMenuItems: MenuItem[] = [
   {
-    title: 'Dashboard',
+    title: "Dashboard",
     icon: LayoutDashboard,
-    route: '/employee/dashboard',
+    route: "/employee/dashboard",
   },
   {
-    title: 'Restaurant Management',
+    title: "Restaurant Management",
     icon: Building2,
-    route: '/employee/restaurant-management',
+    route: "/employee/restaurant-management",
     submenu: [
-      { title: 'Registration Requests', icon: FileText, route: '/employee/registration-requests' },
-      { title: 'Restaurant Directory', icon: CheckCircle, route: '/employee/active-restaurants' },
-      { title: 'Withdrawal Requests', icon: Clock, route: '/employee/withdrawal-requests' },
-    ]
+      { title: "Registration Requests", icon: FileText, route: "/employee/registration-requests" },
+      { title: "Restaurant Directory", icon: CheckCircle, route: "/employee/active-restaurants" },
+      { title: "Withdrawal Requests", icon: Clock, route: "/employee/withdrawal-requests" },
+    ],
   },
   {
-    title: 'Staff Management',
+    title: "Staff Management",
     icon: Users,
-    route: '/employee/staff-management',
+    route: "/employee/staff-management",
     submenu: [
-      { title: 'Staff Accounts', icon: Users, route: '/employee/staff-accounts' },
-      { title: 'Add New Staff', icon: UserPlus, route: '/employee/add-new-staff' },
-      { title: 'Manage Staff', icon: Settings2, route: '/employee/manage-staff' },
-    ]
+      { title: "Staff Accounts", icon: Users, route: "/employee/staff-accounts" },
+      { title: "Add New Staff", icon: UserPlus, route: "/employee/add-new-staff" },
+      { title: "Manage Staff", icon: Settings2, route: "/employee/manage-staff" },
+    ],
   },
   {
-    title: 'Driver Management',
+    title: "Driver Management",
     icon: Truck,
-    route: '/employee/driver-management',
+    route: "/employee/driver-management",
     submenu: [
-      { title: 'Active Drivers', icon: CheckCircle, route: '/employee/active-drivers' },
-      { title: 'Manage Drivers', icon: Settings2, route: '/employee/manage-drivers' },
-    ]
+      { title: "Active Drivers", icon: CheckCircle, route: "/employee/active-drivers" },
+      { title: "Manage Drivers", icon: Settings2, route: "/employee/manage-drivers" },
+    ],
   },
   {
-    title: 'Settings',
+    title: "Settings",
     icon: Settings,
-    route: '/employee/settings'
+    route: "/employee/admin-settings",
   },
 ];
 
 const staffMenuItems: MenuItem[] = [
   {
-    title: 'Dashboard',
+    title: "Dashboard",
     icon: LayoutDashboard,
-    route: '/employee/dashboard'
+    route: "/employee/dashboard",
   },
   {
-    title: 'Order Management',
+    title: "Order Management",
     icon: ShoppingCart,
-    route: '/employee/order-management'
+    route: "/employee/order-management",
   },
   {
-    title: 'Account Settings',
+    title: "Account Settings",
     icon: Settings,
-    route: '/employee/account-settings'
+    route: "/employee/staff-account-settings",
   },
 ];
 
-const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout, currentView, switchView } = useUser();
 
-  const menuItems = currentView === 'admin' ? adminMenuItems : staffMenuItems;
+  const menuItems = currentView === "admin" ? adminMenuItems : staffMenuItems;
 
   const handleLogout = () => {
     logout();
@@ -124,14 +136,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
               <div>
                 <h2 className="font-semibold">FrontDash</h2>
                 <div className="flex items-center space-x-2">
-                  <Badge variant={currentView === 'admin' ? 'default' : 'secondary'}>
-                    {currentView === 'admin' ? 'Admin View' : 'Staff View'}
+                  <Badge variant={currentView === "admin" ? "default" : "secondary"}>
+                    {currentView === "admin" ? "Admin View" : "Staff View"}
                   </Badge>
                 </div>
               </div>
             </div>
           </SidebarHeader>
-          
+
           <SidebarContent className="p-2">
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -139,10 +151,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
                   {item.submenu ? (
                     <Collapsible>
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          className="w-full"
-                          onClick={() => navigate(item.route)}
-                        >
+                        <SidebarMenuButton className="w-full" onClick={() => navigate(item.route)}>
                           <item.icon className="mr-2 h-4 w-4" />
                           {item.title}
                           <ChevronDown className="ml-auto h-4 w-4" />
@@ -162,9 +171,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
                       </CollapsibleContent>
                     </Collapsible>
                   ) : (
-                    <SidebarMenuButton
-                      onClick={() => navigate(item.route)}
-                    >
+                    <SidebarMenuButton onClick={() => navigate(item.route)}>
                       <item.icon className="mr-2 h-4 w-4" />
                       {item.title}
                     </SidebarMenuButton>
@@ -173,15 +180,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
               ))}
             </SidebarMenu>
           </SidebarContent>
-          
+
           <SidebarFooter className="border-t border-sidebar-border p-4">
             <div className="space-y-2">
               <div className="text-sm">
                 <p className="font-medium">{user?.name}</p>
                 <p className="text-muted-foreground text-xs">{user?.username}</p>
               </div>
-              
-              {user?.role === 'admin' && (
+
+              {user?.role === "admin" && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="w-full justify-between">
@@ -190,16 +197,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => switchView('admin')}>
-                      Admin View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => switchView('staff')}>
-                      Staff View
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => switchView("admin")}>Admin View</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => switchView("staff")}>Staff View</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              
+
               <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -207,14 +210,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps>  = ({ children  }) => {
             </div>
           </SidebarFooter>
         </Sidebar>
-        
+
         <main className="flex-1 flex flex-col">
           <header className="border-b bg-card p-4 flex items-center shadow-sm">
             <SidebarTrigger />
           </header>
-          <div className="flex-1 p-6">
-            {children}
-          </div>
+          <div className="flex-1 p-6">{children}</div>
         </main>
       </div>
     </SidebarProvider>

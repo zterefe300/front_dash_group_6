@@ -1,17 +1,31 @@
 package com.frontdash.service;
 
-import com.frontdash.dao.response.RestaurantResponse;
-import com.frontdash.entity.*;
-import com.frontdash.repository.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.entity.EmployeeLogin;
+import com.frontdash.entity.MenuCategory;
+import com.frontdash.entity.Orders;
+import com.frontdash.entity.Restaurant;
+import com.frontdash.entity.RestaurantLogin;
+import com.frontdash.entity.ServiceCharge;
+import com.frontdash.repository.EmployeeLoginRepository;
+import com.frontdash.repository.MenuCategoryRepository;
+import com.frontdash.repository.MenuItemRepository;
+import com.frontdash.repository.OperatingHourRepository;
+import com.frontdash.repository.OrderItemRepository;
+import com.frontdash.repository.OrdersRepository;
+import com.frontdash.repository.RestaurantLoginRepository;
+import com.frontdash.repository.RestaurantRepository;
+import com.frontdash.repository.ServiceChargeRepository;
 
 @Service
 @Transactional
@@ -37,6 +51,12 @@ public class AdminService {
 
     @Autowired
     private RestaurantLoginRepository restaurantLoginRepository;
+
+    @Autowired
+    private EmployeeLoginRepository employeeLoginRepository;
+
+    @Autowired
+    private ServiceChargeRepository serviceChargeRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -209,5 +229,60 @@ public class AdminService {
         return withdrawalRequests.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get admin profile by username
+     * @param username the admin username
+     * @return EmployeeLogin for the admin
+     * @throws IllegalArgumentException if admin not found
+     */
+    public EmployeeLogin getAdminProfile(String username) {
+        Optional<EmployeeLogin> admin = employeeLoginRepository.findByUsername(username)
+                .filter(login -> login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN);
+        return admin.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+    }
+
+    /**
+     * Update admin password
+     * @param username the admin username
+     * @param newPassword the new password
+     * @throws IllegalArgumentException if admin not found
+     */
+    @Transactional
+    public void updateAdminPassword(String username, String newPassword) {
+        EmployeeLogin admin = employeeLoginRepository.findByUsername(username)
+                .filter(login -> login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN)
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+        admin.setPassword(passwordEncoder.encode(newPassword));
+        employeeLoginRepository.save(admin);
+    }
+
+    /**
+     * Get service charge percentage
+     * @return the current service charge percentage
+     */
+    public ServiceCharge getServiceCharge() {
+        List<ServiceCharge> serviceCharges = serviceChargeRepository.findAll();
+        if (serviceCharges.isEmpty()) {
+            // Create default service charge if none exists
+            ServiceCharge defaultCharge = ServiceCharge.builder()
+                    .percentage(new java.math.BigDecimal("8.25"))
+                    .build();
+            return serviceChargeRepository.save(defaultCharge);
+        }
+        return serviceCharges.get(0); // Return the first one
+    }
+
+    /**
+     * Update service charge percentage
+     * @param percentage the new percentage
+     * @return the updated ServiceCharge
+     */
+    @Transactional
+    public ServiceCharge updateServiceCharge(java.math.BigDecimal percentage) {
+        ServiceCharge serviceCharge = getServiceCharge();
+        serviceCharge.setPercentage(percentage);
+        return serviceChargeRepository.save(serviceCharge);
     }
 }

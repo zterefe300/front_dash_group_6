@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     order_time DATETIME NOT NULL,
     assigned_driver_id INT,
     estimated_delivery_time DATETIME,
-    order_status ENUM('PENDING', 'OUT_FOR_DELIVERY', 'DELIVERED') DEFAULT 'PENDING',
+    order_status ENUM('PENDING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'NOT_DELIVERED') DEFAULT 'PENDING',
     tips DECIMAL(10, 2) DEFAULT 0.00,
     subtotal DECIMAL(10, 2) NOT NULL,
     delivery_time DATETIME,
@@ -141,3 +141,9 @@ CREATE TABLE IF NOT EXISTS OrderItem (
 );
 
 CREATE INDEX idx_order_item_order ON OrderItem(order_id);
+
+-- Service Charge
+CREATE TABLE IF NOT EXISTS ServiceCharge (
+    service_charge_id INT PRIMARY KEY AUTO_INCREMENT,
+    percentage DECIMAL(5, 2) NOT NULL DEFAULT 8.25
+);
