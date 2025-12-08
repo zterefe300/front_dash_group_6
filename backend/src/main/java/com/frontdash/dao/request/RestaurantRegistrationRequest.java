@@ -15,7 +15,7 @@ public class RestaurantRegistrationRequest {
     private String name;
     private String cuisineType;
     private String pictureUrl;
-    private Address address;
+    private AddressRequest address;
     private String phoneNumber;
     private String contactPersonName;
     private String emailAddress;

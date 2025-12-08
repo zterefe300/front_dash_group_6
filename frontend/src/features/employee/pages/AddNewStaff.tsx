@@ -1,19 +1,10 @@
-import React, { useState } from "react";
+import { ArrowLeft, Mail, UserPlus } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
+import { toast } from "sonner";
+import { staffService } from "../../../service/employee/staffService";
 import { Button } from "../../../components/common/button";
-import { Input } from "../../../components/common/input";
-import { Label } from "../../../components/common/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/common/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/common/select";
-import { Textarea } from "../../../components/common/textarea";
-import { Badge } from "../../../components/common/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
 import {
   Dialog,
   DialogContent,
@@ -22,15 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../components/common/dialog";
-import { UserPlus, Users, ArrowLeft, Copy, Trash2, Download, Upload, Mail, Send } from "lucide-react";
-import { toast } from "sonner";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
 
 interface NewStaffMember {
   fullName: string;
   lastName: string;
   role: string;
   username: string;
-  password: string;
   email?: string;
 }
 
@@ -41,32 +31,19 @@ export const AddNewStaff = () => {
     lastName: "",
     role: "Delivery Coordinator",
     username: "",
-    password: "",
     email: "",
   });
 
-  const [bulkStaffList, setBulkStaffList] = useState<NewStaffMember[]>([]);
-  const [bulkInput, setBulkInput] = useState("");
-
   const [sendingEmails, setSendingEmails] = useState<{ [key: number]: boolean }>({});
-  const [bulkEmailInput, setBulkEmailInput] = useState("");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [invalidEmailOpen, setInvalidEmailOpen] = useState(false);
   const [emailSentOpen, setEmailSentOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const generateUsername = (lastName: string): string => {
     if (!lastName) return "";
     const randomDigits = Math.floor(Math.random() * 90) + 10; // 10-99
     return `${lastName.toLowerCase().replace(/\s+/g, "")}${randomDigits}`;
-  };
-
-  const generatePassword = (): string => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    let password = "";
-    for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
   };
 
   const validateEmail = (email: string): boolean => {
@@ -81,7 +58,6 @@ export const AddNewStaff = () => {
       // Auto-generate username when last name changes
       if (field === "lastName" && value) {
         updated.username = generateUsername(value);
-        updated.password = generatePassword();
       }
 
       return updated;
@@ -133,135 +109,44 @@ export const AddNewStaff = () => {
   };
 
   const confirmCreateStaff = async () => {
-    // In a real app, this would make an API call
-    console.log("Creating staff:", singleStaff);
-
-    // Add to staff list
-    addStaffToList(singleStaff);
-
-    // Send email if email is provided
-    if (singleStaff.email) {
-      await sendCredentialEmail(singleStaff, false);
-    }
-
-    toast.success(`Staff account created for ${singleStaff.fullName}`);
-
-    // Reset form
-    setSingleStaff({
-      fullName: "",
-      lastName: "",
-      role: "Delivery Coordinator",
-      username: "",
-      password: "",
-      email: "",
-    });
-
-    setConfirmationOpen(false);
-  };
-
-  const parseBulkInput = () => {
-    if (!bulkInput.trim()) {
-      toast.error("Please enter staff names");
-      return;
-    }
-
-    const lines = bulkInput.trim().split("\n");
-    const emailLines = bulkEmailInput.trim().split("\n");
-    const newStaffList: NewStaffMember[] = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const parts = line.trim().split(",");
-      if (parts.length >= 2) {
-        const fullName = parts[0].trim();
-        const role = parts[1].trim();
-        const lastName = fullName.split(" ").pop() || fullName;
-        const email = emailLines[i] ? emailLines[i].trim() : undefined;
-
-        newStaffList.push({
-          fullName,
-          lastName,
-          role,
-          username: generateUsername(lastName),
-          password: generatePassword(),
-          email,
-        });
-      }
-    }
-
-    setBulkStaffList(newStaffList);
-    toast.success(`${newStaffList.length} staff members prepared for creation`);
-  };
-
-  const handleCreateBulkStaff = async () => {
-    if (bulkStaffList.length === 0) {
-      toast.error("No staff members to create");
-      return;
-    }
-
-    // In a real app, this would make an API call
-    toast.success(`Created ${bulkStaffList.length} staff accounts successfully`);
-    console.log("Creating bulk staff:", bulkStaffList);
-
-    // Send emails to those with email addresses
-    const staffWithEmails = bulkStaffList.filter((staff) => staff.email);
-    if (staffWithEmails.length > 0) {
-      toast.info(`Sending credentials to ${staffWithEmails.length} email addresses...`);
-      for (const staff of staffWithEmails) {
-        await sendCredentialEmail(staff);
-      }
-    }
-
-    // Reset
-    setBulkStaffList([]);
-    setBulkInput("");
-    setBulkEmailInput("");
-  };
-
-  const copyCredentials = (staff: NewStaffMember) => {
-    const text = `Name: ${staff.fullName}\nUsername: ${staff.username}\nPassword: ${staff.password}`;
-    navigator.clipboard.writeText(text);
-    toast.success("Credentials copied to clipboard");
-  };
-
-  const removeStaffFromBulk = (index: number) => {
-    setBulkStaffList((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const exportCredentials = () => {
-    const csvContent =
-      "Full Name,Username,Password,Role,Email\n" +
-      bulkStaffList
-        .map(
-          (staff) =>
-            `${staff.fullName},${staff.username},${staff.password},${staff.role},${staff.email || ""}`
-        )
-        .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "staff_credentials.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success("Credentials exported successfully");
-  };
-
-  const sendIndividualEmail = async (staff: NewStaffMember, index: number) => {
-    if (!staff.email) {
-      toast.error("Email address is required");
-      return;
-    }
-
-    setSendingEmails((prev) => ({ ...prev, [index]: true }));
-
+    setIsCreating(true);
     try {
-      await sendCredentialEmail(staff);
+      // Prepare data for API call
+      const staffData = {
+        username: singleStaff.username,
+        firstname: singleStaff.fullName.split(' ')[0] || singleStaff.fullName,
+        lastname: singleStaff.lastName,
+      };
+
+      // Call the backend API
+      await staffService.createStaff(staffData);
+
+      toast.success(`Staff account created for ${singleStaff.fullName}`);
+
+      // Send email if email is provided
+      if (singleStaff.email) {
+        await sendCredentialEmail(singleStaff, false);
+      }
+
+      // Reset form
+      setSingleStaff({
+        fullName: "",
+        lastName: "",
+        role: "Delivery Coordinator",
+        username: "",
+        email: "",
+      });
+
+      setConfirmationOpen(false);
+    } catch (error) {
+      console.error("Failed to create staff:", error);
+      toast.error("Failed to create staff account. Please try again.");
     } finally {
-      setSendingEmails((prev) => ({ ...prev, [index]: false }));
+      setIsCreating(false);
     }
   };
+
+
 
   return (
     <div className="space-y-6">
@@ -340,53 +225,25 @@ export const AddNewStaff = () => {
                 </p>
               </div>
 
-              {singleStaff.username && singleStaff.password && (
+              {singleStaff.username && singleStaff.email && (
                 <Card className="bg-accent/50">
                   <CardContent className="p-4">
-                    <h4 className="font-medium mb-3">Generated Credentials</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-sm text-muted-foreground">Username</Label>
-                        <div className="flex items-center space-x-2">
-                          <Input value={singleStaff.username} readOnly className="bg-background" />
-                          <Button size="sm" variant="outline" onClick={() => copyCredentials(singleStaff)}>
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Label className="text-sm text-muted-foreground">Send Credentials via Email</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Send login credentials to: {singleStaff.email}
+                        </p>
                       </div>
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Initial Password</Label>
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            value={singleStaff.password}
-                            type="password"
-                            readOnly
-                            className="bg-background"
-                          />
-                        </div>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => sendCredentialEmail(singleStaff)}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Email
+                      </Button>
                     </div>
-
-                    {singleStaff.email && (
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label className="text-sm text-muted-foreground">Email Credentials</Label>
-                            <p className="text-xs text-muted-foreground">
-                              Send credentials to: {singleStaff.email}
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => sendCredentialEmail(singleStaff)}
-                          >
-                            <Mail className="h-4 w-4 mr-2" />
-                            Send Email
-                          </Button>
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               )}
@@ -452,9 +309,7 @@ export const AddNewStaff = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setInvalidEmailOpen(false)}>
-              OK
-            </Button>
+            <Button onClick={() => setInvalidEmailOpen(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -469,9 +324,7 @@ export const AddNewStaff = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setEmailSentOpen(false)}>
-              OK
-            </Button>
+            <Button onClick={() => setEmailSentOpen(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

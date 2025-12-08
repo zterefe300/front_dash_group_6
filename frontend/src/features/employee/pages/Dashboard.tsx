@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/common/card';
 import { useUser } from '../../../contexts/UserContext';
 import { useSettings } from '../../../contexts/SettingsContext';
-import { 
-  Building2, 
-  Users, 
-  Truck, 
-  ShoppingCart, 
+import { driverService } from '../../../service/employee/driverService';
+import { restaurantService } from '../../../service/employee/restaurantService';
+import { staffService } from '../../../service/employee/staffService';
+import {
+  Building2,
+  Users,
+  Truck,
+  ShoppingCart,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -18,32 +22,91 @@ export const Dashboard: React.FC = () => {
   const { user, currentView } = useUser();
   const { dashboardConfig } = useSettings();
 
+  const [dashboardData, setDashboardData] = useState({
+    totalRestaurants: 0,
+    activeStaff: 0,
+    activeDrivers: 0,
+    availableDrivers: 0,
+    loading: true,
+    error: null as string | null
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setDashboardData(prev => ({ ...prev, loading: true, error: null }));
+
+        // Fetch data based on current view
+        if (currentView === 'admin') {
+          const [restaurants, staff, drivers] = await Promise.all([
+            restaurantService.getAllRestaurants(),
+            staffService.getAllStaff(),
+            driverService.getAllDrivers()
+          ]);
+
+          setDashboardData({
+            totalRestaurants: restaurants?.length || 0,
+            activeStaff: staff?.length || 0,
+            activeDrivers: drivers?.length || 0,
+            availableDrivers: drivers?.filter((d: any) => d.availabilityStatus === 'AVAILABLE').length || 0,
+            loading: false,
+            error: null
+          });
+        } else {
+          // For staff view, we might need different endpoints
+          const drivers = await driverService.getAllDrivers();
+          setDashboardData({
+            totalRestaurants: 0,
+            activeStaff: 0,
+            activeDrivers: drivers?.length || 0,
+            availableDrivers: drivers?.filter((d: any) => d.availabilityStatus === 'AVAILABLE').length || 0,
+            loading: false,
+            error: null
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        setDashboardData(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Failed to load dashboard data'
+        }));
+      }
+    };
+
+    fetchDashboardData();
+  }, [currentView]);
+
   const adminStats = [
     {
       id: 'total-restaurants',
       title: 'Total Restaurants',
-      value: '4',
+      value: dashboardData.loading ? '...' : dashboardData.totalRestaurants.toString(),
+      change: '',
       icon: Building2,
       color: 'text-blue-600'
     },
     {
       id: 'active-staff',
       title: 'Active Staff',
-      value: '5',
+      value: dashboardData.loading ? '...' : dashboardData.activeStaff.toString(),
+      change: '',
       icon: Users,
       color: 'text-green-600'
     },
     {
       id: 'active-drivers',
       title: 'Active Drivers',
-      value: '5',
+      value: dashboardData.loading ? '...' : dashboardData.activeDrivers.toString(),
+      change: '',
       icon: Truck,
       color: 'text-purple-600'
     },
     {
       id: 'pending-requests',
       title: 'Pending Requests',
-      value: '6',
+      value: '0', // This would need a separate API endpoint
+      change: '',
       icon: AlertCircle,
       color: 'text-orange-600'
     }
@@ -53,31 +116,31 @@ export const Dashboard: React.FC = () => {
     {
       id: 'orders-today',
       title: 'Orders Today',
-      value: '4',
-      change: '+8 from yesterday',
+      value: '0', // This would need an orders API
+      change: 'No data available',
       icon: ShoppingCart,
       color: 'text-blue-600'
     },
     {
       id: 'active-orders',
       title: 'Active Orders',
-      value: '2',
-      change: 'In progress',
+      value: '0', // This would need an orders API
+      change: 'No data available',
       icon: Clock,
       color: 'text-orange-600'
     },
     {
       id: 'completed-orders',
       title: 'Completed Orders',
-      value: '2',
-      change: 'Today',
+      value: '0', // This would need an orders API
+      change: 'No data available',
       icon: CheckCircle,
       color: 'text-green-600'
     },
     {
       id: 'available-drivers',
       title: 'Available Drivers',
-      value: '3',
+      value: dashboardData.loading ? '...' : dashboardData.availableDrivers.toString(),
       change: 'Ready for delivery',
       icon: Truck,
       color: 'text-purple-600'
@@ -144,7 +207,15 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      {stats.length > 0 ? (
+      {dashboardData.error ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 font-medium">Error loading dashboard data</p>
+            <p className="text-sm text-muted-foreground mt-2">{dashboardData.error}</p>
+          </CardContent>
+        </Card>
+      ) : stats.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="stat-card">
@@ -153,11 +224,17 @@ export const Dashboard: React.FC = () => {
                   {stat.title}
                 </CardTitle>
                 <div className="w-8 h-8 bg-gradient-primary/10 rounded-lg flex items-center justify-center">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  {dashboardData.loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <stat.icon className="h-4 w-4 text-primary" />
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="text-2xl font-bold">
+                  {dashboardData.loading ? '...' : stat.value}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {stat.change}
                 </p>

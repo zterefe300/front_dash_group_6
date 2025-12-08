@@ -1,24 +1,23 @@
-import { Routes, Route } from "react-router-dom";
-import { DashboardLayout } from "../components/layout/DashboardLayout";
-import { UserProvider, useUser } from "../contexts/UserContext";
+import { Route, Routes } from "react-router-dom";
 import { SettingsProvider } from "../contexts/SettingsContext";
-import { Dashboard } from "../features/employee/pages/Dashboard";
-import { RestaurantManagement } from "../features/employee/pages/RestaurantManagement";
-import { StaffManagement } from "../features/employee/pages/StaffManagement";
-import { OrderManagement } from "../features/employee/pages/OrderManagement";
-import { AccountSettings } from "../features/employee/pages/AccountSettings";
-import { RegistrationRequests } from "../features/employee/pages/RegistrationRequests";
-import { ActiveRestaurants } from "../features/employee/pages/ActiveRestaurants";
-import { WithdrawalRequests } from "../features/employee/pages/WithdrawalRequests";
-import { StaffAccounts } from "../features/employee/pages/StaffAccounts";
-import { AddNewStaff } from "../features/employee/pages/AddNewStaff";
-import { ManageStaff } from "../features/employee/pages/ManageStaff";
+import { UserProvider } from "../contexts/UserContext";
 import { ActiveDrivers } from "../features/employee/pages/ActiveDrivers";
-import { ManageDrivers } from "../features/employee/pages/ManageDrivers";
+import { ActiveRestaurants } from "../features/employee/pages/ActiveRestaurants";
+import { AddNewStaff } from "../features/employee/pages/AddNewStaff";
+import { AdminSettings } from "../features/employee/pages/AdminSettings";
+import { Dashboard } from "../features/employee/pages/Dashboard";
 import { DriverManagement } from "../features/employee/pages/DriverManagement";
-import { Settings } from "../features/employee/pages/Settings";
-import { EmployeePortalProtectedRoute, EmployeePortalPublicRoute } from "./RouteGuards";
 import { LoginPage } from "../features/employee/pages/LoginPage";
+import { ManageDrivers } from "../features/employee/pages/ManageDrivers";
+import { ManageStaff } from "../features/employee/pages/ManageStaff";
+import { OrderManagement } from "../features/employee/pages/OrderManagement";
+import { RegistrationRequests } from "../features/employee/pages/RegistrationRequests";
+import { RestaurantManagement } from "../features/employee/pages/RestaurantManagement";
+import { StaffAccounts } from "../features/employee/pages/StaffAccounts";
+import { StaffAccountSettings } from "../features/employee/pages/StaffAccountSettings";
+import { StaffManagement } from "../features/employee/pages/StaffManagement";
+import { WithdrawalRequests } from "../features/employee/pages/WithdrawalRequests";
+import { EmployeePortalProtectedRoute, EmployeePortalPublicRoute } from "./RouteGuards";
 
 const protectedRoutes = [
   { path: "/dashboard", element: <Dashboard /> },
@@ -34,8 +33,8 @@ const protectedRoutes = [
   { path: "/active-drivers", element: <ActiveDrivers /> },
   { path: "/manage-drivers", element: <ManageDrivers /> },
   { path: "/order-management", element: <OrderManagement /> },
-  { path: "/account-settings", element: <AccountSettings /> },
-  { path: "/settings", element: <Settings /> },
+  { path: "/staff-account-settings", element: <StaffAccountSettings /> },
+  { path: "/admin-settings", element: <AdminSettings /> },
 ];
 
 const EmployeePortalRoutes = () => (

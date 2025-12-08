@@ -2,6 +2,8 @@ package com.frontdash.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +40,12 @@ public class MenuItem {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "availability", nullable = false)
-    private String availability;
+    @Builder.Default
+    private AvailabilityStatus availability = AvailabilityStatus.AVAILABLE;
+
+    public enum AvailabilityStatus {
+        AVAILABLE, UNAVAILABLE
+    }
 }

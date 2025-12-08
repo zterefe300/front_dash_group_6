@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,6 +37,16 @@ public class RestaurantController {
 
     @Autowired
     private RestaurantService restaurantService;
+
+    @GetMapping
+    @Operation(summary = "Get all restaurants", description = "Retrieve a list of all restaurants")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurants")
+    })
+    public ResponseEntity<List<RestaurantResponse>> getAllRestaurants() {
+        List<RestaurantResponse> responseList = restaurantService.getAllRestaurants();
+        return ResponseEntity.ok(responseList);
+    }
 
     @PostMapping("/registration")
     @Operation(summary = "Submit restaurant registration", description = "Create a new restaurant registration request for approval")

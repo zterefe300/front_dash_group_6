@@ -1,5 +1,6 @@
 package com.frontdash.service;
 
+import com.frontdash.dao.request.AddressRequest;
 import com.frontdash.dao.request.MenuUpdateRequest;
 import com.frontdash.dao.request.OperatingHourEntryRequest;
 import com.frontdash.dao.request.OperatingHoursUpdateRequest;
@@ -45,6 +46,13 @@ public class RestaurantService {
     @Autowired
     private AddressRepository addressRepository;
 
+    public List<RestaurantResponse> getAllRestaurants() {
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+        return restaurants.stream()
+                .map(this::convertToResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     @Transactional
     public RestaurantResponse registerRestaurant(RestaurantRegistrationRequest request) {
         if (request.getName() == null ) {
@@ -69,9 +77,15 @@ public class RestaurantService {
                     });
         }
 
-        Address address = addressRepository.save(request.getAddress());
-        System.out.println(address.toString());
-
+        final AddressRequest addressRequest = request.getAddress();
+        Address address = Address.builder()
+                .streetAddress(addressRequest.getStreetAddress())
+                .city(addressRequest.getCity())
+                .state(addressRequest.getState())
+                .zipCode(addressRequest.getZipCode())
+                .build();
+        addressRepository.save(address);
+        
         Restaurant restaurant = Restaurant.builder()
                 .name(request.getName())
                 .cuisineType(request.getCuisineType())
@@ -84,12 +98,6 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-
-        // after aprove, and insert the login username & password to restaurant table
-//        RestaurantLogin restaurantLogin = RestaurantLogin.builder()
-//                .restaurantId(savedRestaurant.getRestaurantId())
-//                .build();
-//        restaurantLoginRepository.save(restaurantLogin);
 
         return convertToResponse(savedRestaurant);
     }
@@ -126,7 +134,7 @@ public class RestaurantService {
         }
 
         if (request.getAvailability() != null) {
-            menuItem.setAvailability(request.getAvailability());
+            menuItem.setAvailability(MenuItem.AvailabilityStatus.valueOf(request.getAvailability()));
         }
 
         MenuItem updated = menuItemRepository.save(menuItem);
@@ -214,7 +222,7 @@ public class RestaurantService {
                 .itemName(menuItem.getItemName())
                 .pictureUrl(menuItem.getPictureUrl())
                 .price(menuItem.getPrice())
-                .availability(menuItem.getAvailability())
+                .availability(menuItem.getAvailability().name())
                 .build();
     }
 
@@ -226,6 +234,18 @@ public class RestaurantService {
                 .openTime(operatingHour.getOpenTime().toString())
                 .closeTime(operatingHour.getCloseTime().toString())
                 .build();
+    }
+
+    public RestaurantResponse getRestaurantById(Integer restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+        return convertToResponse(restaurant);
+    }
+
+    public MenuItemResponse getMenuItemById(Integer menuItemId) {
+        MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found"));
+        return convertToResponse(menuItem);
     }
 
     private LocalTime parseTime(String value) {

@@ -34,10 +34,10 @@ public class StaffService {
     }
 
     // Helper method to convert StaffRequest DTO to EmployeeLogin entity
-    private EmployeeLogin convertRequestToEmployeeLogin(StaffRequest staffRequest) {
+    private EmployeeLogin convertRequestToEmployeeLogin(StaffRequest staffRequest, String generatedPwd) {
         return EmployeeLogin.builder()
                 .username(staffRequest.getUsername())
-                .password(passwordEncoder.encode(staffRequest.getPassword()))
+                .password(passwordEncoder.encode(generatedPwd))
                 .employeeType(EmployeeLogin.EmployeeType.STAFF)
                 .build();
     }
@@ -58,9 +58,12 @@ public class StaffService {
         if (employeeLoginRepository.existsByUsername(staffRequest.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }
+        
+        //Generate password for the user
+        String pwdGenerated = generatePassword();
 
         // Create the employee login first
-        EmployeeLogin employeeLogin = convertRequestToEmployeeLogin(staffRequest);
+        EmployeeLogin employeeLogin = convertRequestToEmployeeLogin(staffRequest, pwdGenerated);
         employeeLoginRepository.save(employeeLogin);
 
         // Create the staff user
@@ -156,5 +159,20 @@ public class StaffService {
         } else {
             throw new IllegalArgumentException("Staff account not found");
         }
+    }
+
+    private String generatePassword() {
+        final String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        final int passwordLength = 12; // Increased length for better security
+
+        StringBuilder password = new StringBuilder();
+
+        for (int i = 0; i < passwordLength; i++) {
+            int randomIndex = (int) (Math.random() * chars.length());
+            char nextChar = chars.charAt(randomIndex);
+            password.append(nextChar);
+        }
+
+        return password.toString();
     }
 }

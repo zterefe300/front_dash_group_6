@@ -1,16 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { staffService } from "../../../service/employee/staffService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
 import { Button } from "../../../components/common/button";
 import { Input } from "../../../components/common/input";
-import { Badge } from "../../../components/common/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/common/select";
 import {
   Table,
   TableBody,
@@ -19,80 +12,42 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/common/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../../components/common/dialog";
 import { Search, Filter, Users, UserPlus, Edit, UserCheck, UserX } from "lucide-react";
 
 interface StaffMember {
-  id: string;
-  fullName: string;
   username: string;
+  firstname: string;
+  lastname: string;
+  employeeType: string;
 }
 
 export const StaffAccounts = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  
-  // Mock staff data
-  const mockStaff: StaffMember[] = [
-    {
-      id: "1",
-      fullName: "John Smith",
-      username: "smith01",
-    },
-    {
-      id: "2",
-      fullName: "Emily Johnson",
-      username: "johnson02",
-    },
-    {
-      id: "3",
-      fullName: "Michael Brown",
-      username: "brown03",
-    },
-    {
-      id: "4",
-      fullName: "Sarah Davis",
-      username: "davis04",
-    },
-    {
-      id: "5",
-      fullName: "David Wilson",
-      username: "wilson05",
-    },
-  ];
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(() => {
-    let stored = localStorage.getItem("staffMembers");
-
-    if (stored && stored?.length > mockStaff.length) {
-      return JSON.parse(stored);
-    }
-    
-    localStorage.setItem("staffMembers", JSON.stringify(mockStaff));
-    stored = JSON.stringify(mockStaff);
-
-    return JSON.parse(stored);
-  });
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const data = await staffService.getAllStaff();
+        setStaffMembers(data);
+      } catch (error) {
+        console.error('Failed to fetch staff:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const filteredStaff = staffMembers.filter((staff) => {
+    const fullName = `${staff.firstname} ${staff.lastname}`;
     const matchesSearch =
-      staff.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.username.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || staff.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
-
-  const activeStaffCount = staffMembers.filter((s) => s.status === "active").length;
-  const inactiveStaffCount = staffMembers.filter((s) => s.status === "inactive").length;
 
   return (
     <div className="space-y-6">
@@ -140,8 +95,8 @@ export const StaffAccounts = () => {
               </TableHeader>
               <TableBody>
                 {filteredStaff.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="font-medium">{staff.fullName}</TableCell>
+                  <TableRow key={staff.username}>
+                    <TableCell className="font-medium">{`${staff.firstname} ${staff.lastname}`}</TableCell>
                     <TableCell className="font-mono text-sm">{staff.username}</TableCell>
                   </TableRow>
                 ))}
