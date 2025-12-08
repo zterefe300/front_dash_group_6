@@ -15,7 +15,9 @@ public class MenuItemResponse {
 
     private Integer menuItemId;
     private Integer categoryId;
+    private String categoryName;
     private String itemName;
+    private String description;
     private String pictureUrl;
     private BigDecimal price;
     private String availability;

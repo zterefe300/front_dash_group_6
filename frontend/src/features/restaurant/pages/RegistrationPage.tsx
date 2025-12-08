@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,260 @@ import { toast } from 'sonner';
 import { Building2, Clock, CheckCircle, ArrowLeft, FileText, Plus, Trash2, FolderPlus } from 'lucide-react';
 import { useAppStore } from '@/store';
 
+const DAYS_OF_WEEK = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+const BUSINESS_TYPES = [
+  'Restaurant',
+  'Fast Casual',
+  'Quick Service',
+  'Food Truck',
+  'Bakery',
+  'Cafe',
+  'Catering',
+  'Ghost Kitchen',
+  'Other',
+];
+
+const DEFAULT_MENU_CATEGORIES = [
+  'Appetizers',
+  'Salads',
+  'Soups',
+  'Main Course',
+  'Pizza',
+  'Pasta',
+  'Burgers',
+  'Seafood',
+  'Desserts',
+  'Beverages',
+  'Other',
+];
+
+const createInitialApplicationData = () => ({
+  restaurantName: '',
+  businessType: '',
+  description: '',
+  ownerName: '',
+  email: '',
+  phone: '',
+  building: '',
+  street: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  agreeToTerms: true,
+  agreeToCommission: true,
+  confirmAccuracy: true,
+});
+
+const createInitialOperatingHours = () =>
+  DAYS_OF_WEEK.map((day) => ({
+    day,
+    isOpen: true,
+    openTime: '11:00',
+    closeTime: '20:00',
+  }));
+
+type MenuItemState = {
+  id: string;
+  name: string;
+  category: string;
+  price: string;
+  description: string;
+};
+
+interface MenuSectionProps {
+  menuItems: MenuItemState[];
+  onAddCategory: () => void;
+  onAddItem: () => void;
+  onEditItem: (item: MenuItemState) => void;
+  onRemoveItem: (id: string) => void;
+}
+
+const MenuSection = memo(function MenuSection({
+  menuItems,
+  onAddCategory,
+  onAddItem,
+  onEditItem,
+  onRemoveItem,
+}: MenuSectionProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Menu Items
+          </CardTitle>
+          <CardDescription>
+            Add signature dishes and pricing so we can preconfigure your dashboard.
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onAddCategory}
+            className="flex items-center gap-2"
+          >
+            <FolderPlus className="h-4 w-4" />
+            Add Category
+          </Button>
+          <Button type="button" onClick={onAddItem} className="flex items-center gap-2 sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Add Menu Item
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {menuItems.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            No menu items yet. Add your first dish to showcase your restaurant.
+          </div>
+        ) : (
+          menuItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex flex-col gap-4 rounded-lg border border-border bg-card/50 p-4 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-base font-semibold">{item.name}</h4>
+                  {item.category ? <Badge variant="secondary">{item.category}</Badge> : null}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {item.description ? item.description : 'No description provided.'}
+                </p>
+              </div>
+              <div className="flex flex-col items-start gap-2 md:items-end">
+                <span className="text-base font-semibold">${Number(item.price).toFixed(2)}</span>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => onEditItem(item)}>
+                    Edit
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => onRemoveItem(item.id)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+
+interface HoursSectionProps {
+  operatingHours: {
+    day: string;
+    isOpen: boolean;
+    openTime: string;
+    closeTime: string;
+  }[];
+  timeOptions: string[];
+  onChangeHour: (day: string, field: 'openTime' | 'closeTime', value: string) => void;
+  onToggleDay: (day: string, isOpen: boolean) => void;
+}
+
+const HoursSection = memo(function HoursSection({
+  operatingHours,
+  timeOptions,
+  onChangeHour,
+  onToggleDay,
+}: HoursSectionProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Operating Hours
+        </CardTitle>
+        <CardDescription>Configure the weekly schedule customers will see on launch day.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
+          {operatingHours.map((entry) => (
+            <div
+              key={entry.day}
+              className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card/50 p-4 md:grid-cols-[160px,repeat(2,minmax(0,1fr)),auto]"
+              style={{ display: 'flex', justifyContent: 'space-between' }}
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{entry.day}</span>
+                  <Badge variant={entry.isOpen ? 'secondary' : 'outline'}>
+                    {entry.isOpen ? 'Open' : 'Closed'}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {entry.isOpen ? 'Customers can place orders on this day.' : 'Closed all day.'}
+                </p>
+              </div>
+              <div className="space-y-2" style={{ width: '88px' }}>
+                <Label htmlFor={`${entry.day}-open`}>Opens</Label>
+                <Select
+                  value={entry.openTime}
+                  onValueChange={(value) => onChangeHour(entry.day, 'openTime', value)}
+                  disabled={!entry.isOpen}
+                >
+                  <SelectTrigger id={`${entry.day}-open`}>
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map((time) => (
+                      <SelectItem key={`${entry.day}-open-${time}`} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2" style={{ width: '88px' }}>
+                <Label htmlFor={`${entry.day}-close`}>Closes</Label>
+                <Select
+                  value={entry.closeTime}
+                  onValueChange={(value) => onChangeHour(entry.day, 'closeTime', value)}
+                  disabled={!entry.isOpen}
+                >
+                  <SelectTrigger id={`${entry.day}-close`}>
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map((time) => (
+                      <SelectItem key={`${entry.day}-close-${time}`} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2" style={{ width: '88px' }}>
+                <Switch
+                  id={`${entry.day}-open-toggle`}
+                  checked={entry.isOpen}
+                  onCheckedChange={(checked) => onToggleDay(entry.day, checked)}
+                />
+                <Label htmlFor={`${entry.day}-open-toggle`} className="text-sm text-muted-foreground">
+                  {entry.isOpen ? 'Open' : 'Closed'}
+                </Label>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
 export function RegistrationPage() {
   const submitRegistration = useAppStore((state) => state.submitRegistration);
   const registrationSubmitting = useAppStore((state) => state.registrationSubmitting);
@@ -34,52 +288,9 @@ export function RegistrationPage() {
   const registrationError = useAppStore((state) => state.registrationError);
   const clearRegistrationResult = useAppStore((state) => state.clearRegistrationResult);
 
-  const daysOfWeek = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-
-  const createInitialApplicationData = () => ({
-    restaurantName: '',
-    businessType: '',
-    description: '',
-    ownerName: '',
-    email: '',
-    phone: '',
-    building: '',
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    agreeToTerms: true,
-    agreeToCommission: true,
-    confirmAccuracy: true,
-  });
-
-  const createInitialOperatingHours = () =>
-    daysOfWeek.map((day) => ({
-      day,
-      isOpen: true,
-      openTime: '11:00',
-      closeTime: '20:00',
-    }));
-
   const [documents, setDocuments] = useState<DocumentFile[]>([]);
   const [applicationData, setApplicationData] = useState(() => createInitialApplicationData());
-  const [menuItems, setMenuItems] = useState<
-    {
-      id: string;
-      name: string;
-      category: string;
-      price: string;
-      description: string;
-    }[]
-  >([]);
+  const [menuItems, setMenuItems] = useState<MenuItemState[]>([]);
   const [isMenuDialogOpen, setIsMenuDialogOpen] = useState(false);
   const [isEditingMenuItem, setIsEditingMenuItem] = useState(false);
   const [menuForm, setMenuForm] = useState({
@@ -149,31 +360,13 @@ export function RegistrationPage() {
 
   const generatedUsername = generateUsername(applicationData.ownerName);
 
-  const businessTypes = [
-    'Restaurant', 'Fast Casual', 'Quick Service', 'Food Truck', 
-    'Bakery', 'Cafe', 'Catering', 'Ghost Kitchen', 'Other'
-  ];
+  const [menuCategories, setMenuCategories] = useState<string[]>(DEFAULT_MENU_CATEGORIES);
 
-  const defaultMenuCategories = [
-    'Appetizers',
-    'Salads',
-    'Soups',
-    'Main Course',
-    'Pizza',
-    'Pasta',
-    'Burgers',
-    'Seafood',
-    'Desserts',
-    'Beverages',
-    'Other',
-  ];
-  const [menuCategories, setMenuCategories] = useState<string[]>(defaultMenuCategories);
+  const handleInputChange = useCallback((field: string, value: string | boolean) => {
+    setApplicationData((prev) => ({ ...prev, [field]: value }));
+  }, [setApplicationData]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setApplicationData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const openAddMenuDialog = () => {
+  const openAddMenuDialog = useCallback(() => {
     setMenuForm({
       id: '',
       name: '',
@@ -183,9 +376,9 @@ export function RegistrationPage() {
     });
     setIsEditingMenuItem(false);
     setIsMenuDialogOpen(true);
-  };
+  }, [setMenuForm, setIsEditingMenuItem, setIsMenuDialogOpen]);
 
-  const openEditMenuDialog = (item: typeof menuItems[number]) => {
+  const openEditMenuDialog = useCallback((item: typeof menuItems[number]) => {
     setMenuForm({
       id: item.id,
       name: item.name,
@@ -195,9 +388,9 @@ export function RegistrationPage() {
     });
     setIsEditingMenuItem(true);
     setIsMenuDialogOpen(true);
-  };
+  }, [setMenuForm, setIsEditingMenuItem, setIsMenuDialogOpen]);
 
-  const handleAddMenuCategory = () => {
+  const handleAddMenuCategory = useCallback(() => {
     const rawName = prompt('Enter a new menu category name:');
     if (rawName === null) {
       return;
@@ -225,7 +418,7 @@ export function RegistrationPage() {
       }));
     }
     toast.success(`Added category "${formatted}"`);
-  };
+  }, [isMenuDialogOpen, menuCategories, setMenuCategories, setMenuForm]);
 
   const handleMenuFormChange = <
     Field extends 'name' | 'category' | 'price' | 'description'
@@ -281,28 +474,27 @@ export function RegistrationPage() {
     setIsMenuDialogOpen(false);
   };
 
-  const removeMenuItem = (id: string) => {
+  const removeMenuItem = useCallback((id: string) => {
     setMenuItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  }, [setMenuItems]);
 
-  const updateOperatingHour = (
-    day: string,
-    field: 'openTime' | 'closeTime',
-    value: string
-  ) => {
-    setOperatingHours((prev) =>
-      prev.map((entry) =>
-        entry.day === day
-          ? {
-              ...entry,
-              [field]: value,
-            }
-          : entry
-      )
-    );
-  };
+  const updateOperatingHour = useCallback(
+    (day: string, field: 'openTime' | 'closeTime', value: string) => {
+      setOperatingHours((prev) =>
+        prev.map((entry) =>
+          entry.day === day
+            ? {
+                ...entry,
+                [field]: value,
+              }
+            : entry
+        )
+      );
+    },
+    [setOperatingHours]
+  );
 
-  const setDayOpen = (day: string, isOpen: boolean) => {
+  const setDayOpen = useCallback((day: string, isOpen: boolean) => {
     setOperatingHours((prev) =>
       prev.map((entry) =>
         entry.day === day
@@ -319,7 +511,7 @@ export function RegistrationPage() {
           : entry
       )
     );
-  };
+  }, [setOperatingHours]);
 
   const applyOperatingHoursTemplate = (sourceDay: string) => {
     const template = operatingHours.find((entry) => entry.day === sourceDay);
@@ -611,7 +803,7 @@ export function RegistrationPage() {
                       <SelectValue placeholder="Select business type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {businessTypes.map(type => (
+                      {BUSINESS_TYPES.map(type => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
                     </SelectContent>
@@ -809,84 +1001,13 @@ export function RegistrationPage() {
 
             {/* Menu Planning */}
             <div className="space-y-6">
-              <Card>
-                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Menu Items
-                    </CardTitle>
-                    <CardDescription>
-                      Add signature dishes and pricing so we can preconfigure your dashboard.
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleAddMenuCategory}
-                      className="flex items-center gap-2"
-                    >
-                      <FolderPlus className="h-4 w-4" />
-                      Add Category
-                    </Button>
-                    <Button type="button" onClick={openAddMenuDialog} className="flex items-center gap-2 sm:w-auto">
-                      <Plus className="h-4 w-4" />
-                      Add Menu Item
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {menuItems.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                      No menu items yet. Add your first dish to showcase your restaurant.
-                    </div>
-                  ) : (
-                    menuItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex flex-col gap-4 rounded-lg border border-border bg-card/50 p-4 md:flex-row md:items-center md:justify-between"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="text-base font-semibold">{item.name}</h4>
-                            {item.category ? (
-                              <Badge variant="secondary">{item.category}</Badge>
-                            ) : null}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {item.description
-                              ? item.description
-                              : 'No description provided.'}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-start gap-2 md:items-end">
-                          <span className="text-base font-semibold">${Number(item.price).toFixed(2)}</span>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditMenuDialog(item)}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeMenuItem(item.id)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
+              <MenuSection
+                menuItems={menuItems}
+                onAddCategory={handleAddMenuCategory}
+                onAddItem={openAddMenuDialog}
+                onEditItem={openEditMenuDialog}
+                onRemoveItem={removeMenuItem}
+              />
             </div>
 
             <Dialog open={isMenuDialogOpen} onOpenChange={setIsMenuDialogOpen}>
@@ -969,110 +1090,12 @@ export function RegistrationPage() {
 
             {/* Operating Hours */}
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    Operating Hours
-                  </CardTitle>
-                  <CardDescription>
-                    Configure the weekly schedule customers will see on launch day.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    {operatingHours.map((entry) => (
-                      <div
-                        key={entry.day}
-                        className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card/50 p-4 md:grid-cols-[160px,repeat(2,minmax(0,1fr)),auto]"
-                        style={{"display":"flex", "justifyContent":"space-between"}}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{entry.day}</span>
-                            <Badge variant={entry.isOpen ? 'secondary' : 'outline'}>
-                              {entry.isOpen ? 'Open' : 'Closed'}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {entry.isOpen
-                              ? 'Customers can place orders on this day.'
-                              : 'Closed all day.'}
-                          </p>
-                        </div>
-                        <div className="space-y-2" style={{"width":"88px"}}>
-                          <Label htmlFor={`${entry.day}-open`}>Opens</Label>
-                          <Select
-                            value={entry.openTime}
-                            onValueChange={(value) =>
-                              updateOperatingHour(entry.day, 'openTime', value)
-                            }
-                            disabled={!entry.isOpen}
-                          >
-                            <SelectTrigger id={`${entry.day}-open`}>
-                              <SelectValue placeholder="Select time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timeOptions.map((time) => (
-                                <SelectItem key={`${entry.day}-open-${time}`} value={time}>
-                                  {time}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2" style={{"width":"88px"}}>
-                          <Label htmlFor={`${entry.day}-close`}>Closes</Label>
-                          <Select
-                            value={entry.closeTime}
-                            onValueChange={(value) =>
-                              updateOperatingHour(entry.day, 'closeTime', value)
-                            }
-                            disabled={!entry.isOpen}
-                          >
-                            <SelectTrigger id={`${entry.day}-close`}>
-                              <SelectValue placeholder="Select time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timeOptions.map((time) => (
-                                <SelectItem key={`${entry.day}-close-${time}`} value={time}>
-                                  {time}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex items-center gap-2" style={{"width":"88px"}}>
-                          <Switch
-                            id={`${entry.day}-open-toggle`}
-                            checked={entry.isOpen}
-                            onCheckedChange={(checked) => setDayOpen(entry.day, checked)}
-                          />
-                          <Label
-                            htmlFor={`${entry.day}-open-toggle`}
-                            className="text-sm text-muted-foreground"
-                          >
-                            {entry.isOpen ? 'Open' : 'Closed'}
-                          </Label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {/* <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      Need a quick setup? Copy Monday&rsquo;s schedule to the rest of the week.
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="sm:w-auto"
-                      onClick={() => applyOperatingHoursTemplate('Monday')}
-                    >
-                      Apply Monday Hours to All Days
-                    </Button>
-                  </div> */}
-                </CardContent>
-              </Card>
+              <HoursSection
+                operatingHours={operatingHours}
+                timeOptions={timeOptions}
+                onChangeHour={updateOperatingHour}
+                onToggleDay={setDayOpen}
+              />
             </div>
 
             <Separator className="my-12 bg-primary/50 h-[3px] rounded-full" />

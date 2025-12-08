@@ -25,7 +25,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable Integer id) {
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String id) {
         System.out.println("Fetching order with ID: " + id);
         OrderResponse resp = orderService.getOrderById(id);
         if (resp == null) return ResponseEntity.notFound().build();
@@ -41,13 +41,13 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/assign-driver")
-    public ResponseEntity<OrderResponse> assignDriver(@PathVariable Integer id, @RequestParam Integer driverId) {
+    public ResponseEntity<OrderResponse> assignDriver(@PathVariable String id, @RequestParam Integer driverId) {
         OrderResponse resp = orderService.assignDriver(id, driverId);
         return ResponseEntity.ok(resp);
     }
 
     @PatchMapping("/{id}/delivery")
-    public ResponseEntity<OrderResponse> setDeliveryTime(@PathVariable Integer id,
+    public ResponseEntity<OrderResponse> setDeliveryTime(@PathVariable String id,
                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deliveryTime) {
         OrderResponse resp = orderService.updateDeliveryTime(id, deliveryTime);
         return ResponseEntity.ok(resp);

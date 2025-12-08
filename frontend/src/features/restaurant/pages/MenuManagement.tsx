@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from './ImageUpload';
 import { Plus, Edit, Trash2, ImageIcon, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 interface MenuItem {
   id: string;
@@ -34,34 +35,20 @@ interface MenuItem {
 
 export function MenuManagement() {
 
-  // TODO: Replace with real store data later
-  const restaurant = { id: 'mock-restaurant-id', name: 'Mock Restaurant' };
-  const isMenuLoading = false;
-  const isMenuSaving = false;
-
-  // Mock menu data
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    {
-      id: '1',
-      name: 'Margherita Pizza',
-      description: 'Classic tomato sauce, mozzarella, and fresh basil',
-      price: 12.99,
-      category: 'Pizza',
-      isAvailable: true,
-      imageUrl: null,
-    },
-    {
-      id: '2',
-      name: 'Caesar Salad',
-      description: 'Romaine lettuce, croutons, parmesan, and Caesar dressing',
-      price: 8.99,
-      category: 'Salads',
-      isAvailable: true,
-      imageUrl: null,
-    },
-  ]);
-
+  const token = useAppStore((state) => state.token);
+  const restaurant = useAppStore((state) => state.user);
   const restaurantId = restaurant?.id ?? '';
+  const menuItems = useAppStore((state) => state.menu);
+  const categories = useAppStore((state) => state.categories);
+  const isMenuLoading = useAppStore((state) => state.isMenuLoading);
+  const isMenuSaving = useAppStore((state) => state.isMenuSaving);
+  const fetchMenu = useAppStore((state) => state.fetchMenu);
+  const fetchCategories = useAppStore((state) => state.fetchCategories);
+  const createMenuItem = useAppStore((state) => state.createMenuItem);
+  const updateMenuItem = useAppStore((state) => state.updateMenuItem);
+  const deleteMenuItem = useAppStore((state) => state.deleteMenuItem);
+  const toggleAvailabilityApi = useAppStore((state) => state.toggleMenuItemAvailability);
+  const createCategory = useAppStore((state) => state.createCategory);
 
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: '',
@@ -75,41 +62,59 @@ export function MenuManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token || !restaurantId) return;
+    fetchCategories(token, restaurantId).catch((error) => {
+      console.error('Failed to fetch categories', error);
+    });
+    fetchMenu(token, restaurantId).catch((error) => {
+      console.error('Failed to fetch menu', error);
+    });
+  }, [token, restaurantId, fetchCategories, fetchMenu]);
   
   // Filter states
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterAvailability, setFilterAvailability] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  // -------------------- Categories (可新增) --------------------
-  const [categories, setCategories] = useState<string[]>([
-    'Pizza', 'Pasta', 'Salads', 'Main Course', 'Appetizers', 'Desserts', 'Beverages'
-  ]);
+  // -------------------- Categories (store-backed) --------------------
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
   const handleAddCategory = () => {
+    if (!token || !restaurantId) {
+      toast.error('Please sign in again to manage categories');
+      return;
+    }
     const name = newCategoryName.trim();
     if (!name) {
       toast.error('Category name cannot be empty');
       return;
     }
-    // 不区分大小写去重
-    const exists = categories.some(c => c.toLowerCase() === name.toLowerCase());
+    const exists = categories.some((c) => c.name.toLowerCase() === name.toLowerCase());
     if (exists) {
       toast.error('Category already exists');
       return;
     }
-    setCategories(prev => [...prev, name]);
-    setNewCategoryName('');
-    setIsAddCategoryOpen(false);
-    toast.success('Category added');
-    // 如需后端持久化，可在这里调用 saveCategory({ restaurantId, categoryName: name })
-    // 并在成功后 refreshMenu / refreshCategories
+    createCategory(token, restaurantId, name)
+      .then(() => {
+        setNewCategoryName('');
+        setIsAddCategoryOpen(false);
+        toast.success('Category added');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to add category';
+        toast.error(message);
+      });
   };
-  // ------------------------------------------------------------
+// ------------------------------------------------------------
 
   const handleAddItem = () => {
+    if (!token || !restaurantId) {
+      toast.error('Please sign in again to add items');
+      return;
+    }
     if (
       !newItem.name ||
       !newItem.description ||
@@ -122,28 +127,32 @@ export function MenuManagement() {
       return;
     }
 
-    // Mock: Add item to local state
-    const newMenuItem: MenuItem = {
-      id: Date.now().toString(),
+    const payload = {
       name: newItem.name,
       description: newItem.description,
       price: Number(newItem.price),
       category: newItem.category,
       isAvailable: newItem.isAvailable ?? true,
-      imageUrl: newItem.imageUrl ?? null,
+      imageUrl: newItem.imageUrl ?? undefined,
     };
 
-    setMenuItems([...menuItems, newMenuItem]);
-    setNewItem({
-      name: '',
-      description: '',
-      price: 0,
-      category: '',
-      isAvailable: true,
-      imageUrl: null,
-    });
-    setIsAddDialogOpen(false);
-    toast.success('Menu item added successfully!');
+    createMenuItem(token, restaurantId, payload)
+      .then(() => {
+        setNewItem({
+          name: '',
+          description: '',
+          price: 0,
+          category: '',
+          isAvailable: true,
+          imageUrl: null,
+        });
+        setIsAddDialogOpen(false);
+        toast.success('Menu item added successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to add menu item';
+        toast.error(message);
+      });
   };
 
   const handleEditItem = () => {
@@ -151,19 +160,45 @@ export function MenuManagement() {
       return;
     }
 
-    // Mock: Update item in local state
-    setMenuItems(menuItems.map(item =>
-      item.id === editingItem.id ? { ...editingItem, price: Number(editingItem.price) } : item
-    ));
-    setEditingItem(null);
-    setIsEditDialogOpen(false);
-    toast.success('Menu item updated successfully!');
+    if (!token || !restaurantId) {
+      toast.error('Please sign in again to update items');
+      return;
+    }
+
+    const payload = {
+      name: editingItem.name,
+      description: editingItem.description,
+      price: Number(editingItem.price),
+      category: editingItem.category,
+      isAvailable: editingItem.isAvailable,
+      imageUrl: editingItem.imageUrl ?? undefined,
+    };
+
+    updateMenuItem(token, restaurantId, editingItem.id, payload)
+      .then(() => {
+        setEditingItem(null);
+        setIsEditDialogOpen(false);
+        toast.success('Menu item updated successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update menu item';
+        toast.error(message);
+      });
   };
 
   const handleDeleteItem = (id: string) => {
-    // Mock: Remove item from local state
-    setMenuItems(menuItems.filter(item => item.id !== id));
-    toast.success('Menu item deleted successfully!');
+    if (!token || !restaurantId) {
+      toast.error('Please sign in again to delete items');
+      return;
+    }
+    deleteMenuItem(token, restaurantId, id)
+      .then(() => {
+        toast.success('Menu item deleted successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to delete menu item';
+        toast.error(message);
+      });
   };
 
   const confirmDeleteItem = () => {
@@ -176,18 +211,27 @@ export function MenuManagement() {
   };
 
   const toggleAvailability = (item: MenuItem) => {
+    if (!token || !restaurantId) {
+      toast.error('Please sign in again to update availability');
+      return;
+    }
+
+    const nextAvailable = !item.isAvailable;
     if (editingItem && editingItem.id === item.id) {
       setEditingItem({
         ...editingItem,
-        isAvailable: !editingItem.isAvailable,
+        isAvailable: nextAvailable,
       });
     }
 
-    // Mock: Update item availability in local state
-    setMenuItems(menuItems.map(menuItem =>
-      menuItem.id === item.id ? { ...menuItem, isAvailable: !menuItem.isAvailable } : menuItem
-    ));
-    toast.success('Availability updated');
+    toggleAvailabilityApi(token, restaurantId, item.id, nextAvailable)
+      .then(() => {
+        toast.success('Availability updated');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update availability';
+        toast.error(message);
+      });
   };
 
   // Filtered items using useMemo for performance
@@ -299,8 +343,10 @@ export function MenuManagement() {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map(category => (
-                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -397,8 +443,10 @@ export function MenuManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -665,8 +713,10 @@ export function MenuManagement() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

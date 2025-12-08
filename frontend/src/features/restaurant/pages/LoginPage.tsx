@@ -15,14 +15,13 @@ import { FrontDashLogo } from "./FrontDashLogo";
 import { BackgroundPattern } from "./BackgroundPattern";
 import { toast } from "sonner";
 import { Info, Truck, Clock, Shield } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
+import { useAppStore } from "@/store";
 
 export function LoginPage() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [usernameError, setUsernameError] = useState("");
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, isAuthenticating, authError } = useAppStore();
 
   const validateUsername = useCallback((username: string) => {
     if (!username) return "Username is required";
@@ -60,15 +59,12 @@ export function LoginPage() {
     }
 
     try {
-      setIsAuthenticating(true);
-      await login(loginData.username, loginData.password);
+      await login({ username: loginData.username, password: loginData.password });
       toast.success("Login successful!");
       navigate("/restaurant/dashboard", { replace: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed. Please try again.";
       toast.error(message);
-    } finally {
-      setIsAuthenticating(false);
     }
   }, [validateUsername, loginData.username, loginData.password, login, navigate]);
 

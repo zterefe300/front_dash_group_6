@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 type AddressFormState = {
   building: string;
@@ -24,15 +25,38 @@ const STATES = [
 ];
 
 export function AddressLocation() {
-  // TODO: Replace with real store data later
+  const token = useAppStore((state) => state.token);
+  const restaurant = useAppStore((state) => state.user);
+  const restaurantProfile = useAppStore((state) => state.restaurant);
+  const isProfileUpdating = useAppStore((state) => state.isProfileUpdating);
+  const fetchProfile = useAppStore((state) => state.fetchProfile);
+  const updateAddress = useAppStore((state) => state.updateAddress);
+
   const [isEditing, setIsEditing] = useState(false);
   const [address, setAddress] = useState<AddressFormState>({
-    building: 'Building A',
-    street: '123 Main Street',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
+    building: restaurantProfile?.address?.building || '',
+    street: restaurantProfile?.address?.street || '',
+    city: restaurantProfile?.address?.city || '',
+    state: restaurantProfile?.address?.state || '',
+    zipCode: restaurantProfile?.address?.zipCode || '',
   });
+
+  useEffect(() => {
+    if (!token || !restaurant?.id) return;
+    fetchProfile(token, restaurant.id).catch((error) => console.error('Failed to fetch profile', error));
+  }, [token, restaurant?.id, fetchProfile]);
+
+  useEffect(() => {
+    if (restaurantProfile?.address) {
+      setAddress({
+        building: restaurantProfile.address.building,
+        street: restaurantProfile.address.street,
+        city: restaurantProfile.address.city,
+        state: restaurantProfile.address.state,
+        zipCode: restaurantProfile.address.zipCode,
+      });
+    }
+  }, [restaurantProfile]);
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -40,9 +64,19 @@ export function AddressLocation() {
   };
 
   const handleSave = () => {
-    // Mock: Just update local state
-    setIsEditing(false);
-    toast.success('Address updated successfully!');
+    if (!token || !restaurant?.id) {
+      toast.error('Please sign in again to update address');
+      return;
+    }
+    updateAddress(token, restaurant.id, address)
+      .then(() => {
+        setIsEditing(false);
+        toast.success('Address updated successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update address';
+        toast.error(message);
+      });
   };
 
   return (

@@ -4,8 +4,12 @@ import com.frontdash.dao.request.MenuUpdateRequest;
 import com.frontdash.dao.request.OperatingHoursUpdateRequest;
 import com.frontdash.dao.request.RestaurantRegistrationRequest;
 import com.frontdash.dao.request.RestaurantWithdrawalRequest;
+import com.frontdash.dao.request.RestaurantProfileUpdateRequest;
+import com.frontdash.dao.request.RestaurantContactUpdateRequest;
+import com.frontdash.dao.request.RestaurantAddressUpdateRequest;
 import com.frontdash.dao.response.MenuItemResponse;
 import com.frontdash.dao.response.OperatingHourResponse;
+import com.frontdash.dao.response.RestaurantProfileResponse;
 import com.frontdash.dao.response.RestaurantResponse;
 import com.frontdash.service.RestaurantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,8 +50,10 @@ public class RestaurantController {
     })
     public ResponseEntity<RestaurantResponse> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
         try {
-            RestaurantResponse response = restaurantService.registerRestaurant(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            System.out.println(request.toString());
+            return null;
+//            RestaurantResponse response = restaurantService.registerRestaurant(request);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         }
@@ -85,6 +91,57 @@ public class RestaurantController {
         try {
             List<OperatingHourResponse> responses = restaurantService.updateOperatingHours(restaurantId, request);
             return ResponseEntity.ok(responses);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<RestaurantProfileResponse> getProfile(@PathVariable("id") Integer restaurantId) {
+        try {
+            return ResponseEntity.ok(restaurantService.getRestaurantProfile(restaurantId));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<RestaurantProfileResponse> updateProfile(
+            @PathVariable("id") Integer restaurantId,
+            @RequestBody RestaurantProfileUpdateRequest request) {
+        try {
+            return ResponseEntity.ok(restaurantService.updateRestaurantProfile(restaurantId, request));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}/contact")
+    public ResponseEntity<RestaurantProfileResponse> updateContact(
+            @PathVariable("id") Integer restaurantId,
+            @RequestBody RestaurantContactUpdateRequest request) {
+        try {
+            return ResponseEntity.ok(restaurantService.updateContact(restaurantId, request));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}/address")
+    public ResponseEntity<RestaurantProfileResponse> updateAddress(
+            @PathVariable("id") Integer restaurantId,
+            @RequestBody RestaurantAddressUpdateRequest request) {
+        try {
+            return ResponseEntity.ok(restaurantService.updateAddress(restaurantId, request));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/{id}/hours")
+    public ResponseEntity<List<OperatingHourResponse>> getOperatingHours(@PathVariable("id") Integer restaurantId) {
+        try {
+            return ResponseEntity.ok(restaurantService.getOperatingHours(restaurantId));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         }

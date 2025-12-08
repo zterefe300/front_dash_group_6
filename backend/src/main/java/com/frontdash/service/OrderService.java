@@ -63,7 +63,7 @@ public class OrderService {
         return toResponse(saved);
     }
 
-    public OrderResponse getOrderById(Integer id) {
+    public OrderResponse getOrderById(String id) {
         return ordersRepository.findById(id).map(this::toResponse).orElse(null);
     }
 
@@ -71,7 +71,7 @@ public class OrderService {
         return ordersRepository.findByRestaurantId(restaurantId).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public OrderResponse assignDriver(Integer orderId, Integer driverId) {
+    public OrderResponse assignDriver(String orderId, Integer driverId) {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setAssignedDriverId(driverId);
         order.setOrderStatus(Orders.OrderStatus.OUT_FOR_DELIVERY);
@@ -79,7 +79,7 @@ public class OrderService {
         return toResponse(updated);
     }
 
-    public OrderResponse updateDeliveryTime(Integer orderId, LocalDateTime deliveryTime) {
+    public OrderResponse updateDeliveryTime(String orderId, LocalDateTime deliveryTime) {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setDeliveryTime(deliveryTime);
         order.setOrderStatus(Orders.OrderStatus.DELIVERED);

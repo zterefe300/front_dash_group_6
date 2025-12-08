@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderResponse {
-    private Integer orderId;
+    private String orderId;
     private Integer restaurantId;
     private String customerName;
     private String customerPhone;

@@ -1,143 +1,61 @@
-// Restaurant API types and functions
+// Restaurant API - Main Entry Point
+// Export all restaurant API modules and types
 
-export interface RestaurantSummary {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: 'pending' | 'active' | 'suspended' | 'rejected';
-  address?: RestaurantAddress;
-  operatingHours?: OperatingDay[];
-  socialLinks?: RestaurantSocialLinks;
-}
+// Export all types
+export * from './types';
 
-export interface RestaurantAddress {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-}
+// Export configuration
+export * from './config';
 
-export interface RestaurantSocialLinks {
-  website?: string;
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-}
+// Export individual API modules
+export * from './auth';
+export * from './registration';
+export * from './profile';
+export * from './address';
+export * from './menu';
+export * from './operating-hours';
+export * from './withdrawal';
 
-export interface OperatingDay {
-  day: string;
-  isOpen: boolean;
-  openTime?: string;
-  closeTime?: string;
-}
-
-export interface MenuItemPayload {
-  name: string;
-  category: string;
-  price: number;
-  description?: string;
-}
-
-export interface RegistrationPayload {
-  restaurantName: string;
-  businessType: string;
-  description: string;
-  ownerName: string;
-  email: string;
-  phone: string;
-  building: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  agreeToTerms: boolean;
-  agreeToCommission: boolean;
-  confirmAccuracy: boolean;
-  operatingHours: OperatingDay[];
-  menuItems: MenuItemPayload[];
-  supportingFiles?: string[];
-}
-
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: RestaurantSummary;
-}
-
-// API functions
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Combined API object for convenience (backward compatibility)
+import { authApi } from './auth';
+import { registrationApi } from './registration';
+import { profileApi } from './profile';
+import { addressApi } from './address';
+import { menuApi } from './menu';
+import { operatingHoursApi } from './operating-hours';
+import { withdrawalApi } from './withdrawal';
 
 export const restaurantApi = {
-  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/restaurant/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+  // Auth
+  login: authApi.login,
+  logout: authApi.logout,
+  changePassword: authApi.changePassword,
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
-    }
+  // Registration
+  register: registrationApi.register,
 
-    return response.json();
-  },
+  // Profile
+  getProfile: profileApi.getProfile,
+  updateProfile: profileApi.updateProfile,
+  updateContact: profileApi.updateContact,
 
-  register: async (payload: RegistrationPayload): Promise<{ message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/restaurant/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+  // Address
+  updateAddress: addressApi.updateAddress,
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
-    }
+  // Menu
+  getMenu: menuApi.getMenu,
+  createMenuItem: menuApi.createMenuItem,
+  updateMenuItem: menuApi.updateMenuItem,
+  deleteMenuItem: menuApi.deleteMenuItem,
+  toggleMenuItemAvailability: menuApi.toggleMenuItemAvailability,
+  getCategories: menuApi.getCategories,
+  createCategory: menuApi.createCategory,
 
-    return response.json();
-  },
+  // Operating Hours
+  getOperatingHours: operatingHoursApi.getOperatingHours,
+  updateOperatingHours: operatingHoursApi.updateOperatingHours,
 
-  getProfile: async (token: string): Promise<RestaurantSummary> => {
-    const response = await fetch(`${API_BASE_URL}/restaurant/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch profile');
-    }
-
-    return response.json();
-  },
-
-  updateProfile: async (token: string, data: Partial<RestaurantSummary>): Promise<RestaurantSummary> => {
-    const response = await fetch(`${API_BASE_URL}/restaurant/profile`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update profile');
-    }
-
-    return response.json();
-  },
+  // Withdrawal
+  submitWithdrawal: withdrawalApi.submitWithdrawal,
+  getWithdrawalHistory: withdrawalApi.getWithdrawalHistory,
 };

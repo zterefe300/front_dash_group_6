@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 interface DayHours {
   isOpen: boolean;
@@ -34,9 +35,38 @@ const createDefaultHours = (): Record<DayKey, DayHours> => ({
 });
 
 export function OperatingHours() {
-  // TODO: Replace with real store data later
+  const token = useAppStore((state) => state.token);
+  const restaurant = useAppStore((state) => state.user);
+  const operatingHours = useAppStore((state) => state.operatingHours);
+  const isOperatingHoursLoading = useAppStore((state) => state.isOperatingHoursLoading);
+  const isOperatingHoursUpdating = useAppStore((state) => state.isOperatingHoursUpdating);
+  const fetchOperatingHours = useAppStore((state) => state.fetchOperatingHours);
+  const updateOperatingHours = useAppStore((state) => state.updateOperatingHours);
+
   const [isEditing, setIsEditing] = useState(false);
   const [hours, setHours] = useState<Record<DayKey, DayHours>>(createDefaultHours());
+
+  useEffect(() => {
+    if (!token || !restaurant?.id) return;
+    fetchOperatingHours(token, restaurant.id).catch((error) => console.error('Failed to fetch hours', error));
+  }, [token, restaurant?.id, fetchOperatingHours]);
+
+  useEffect(() => {
+    if (operatingHours && operatingHours.length > 0) {
+      const mapped: Record<DayKey, DayHours> = createDefaultHours();
+      operatingHours.forEach((entry) => {
+        const key = entry.day.toLowerCase() as DayKey;
+        if (DAY_KEYS.includes(key)) {
+          mapped[key] = {
+            isOpen: entry.isOpen !== false,
+            openTime: entry.openTime || '09:00',
+            closeTime: entry.closeTime || '21:00',
+          };
+        }
+      });
+      setHours(mapped);
+    }
+  }, [operatingHours]);
 
   const dayNames: Record<DayKey, string> = {
     monday: 'Monday',
@@ -59,9 +89,27 @@ export function OperatingHours() {
   );
 
   const handleSave = () => {
-    // Mock: Just update local state
-    setIsEditing(false);
-    toast.success('Operating hours updated successfully!');
+    if (!token || !restaurant?.id) {
+      toast.error('Please sign in again to update operating hours');
+      return;
+    }
+    const payload = {
+      hours: Object.entries(hours).map(([dayKey, cfg]) => ({
+        day: dayKey,
+        isOpen: cfg.isOpen,
+        openTime: cfg.isOpen ? cfg.openTime : '',
+        closeTime: cfg.isOpen ? cfg.closeTime : '',
+      })),
+    };
+    updateOperatingHours(token, restaurant.id, payload)
+      .then(() => {
+        setIsEditing(false);
+        toast.success('Operating hours updated successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update operating hours';
+        toast.error(message);
+      });
   };
 
   const handleCancel = () => {
@@ -88,16 +136,16 @@ export function OperatingHours() {
           <p className="text-muted-foreground">Set your restaurant's weekly operating hours</p>
         </div>
         {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)}>
+          <Button onClick={() => setIsEditing(true)} disabled={isOperatingHoursLoading}>
             Edit Hours
           </Button>
         ) : (
           <div className="space-x-2">
-            <Button variant="outline" onClick={handleCancel}>
+            <Button variant="outline" onClick={handleCancel} disabled={isOperatingHoursUpdating}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              Save Changes
+            <Button onClick={handleSave} disabled={isOperatingHoursUpdating}>
+              {isOperatingHoursUpdating ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         )}

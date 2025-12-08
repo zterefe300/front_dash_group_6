@@ -2,6 +2,8 @@ import { Navigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 
+import { useAppStore } from '@/store';
+
 /* RouteGuard for Employee portal*/
 export const EmployeePortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
   const { isAuthenticated } = useUser();
@@ -29,11 +31,11 @@ export const CustomerPortalProtectedRoute = ({ element }: { element: JSX.Element
 
 /* RouteGuard for Restaurant portal*/
 export const RestaurantPortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAppStore();
   return isAuthenticated ? element : <Navigate to="/restaurant/login" replace />;
 };
 
 export const RestaurantPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAppStore();
   return !isAuthenticated ? element : <Navigate to="/restaurant/dashboard" />;
 };

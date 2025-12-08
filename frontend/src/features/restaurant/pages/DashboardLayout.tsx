@@ -40,6 +40,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/UserContext';
 
+import useAppStore from '@/store';
+
 type NavigationItem = {
   title: string;
   icon: LucideIcon;
@@ -54,7 +56,7 @@ type NavigationItem = {
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useUser();
+  const { logout } = useAppStore();
 
   const handleLogout = () => {
     logout();

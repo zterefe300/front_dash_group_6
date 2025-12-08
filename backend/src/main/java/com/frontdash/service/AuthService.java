@@ -8,6 +8,7 @@ import com.frontdash.entity.RestaurantLogin;
 import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.RestaurantLoginRepository;
 import com.frontdash.repository.RestaurantRepository;
+import com.frontdash.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public LoginResponse loginStaff(LoginRequest request) {
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .filter(employeeLogin -> employeeLogin.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF)
@@ -44,11 +48,11 @@ public class AuthService {
                 .build();
     }
 
-    public LoginResponse loginOwner(LoginRequest request) {
-        RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(request.getUsername())
+    public LoginResponse loginOwner(String username, String password) {
+        RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        if (!request.getPassword().equals(restaurantLogin.getPassword())) {
+        if (!password.equals(restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
@@ -59,11 +63,19 @@ public class AuthService {
             throw new IllegalArgumentException("Restaurant is not active");
         }
 
+        // Generate JWT token
+        String token = jwtUtil.generateToken(username, restaurant.getRestaurantId(), "OWNER");
+
         return LoginResponse.builder()
                 .success(true)
                 .message("Restaurant owner login successful")
                 .role("OWNER")
                 .restaurantId(restaurant.getRestaurantId())
+                .token(token)
+                .username(username)
+                .restaurantName(restaurant.getName())
+                .email(restaurant.getEmailAddress())
+                .status(restaurant.getStatus().name())
                 .build();
     }
 }

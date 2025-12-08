@@ -1,12 +1,9 @@
 package com.frontdash.service;
 
-import com.frontdash.dao.request.MenuUpdateRequest;
-import com.frontdash.dao.request.OperatingHourEntryRequest;
-import com.frontdash.dao.request.OperatingHoursUpdateRequest;
-import com.frontdash.dao.request.RestaurantRegistrationRequest;
-import com.frontdash.dao.request.RestaurantWithdrawalRequest;
+import com.frontdash.dao.request.*;
 import com.frontdash.dao.response.MenuItemResponse;
 import com.frontdash.dao.response.OperatingHourResponse;
+import com.frontdash.dao.response.RestaurantProfileResponse;
 import com.frontdash.dao.response.RestaurantResponse;
 import com.frontdash.entity.*;
 import com.frontdash.repository.*;
@@ -47,43 +44,45 @@ public class RestaurantService {
 
     @Transactional
     public RestaurantResponse registerRestaurant(RestaurantRegistrationRequest request) {
-        if (request.getName() == null ) {
+        if (request.getRestaurantName() == null ) {
             throw new IllegalArgumentException("Restaurant name are required");
         }
 
-        if (restaurantRepository.existsByName(request.getName())) {
+        if (restaurantRepository.existsByName(request.getRestaurantName())) {
             throw new IllegalArgumentException("Restaurant name already exists");
         }
 
-        if (request.getEmailAddress() != null) {
-            restaurantRepository.findByEmailAddress(request.getEmailAddress())
+        if (request.getEmail() != null) {
+            restaurantRepository.findByEmailAddress(request.getEmail())
                     .ifPresent(existing -> {
                         throw new IllegalArgumentException("Restaurant email already exists");
                     });
         }
 
-        if (request.getPhoneNumber() != null) {
-            restaurantRepository.findByPhoneNumber(request.getPhoneNumber())
+        if (request.getPhone() != null) {
+            restaurantRepository.findByPhoneNumber(request.getPhone())
                     .ifPresent(existing -> {
                         throw new IllegalArgumentException("Restaurant phone number already exists");
                     });
         }
 
-        Address address = addressRepository.save(request.getAddress());
-        System.out.println(address.toString());
+//        Address address = addressRepository.save(request.g());
+//        System.out.println(address.toString());
+//
+//        Restaurant restaurant = Restaurant.builder()
+//                .name(request.getName())
+//                .cuisineType(request.getCuisineType())
+//                .pictureUrl(request.getPictureUrl())
+//                .addressId(address.getAddressId())
+//                .phoneNumber(request.getPhoneNumber())
+//                .contactPersonName(request.getContactPersonName())
+//                .emailAddress(request.getEmailAddress())
+//                .status(Restaurant.RestaurantStatus.NEW_REG)
+//                .build();
 
-        Restaurant restaurant = Restaurant.builder()
-                .name(request.getName())
-                .cuisineType(request.getCuisineType())
-                .pictureUrl(request.getPictureUrl())
-                .addressId(address.getAddressId())
-                .phoneNumber(request.getPhoneNumber())
-                .contactPersonName(request.getContactPersonName())
-                .emailAddress(request.getEmailAddress())
-                .status(Restaurant.RestaurantStatus.NEW_REG)
-                .build();
+        Restaurant savedRestaurant = null;
+//        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
-        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
         // after aprove, and insert the login username & password to restaurant table
 //        RestaurantLogin restaurantLogin = RestaurantLogin.builder()
@@ -133,6 +132,117 @@ public class RestaurantService {
         return convertToResponse(updated);
     }
 
+    @Transactional(readOnly = true)
+    public List<MenuItemResponse> getMenuItems(Integer restaurantId) {
+        List<MenuCategory> categories = menuCategoryRepository.findByRestaurantId(restaurantId);
+        List<MenuItemResponse> responses = new ArrayList<>();
+        for (MenuCategory category : categories) {
+            List<MenuItem> items = menuItemRepository.findByCategoryId(category.getCategoryId());
+            for (MenuItem item : items) {
+                responses.add(convertToResponse(item));
+            }
+        }
+        return responses;
+    }
+
+    @Transactional
+    public MenuItemResponse createMenuItem(Integer restaurantId, MenuItemCreateRequest request) {
+        MenuCategory category = menuCategoryRepository
+                .findByRestaurantIdAndCategoryName(restaurantId, request.getCategory())
+                .orElseGet(() -> menuCategoryRepository.save(
+                        MenuCategory.builder()
+                                .restaurantId(restaurantId)
+                                .categoryName(request.getCategory())
+                                .build()
+                ));
+
+        MenuItem menuItem = MenuItem.builder()
+                .categoryId(category.getCategoryId())
+                .itemName(request.getName())
+                .description(request.getDescription())
+                .pictureUrl(request.getImageUrl())
+                .price(request.getPrice())
+                .availability(Boolean.TRUE.equals(request.getIsAvailable()) ? "available" : "unavailable")
+                .build();
+
+        MenuItem saved = menuItemRepository.save(menuItem);
+        return convertToResponse(saved);
+    }
+
+    @Transactional
+    public MenuItemResponse updateMenuItem(Integer restaurantId, Integer menuItemId, MenuItemUpdateRequest request) {
+        MenuItem menuItem = menuItemRepository.findByMenuItemIdAndRestaurantId(menuItemId, restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found for restaurant"));
+
+        if (request.getCategory() != null) {
+            MenuCategory category = menuCategoryRepository
+                    .findByRestaurantIdAndCategoryName(restaurantId, request.getCategory())
+                    .orElseGet(() -> menuCategoryRepository.save(
+                            MenuCategory.builder()
+                                    .restaurantId(restaurantId)
+                                    .categoryName(request.getCategory())
+                                    .build()
+                    ));
+            menuItem.setCategoryId(category.getCategoryId());
+        }
+
+        if (request.getName() != null) {
+            menuItem.setItemName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            menuItem.setDescription(request.getDescription());
+        }
+        if (request.getImageUrl() != null) {
+            menuItem.setPictureUrl(request.getImageUrl());
+        }
+        if (request.getPrice() != null) {
+            menuItem.setPrice(request.getPrice());
+        }
+        if (request.getIsAvailable() != null) {
+            menuItem.setAvailability(request.getIsAvailable() ? "available" : "unavailable");
+        }
+
+        MenuItem saved = menuItemRepository.save(menuItem);
+        return convertToResponse(saved);
+    }
+
+    @Transactional
+    public void deleteMenuItem(Integer restaurantId, Integer menuItemId) {
+        MenuItem menuItem = menuItemRepository.findByMenuItemIdAndRestaurantId(menuItemId, restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found for restaurant"));
+        menuItemRepository.delete(menuItem);
+    }
+
+    @Transactional
+    public void updateMenuItemAvailability(Integer restaurantId, Integer menuItemId, boolean isAvailable) {
+        MenuItem menuItem = menuItemRepository.findByMenuItemIdAndRestaurantId(menuItemId, restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found for restaurant"));
+        menuItem.setAvailability(isAvailable ? "available" : "unavailable");
+        menuItemRepository.save(menuItem);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuCategory> getCategories(Integer restaurantId) {
+        return menuCategoryRepository.findByRestaurantId(restaurantId);
+    }
+
+    @Transactional
+    public MenuCategory createCategory(Integer restaurantId, MenuCategoryCreateRequest request) {
+        if (request.getCategoryName() == null || request.getCategoryName().isBlank()) {
+            throw new IllegalArgumentException("Category name is required");
+        }
+        Optional<MenuCategory> existing = menuCategoryRepository.findByRestaurantIdAndCategoryName(
+                restaurantId, request.getCategoryName());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        MenuCategory category = MenuCategory.builder()
+                .restaurantId(restaurantId)
+                .categoryName(request.getCategoryName())
+                .build();
+        return menuCategoryRepository.save(category);
+    }
+
     @Transactional
     public List<OperatingHourResponse> updateOperatingHours(Integer restaurantId, OperatingHoursUpdateRequest request) {
         if (request.getHours() == null || request.getHours().isEmpty()) {
@@ -179,6 +289,111 @@ public class RestaurantService {
         return responses;
     }
 
+    @Transactional(readOnly = true)
+    public RestaurantProfileResponse getRestaurantProfile(Integer restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+
+        Address address = null;
+        if (restaurant.getAddressId() != null) {
+            address = addressRepository.findById(restaurant.getAddressId()).orElse(null);
+        }
+
+        List<OperatingHourResponse> hours = getOperatingHours(restaurantId);
+
+        return RestaurantProfileResponse.builder()
+                .restaurantId(restaurant.getRestaurantId())
+                .name(restaurant.getName())
+                .description(restaurant.getDescription())
+                .businessType(restaurant.getBusinessType() != null ? restaurant.getBusinessType() : restaurant.getCuisineType())
+                .contactName(restaurant.getContactPersonName())
+                .phoneNumber(restaurant.getPhoneNumber())
+                .email(restaurant.getEmailAddress())
+                .status(restaurant.getStatus().name())
+                .address(address != null ? com.frontdash.dao.response.AddressResponse.builder()
+                        .addressId(address.getAddressId())
+                        .streetAddress(address.getStreetAddress())
+                        .city(address.getCity())
+                        .state(address.getState())
+                        .zipCode(address.getZipCode())
+                        .build() : null)
+                .operatingHours(hours)
+                .build();
+    }
+
+    @Transactional
+    public RestaurantProfileResponse updateRestaurantProfile(Integer restaurantId, RestaurantRequest request) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+
+        if (request.getName() != null) {
+            restaurant.setName(request.getName());
+        }
+
+        if (request.getCuisineType() != null) {
+            restaurant.setBusinessType(request.getCuisineType());
+            restaurant.setCuisineType(request.getCuisineType());
+        }
+
+        restaurantRepository.save(restaurant);
+        return getRestaurantProfile(restaurantId);
+    }
+
+    @Transactional
+    public RestaurantProfileResponse updateContact(Integer restaurantId, RestaurantContactUpdateRequest request) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+
+        if (request.getContactName() != null) {
+            restaurant.setContactPersonName(request.getContactName());
+        }
+        if (request.getPhoneNumber() != null) {
+            restaurant.setPhoneNumber(request.getPhoneNumber());
+        }
+        if (request.getEmail() != null) {
+            restaurant.setEmailAddress(request.getEmail());
+        }
+
+        restaurantRepository.save(restaurant);
+        return getRestaurantProfile(restaurantId);
+    }
+
+    @Transactional
+    public RestaurantProfileResponse updateAddress(Integer restaurantId, RestaurantAddressUpdateRequest request) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+
+        Address address;
+        if (restaurant.getAddressId() != null) {
+            address = addressRepository.findById(restaurant.getAddressId()).orElse(Address.builder().build());
+            address.setAddressId(restaurant.getAddressId());
+        } else {
+            address = Address.builder().build();
+        }
+
+        address.setBldg(request.getBuilding());
+        address.setStreetAddress(request.getStreet());
+        address.setCity(request.getCity());
+        address.setState(request.getState());
+        address.setZipCode(request.getZipCode());
+
+        Address saved = addressRepository.save(address);
+        restaurant.setAddressId(saved.getAddressId());
+        restaurantRepository.save(restaurant);
+
+        return getRestaurantProfile(restaurantId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OperatingHourResponse> getOperatingHours(Integer restaurantId) {
+        List<OperatingHour> operatingHours = operatingHourRepository.findByRestaurantId(restaurantId);
+        List<OperatingHourResponse> responses = new ArrayList<>();
+        for (OperatingHour hour : operatingHours) {
+            responses.add(convertToResponse(hour));
+        }
+        return responses;
+    }
+
     @Transactional
     public RestaurantResponse requestWithdrawal(RestaurantWithdrawalRequest request) {
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
@@ -208,10 +423,18 @@ public class RestaurantService {
     }
 
     private MenuItemResponse convertToResponse(MenuItem menuItem) {
+        String categoryName = null;
+        if (menuItem.getCategoryId() != null) {
+            categoryName = menuCategoryRepository.findById(menuItem.getCategoryId())
+                    .map(MenuCategory::getCategoryName)
+                    .orElse(null);
+        }
         return MenuItemResponse.builder()
                 .menuItemId(menuItem.getMenuItemId())
                 .categoryId(menuItem.getCategoryId())
+                .categoryName(categoryName)
                 .itemName(menuItem.getItemName())
+                .description(menuItem.getDescription())
                 .pictureUrl(menuItem.getPictureUrl())
                 .price(menuItem.getPrice())
                 .availability(menuItem.getAvailability())

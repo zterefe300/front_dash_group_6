@@ -32,6 +32,9 @@ public class MenuItem {
     @Column(name = "item_name", nullable = false)
     private String itemName;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "picture_url")
     private String pictureUrl;
 

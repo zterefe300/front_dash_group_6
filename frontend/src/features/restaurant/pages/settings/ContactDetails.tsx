@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 type ContactFormState = {
   contactName: string;
@@ -12,13 +13,36 @@ type ContactFormState = {
 };
 
 export function ContactDetails() {
-  // TODO: Replace with real store data later
+  const token = useAppStore((state) => state.token);
+  const restaurant = useAppStore((state) => state.user);
+  const restaurantProfile = useAppStore((state) => state.restaurant);
+  const isProfileUpdating = useAppStore((state) => state.isProfileUpdating);
+  const fetchProfile = useAppStore((state) => state.fetchProfile);
+  const updateContact = useAppStore((state) => state.updateContact);
+
   const [isEditing, setIsEditing] = useState(false);
   const [contacts, setContacts] = useState<ContactFormState>({
-    contactName: 'John Doe',
-    phoneNumber: '+1 (555) 123-4567',
-    email: 'contact@mockrestaurant.com',
+    contactName: restaurantProfile?.contactName || restaurant?.name || '',
+    phoneNumber: restaurantProfile?.phone || restaurant?.phone || '',
+    email: restaurantProfile?.email || restaurant?.email || '',
   });
+
+  useEffect(() => {
+    if (!token || !restaurant?.id) return;
+    fetchProfile(token, restaurant.id).catch((error) => {
+      console.error('Failed to fetch profile', error);
+    });
+  }, [token, restaurant?.id, fetchProfile]);
+
+  useEffect(() => {
+    if (restaurantProfile) {
+      setContacts({
+        contactName: restaurantProfile.contactName || '',
+        phoneNumber: restaurantProfile.phone || '',
+        email: restaurantProfile.email || '',
+      });
+    }
+  }, [restaurantProfile]);
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -26,9 +50,23 @@ export function ContactDetails() {
   };
 
   const handleSave = () => {
-    // Mock: Just update local state
-    setIsEditing(false);
-    toast.success('Contact details updated successfully!');
+    if (!token || !restaurant?.id) {
+      toast.error('Please sign in again to update contacts');
+      return;
+    }
+    updateContact(token, restaurant.id, {
+      contactName: contacts.contactName,
+      phoneNumber: contacts.phoneNumber,
+      email: contacts.email,
+    })
+      .then(() => {
+        setIsEditing(false);
+        toast.success('Contact details updated successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update contact details';
+        toast.error(message);
+      });
   };
 
   return (

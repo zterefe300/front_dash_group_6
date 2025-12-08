@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { memo, useEffect, useState, useRef, type Dispatch, type SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,11 +36,11 @@ interface DocumentUploadProps {
   acceptedTypes?: string[];
   maxSize?: number; // in MB
   files: DocumentFile[];
-  onFilesChange: (files: DocumentFile[]) => void;
+  onFilesChange: Dispatch<SetStateAction<DocumentFile[]>>;
   multiple?: boolean;
 }
 
-export function DocumentUpload({
+export const DocumentUpload = memo(function DocumentUpload({
   category,
   label,
   description,
@@ -53,6 +53,14 @@ export function DocumentUpload({
 }: DocumentUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [localFiles, setLocalFiles] = useState<DocumentFile[]>(
+    () => files.filter((f) => f.category === category)
+  );
+
+  // Keep local files in sync when parent resets/clears
+  useEffect(() => {
+    setLocalFiles(files.filter((f) => f.category === category));
+  }, [files, category]);
 
   const getFileIcon = (fileType: string) => {
     if (fileType.includes('image')) {
@@ -89,25 +97,28 @@ export function DocumentUpload({
 
   const simulateUpload = (fileId: string) => {
     const interval = setInterval(() => {
-      onFilesChange(prevFiles => 
-        prevFiles.map(f => {
-          if (f.id === fileId) {
-            const newProgress = Math.min(f.progress + Math.random() * 30, 100);
-            const isComplete = newProgress >= 100;
-            
-            if (isComplete) {
-              clearInterval(interval);
-              return {
-                ...f,
-                progress: 100,
-                status: 'uploaded' as const,
-                url: `https://example.com/documents/${f.name}`
-              };
-            }
-            
-            return { ...f, progress: newProgress };
+      setLocalFiles((prev) =>
+        prev.map((f) => {
+          if (f.id !== fileId) return f;
+          const newProgress = Math.min(f.progress + Math.random() * 30, 100);
+          const isComplete = newProgress >= 100;
+
+          if (isComplete) {
+            clearInterval(interval);
+            const completedFile = {
+              ...f,
+              progress: 100,
+              status: 'uploaded' as const,
+              url: `https://example.com/documents/${f.name}`,
+            };
+            // Only update parent once when upload completes to avoid rerender thrash
+            onFilesChange((prevFiles) =>
+              prevFiles.map((pf) => (pf.id === fileId ? completedFile : pf))
+            );
+            return completedFile;
           }
-          return f;
+
+          return { ...f, progress: newProgress };
         })
       );
     }, 200);
@@ -145,11 +156,16 @@ export function DocumentUpload({
     }
 
     if (validFiles.length > 0) {
-      if (multiple) {
-        onFilesChange([...files, ...validFiles]);
-      } else {
-        onFilesChange(validFiles);
-      }
+      // Update local immediately; parent only once to reduce global rerenders
+      setLocalFiles((prev) =>
+        multiple ? [...prev, ...validFiles] : validFiles
+      );
+      onFilesChange((prevFiles) => {
+        const preserved = multiple
+          ? prevFiles
+          : prevFiles.filter((f) => f.category !== category);
+        return [...preserved, ...validFiles];
+      });
       toast.success(`${validFiles.length} file(s) added for upload`);
     }
   };
@@ -171,11 +187,12 @@ export function DocumentUpload({
   };
 
   const removeFile = (fileId: string) => {
-    onFilesChange(files.filter(f => f.id !== fileId));
+    setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
+    onFilesChange((prev) => prev.filter((f) => f.id !== fileId));
     toast.success('File removed');
   };
 
-  const categoryFiles = files.filter(f => f.category === category);
+  const categoryFiles = localFiles;
 
   return (
     <div className="space-y-4">
@@ -313,4 +330,4 @@ export function DocumentUpload({
       )}
     </div>
   );
-}
+});

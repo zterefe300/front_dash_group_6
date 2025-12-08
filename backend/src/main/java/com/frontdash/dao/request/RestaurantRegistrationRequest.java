@@ -1,23 +1,72 @@
 package com.frontdash.dao.request;
 
-import com.frontdash.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+/**
+ * Request model for restaurant registration
+ * Maps to frontend RegistrationPage form data
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class RestaurantRegistrationRequest {
 
-    private String name;
-    private String cuisineType;
-    private String pictureUrl;
-    private Address address;
-    private String phoneNumber;
-    private String contactPersonName;
-    private String emailAddress;
+    // Basic Restaurant Information
+    private String restaurantName;
+    private String businessType;
+    private String description;
 
+    // Contact Information
+    private String ownerName;
+    private String email;
+    private String phone;
+
+    // Business Address
+    private String building;
+    private String street;
+    private String city;
+    private String state;
+    private String zipCode;
+
+    // Menu Items
+    private List<MenuItemRequest> menuItems;
+
+    // Operating Hours
+    private List<OperatingHourRequest> operatingHours;
+
+    // Supporting Documents
+    private List<String> supportingFiles;
+
+    // Agreements
+    private Boolean agreeToTerms;
+    private Boolean agreeToCommission;
+    private Boolean confirmAccuracy;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MenuItemRequest {
+        private String name;
+        private String category;
+        private Double price;
+        private String description;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OperatingHourRequest {
+        private String day;
+        private Boolean isOpen;
+        private String openTime;
+        private String closeTime;
+    }
 }

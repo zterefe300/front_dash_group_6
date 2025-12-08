@@ -12,11 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -60,8 +56,7 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponse> ownerLogin(@RequestBody LoginRequest request) {
         try {
-            System.out.println(request);
-            LoginResponse response = authService.loginOwner(request);
+            LoginResponse response = authService.loginOwner(request.getUsername(), request.getPassword());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -72,5 +67,20 @@ public class AuthController {
                             .build()
             );
         }
+    }
+
+    @PostMapping("/owner/logout")
+    @Operation(summary = "Restaurant owner logout", description = "Logout restaurant owner and invalidate token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<LoginResponse> ownerLogout(@RequestHeader(value = "Authorization", required = false) String token) {
+        return ResponseEntity.ok(
+                LoginResponse.builder()
+                        .success(true)
+                        .message("Logout successful")
+                        .build()
+        );
     }
 }
