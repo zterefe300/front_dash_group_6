@@ -1,5 +1,6 @@
 package com.frontdash.service;
 
+import com.frontdash.dao.MessageType;
 import com.frontdash.dao.request.StaffRequest;
 import com.frontdash.dao.response.StaffResponse;
 import com.frontdash.entity.EmployeeLogin;
@@ -27,6 +28,9 @@ public class StaffService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     // Helper method to convert StaffUsers entity to StaffResponse DTO
     private StaffResponse convertToResponse(StaffUsers staff) {
@@ -58,7 +62,7 @@ public class StaffService {
         if (employeeLoginRepository.existsByUsername(staffRequest.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }
-        
+
         //Generate password for the user
         String pwdGenerated = generatePassword();
 
@@ -69,6 +73,13 @@ public class StaffService {
         // Create the staff user
         StaffUsers staff = convertRequestToStaffUsers(staffRequest);
         StaffUsers savedStaff = staffUsersRepository.save(staff);
+
+        // Send email if email is provided
+        if (staffRequest.getEmail() != null && !staffRequest.getEmail().trim().isEmpty()) {
+            String bodyMessage = emailService.generateStaffCredentialsBody(staffRequest.getUsername(), pwdGenerated);
+            emailService.sendEmail(staffRequest.getEmail(), bodyMessage, MessageType.STAFF_ACCOUNT_CREDENTIALS_SHARING);
+        }
+
         return convertToResponse(savedStaff);
     }
 

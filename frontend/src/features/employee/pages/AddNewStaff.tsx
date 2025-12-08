@@ -34,7 +34,6 @@ export const AddNewStaff = () => {
     email: "",
   });
 
-  const [sendingEmails, setSendingEmails] = useState<{ [key: number]: boolean }>({});
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [invalidEmailOpen, setInvalidEmailOpen] = useState(false);
   const [emailSentOpen, setEmailSentOpen] = useState(false);
@@ -64,26 +63,6 @@ export const AddNewStaff = () => {
     });
   };
 
-  const sendCredentialEmail = async (staff: NewStaffMember, showDialog: boolean = true) => {
-    if (!staff.email) {
-      toast.error("Email address is required to send credentials");
-      return;
-    }
-
-    if (!validateEmail(staff.email)) {
-      setInvalidEmailOpen(true);
-      return;
-    }
-
-    // In a real app, this would make an API call to send email
-    await new Promise((resolve) => setTimeout(resolve, 0)); // Simulate API call
-
-    if (showDialog) {
-      setEmailSentOpen(true);
-    }
-    console.log("Sending credentials email to:", staff.email);
-  };
-
   const addStaffToList = (staff: NewStaffMember) => {
     const existingStaff = JSON.parse(localStorage.getItem("staffMembers") || "[]");
     const newStaff = {
@@ -105,6 +84,12 @@ export const AddNewStaff = () => {
       return;
     }
 
+    // Validate email if provided
+    if (singleStaff.email && !validateEmail(singleStaff.email)) {
+      setInvalidEmailOpen(true);
+      return;
+    }
+
     setConfirmationOpen(true);
   };
 
@@ -116,18 +101,19 @@ export const AddNewStaff = () => {
         username: singleStaff.username,
         firstname: singleStaff.fullName.split(' ')[0] || singleStaff.fullName,
         lastname: singleStaff.lastName,
+        email: singleStaff.email || null,
       };
 
       // Call the backend API
       await staffService.createStaff(staffData);
 
-      toast.success(`Staff account created for ${singleStaff.fullName}`);
+      const successMessage = singleStaff.email
+        ? `Staff account created for ${singleStaff.fullName} and credentials sent to ${singleStaff.email}`
+        : `Staff account created for ${singleStaff.fullName}`;
 
-      // Send email if email is provided
-      if (singleStaff.email) {
-        await sendCredentialEmail(singleStaff, false);
-      }
+      toast.success(successMessage);
 
+      
       // Reset form
       setSingleStaff({
         fullName: "",
@@ -224,29 +210,6 @@ export const AddNewStaff = () => {
                   If provided, login credentials will be sent to this email address
                 </p>
               </div>
-
-              {singleStaff.username && singleStaff.email && (
-                <Card className="bg-accent/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Send Credentials via Email</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Send login credentials to: {singleStaff.email}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => sendCredentialEmail(singleStaff)}
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Email
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
 
               <div className="flex justify-end space-x-3">
                 <Button variant="outline" onClick={() => navigate("/employee/staff-accounts")}>
