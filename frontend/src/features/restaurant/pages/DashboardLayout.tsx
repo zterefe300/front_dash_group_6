@@ -38,7 +38,6 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/contexts/UserContext';
 
 import useAppStore from '@/store';
 
@@ -106,9 +105,9 @@ export default function DashboardLayout() {
           <SidebarHeader>
             <div className="px-4 py-2">
               <h2 className="text-primary font-bold">FrontDash Partner</h2>
-              <p className="text-sm text-muted-foreground">
+              {/* <p className="text-sm text-muted-foreground">
                 Bella&apos;s Italian Kitchen
-              </p>
+              </p> */}
             </div>
           </SidebarHeader>
 

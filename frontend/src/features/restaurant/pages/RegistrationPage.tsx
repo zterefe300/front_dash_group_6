@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { DocumentUpload, DocumentFile } from './DocumentUpload';
+import { ImageUpload } from './ImageUpload';
 import { FrontDashLogo } from './FrontDashLogo';
 import { BackgroundPattern } from './BackgroundPattern';
 import type { RegistrationPayload } from '@/api/restaurant';
@@ -45,18 +46,6 @@ const DAYS_OF_WEEK = [
   'Sunday',
 ];
 
-const BUSINESS_TYPES = [
-  'Restaurant',
-  'Fast Casual',
-  'Quick Service',
-  'Food Truck',
-  'Bakery',
-  'Cafe',
-  'Catering',
-  'Ghost Kitchen',
-  'Other',
-];
-
 const DEFAULT_MENU_CATEGORIES = [
   'Appetizers',
   'Salads',
@@ -73,8 +62,6 @@ const DEFAULT_MENU_CATEGORIES = [
 
 const createInitialApplicationData = () => ({
   name: '',
-  cuisineType: '',
-  description: '',
   contactPersonName: '',
   emailAddress: '',
   phoneNumber: '',
@@ -102,6 +89,7 @@ type MenuItemState = {
   category: string;
   price: string;
   description: string;
+  imageUrl?: string | null;
 };
 
 interface MenuSectionProps {
@@ -158,14 +146,21 @@ const MenuSection = memo(function MenuSection({
               key={item.id}
               className="flex flex-col gap-4 rounded-lg border border-border bg-card/50 p-4 md:flex-row md:items-center md:justify-between"
             >
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-base font-semibold">{item.name}</h4>
-                  {item.category ? <Badge variant="secondary">{item.category}</Badge> : null}
+              <div className="flex items-center gap-4 flex-1">
+                {item.imageUrl && (
+                  <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-muted flex-shrink-0">
+                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <div className="space-y-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-base font-semibold">{item.name}</h4>
+                    {item.category ? <Badge variant="secondary">{item.category}</Badge> : null}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description ? item.description : 'No description provided.'}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {item.description ? item.description : 'No description provided.'}
-                </p>
               </div>
               <div className="flex flex-col items-start gap-2 md:items-end">
                 <span className="text-base font-semibold">${Number(item.price).toFixed(2)}</span>
@@ -307,6 +302,7 @@ export function RegistrationPage() {
     category: '',
     price: '',
     description: '',
+    imageUrl: null as string | null,
   });
   const [operatingHours, setOperatingHours] = useState(() => createInitialOperatingHours());
 
@@ -341,6 +337,7 @@ export function RegistrationPage() {
       category: '',
       price: '',
       description: '',
+      imageUrl: null,
     });
     setOperatingHours(createInitialOperatingHours());
     setApplicationData(createInitialApplicationData());
@@ -383,6 +380,7 @@ export function RegistrationPage() {
       category: '',
       price: '',
       description: '',
+      imageUrl: null,
     });
     setIsEditingMenuItem(false);
     setIsMenuDialogOpen(true);
@@ -396,6 +394,7 @@ export function RegistrationPage() {
         category: item.category,
         price: item.price,
         description: item.description,
+        imageUrl: item.imageUrl ?? null,
       });
       setIsEditingMenuItem(true);
       setIsMenuDialogOpen(true);
@@ -434,7 +433,7 @@ export function RegistrationPage() {
   }, [isMenuDialogOpen, menuCategories]);
 
   const handleMenuFormChange = <
-    Field extends 'name' | 'category' | 'price' | 'description'
+    Field extends 'name' | 'category' | 'price' | 'description' | 'imageUrl'
   >(
     field: Field,
     value: string
@@ -467,6 +466,7 @@ export function RegistrationPage() {
                 category: menuForm.category.trim(),
                 price: priceValue.toFixed(2),
                 description: menuForm.description.trim(),
+                imageUrl: menuForm.imageUrl,
               }
             : item
         )
@@ -480,6 +480,7 @@ export function RegistrationPage() {
           category: menuForm.category.trim(),
           price: priceValue.toFixed(2),
           description: menuForm.description.trim(),
+          imageUrl: menuForm.imageUrl,
         },
       ]);
     }
@@ -556,8 +557,6 @@ export function RegistrationPage() {
   const validateForm = () => {
     const requiredFields = [
       'name',
-      'cuisineType',
-      'description',
       'contactPersonName',
       'emailAddress',
       'phoneNumber',
@@ -576,7 +575,7 @@ export function RegistrationPage() {
       applicationData.agreeToCommission &&
       applicationData.confirmAccuracy;
 
-    // 只要求 Business License
+    // Business License
     const requiredDocuments = ['business-license'];
     const missingDocuments = requiredDocuments.filter(
       (category) => !documents.some((doc) => doc.category === category && doc.status === 'uploaded')
@@ -613,9 +612,9 @@ export function RegistrationPage() {
 
     if (missingDocuments.length > 0) {
       const docNames = missingDocuments.map((doc) =>
-        doc === 'business-license' ? 'Business License' : doc
+        doc === 'business-license' ? 'Restaurant Image' : doc
       );
-      toast.error(`Please upload required documents: ${docNames.join(', ')}`);
+      toast.error(`Please upload required image: ${docNames.join(', ')}`);
       return false;
     }
 
@@ -678,6 +677,7 @@ export function RegistrationPage() {
         category: item.category.trim(),
         price: parseFloat(item.price),
         description: item.description.trim(),
+        imageUrl: item.imageUrl ?? undefined,
       }));
 
     const supportingFiles = documents
@@ -686,8 +686,6 @@ export function RegistrationPage() {
 
     const submissionPayload: RegistrationPayload = {
       name: applicationData.name.trim(),
-      cuisineType: applicationData.cuisineType,
-      description: applicationData.description.trim(),
       contactPersonName: applicationData.contactPersonName.trim(),
       emailAddress: applicationData.emailAddress.trim(),
       phoneNumber: applicationData.phoneNumber.trim(),
@@ -748,13 +746,13 @@ export function RegistrationPage() {
 
             <div className="space-y-1 text-sm text-muted-foreground">
               <p>
-                <span className="font-medium text-foreground">Login Username:</span>{' '}
+                <span className="font-medium text-foreground">Given Login Username:</span>{' '}
                 {registrationResult.generatedUsername}
               </p>
-              <p>
+              {/* <p>
                 <span className="font-medium text-foreground">Current Status:</span>{' '}
                 {registrationResult.status}
-              </p>
+              </p> */}
               {submittedAt && (
                 <p>
                   <span className="font-medium text-foreground">Submitted At:</span> {submittedAt}
@@ -833,45 +831,43 @@ export function RegistrationPage() {
                   <p className="text-sm text-muted-foreground">Tell us about your restaurant</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="restaurantName">Restaurant Name *</Label>
-                    <Input
-                      id="name"
-                      placeholder="Your Restaurant Name"
-                      value={applicationData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="businessType">Cuisine Type *</Label>
-                    <Select
-                      value={applicationData.cuisineType}
-                      onValueChange={(value) => handleInputChange('cuisineType', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select business type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BUSINESS_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="restaurantName">Restaurant Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your Restaurant Name"
+                    value={applicationData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Restaurant Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your restaurant, specialties, and what makes you unique..."
-                    rows={4}
-                    value={applicationData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                  />
+                  <div className="flex items-center space-x-2 mb-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h4 className="text-base font-medium">Restaurant Image</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Upload your restaurant image. This will be displayed to customers.
+                  </p>
+
+                  <Alert>
+                    <AlertDescription>
+                      Restaurant image must be clear and legible. Accepted image formats: JPG, JPEG,
+                      PNG, WEBP (Max 10MB).
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="mt-3">
+                    <DocumentUpload
+                      category="business-license"
+                      label="Restaurant Image"
+                      description="Upload a high-quality image of your restaurant"
+                      required={true}
+                      files={documents}
+                      onFilesChange={setDocuments}
+                      multiple={false}
+                    />
+                  </div>
                 </div>
               </section>
 
@@ -1003,41 +999,6 @@ export function RegistrationPage() {
                 </div>
               </section>
 
-              {/* Required Documents */}
-              <section className="space-y-4 pt-6 border-t border-border/60">
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <h3 className="text-xl font-semibold">Documents</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Upload your essential business document. Only Business License is required.
-                  </p>
-                </div>
-
-                <Alert>
-                  <AlertDescription>
-                    Business license must be clear and legible. Accepted image formats: JPG, JPEG,
-                    PNG, WEBP (Max 10MB).
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-2">
-                  <h4 className="text-base font-medium text-destructive">Required Document</h4>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <DocumentUpload
-                      category="business-license"
-                      label="Business License"
-                      description="Current business license or registration certificate"
-                      required={true}
-                      files={documents}
-                      onFilesChange={setDocuments}
-                      multiple={false}
-                    />
-                  </div>
-                </div>
-              </section>
-
               {/* Menu Planning */}
               <section className="space-y-6 pt-6 border-t border-border/60">
                 <MenuSection
@@ -1049,7 +1010,7 @@ export function RegistrationPage() {
                 />
 
                 <Dialog open={isMenuDialogOpen} onOpenChange={setIsMenuDialogOpen}>
-                  <DialogContent className="sm:max-w-lg">
+                  <DialogContent style={{"width":"40%"}} className="sm:max-w-md max-h-[90vh] overflow-auto">
                     <DialogHeader>
                       <DialogTitle>
                         {isEditingMenuItem ? 'Edit Menu Item' : 'Add Menu Item'}
@@ -1060,54 +1021,70 @@ export function RegistrationPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="menu-name">Item Name *</Label>
-                        <Input
-                          id="menu-name"
-                          placeholder="Margherita Pizza"
-                          value={menuForm.name}
-                          onChange={(e) => handleMenuFormChange('name', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="menu-category">Category</Label>
-                        <Select
-                          value={menuForm.category}
-                          onValueChange={(value) => handleMenuFormChange('category', value)}
-                        >
-                          <SelectTrigger id="menu-category">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {menuCategories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="menu-price">Price (USD) *</Label>
-                        <Input
-                          id="menu-price"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder="16.50"
-                          value={menuForm.price}
-                          onChange={(e) => handleMenuFormChange('price', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="menu-description">Description</Label>
-                        <Textarea
-                          id="menu-description"
-                          placeholder="Fresh tomato sauce, mozzarella, basil..."
-                          value={menuForm.description}
-                          onChange={(e) => handleMenuFormChange('description', e.target.value)}
-                          rows={3}
-                        />
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="menu-name">Item Name *</Label>
+                          <Input
+                            style={{"width":"50%"}}
+                            id="menu-name"
+                            placeholder="Margherita Pizza"
+                            value={menuForm.name}
+                            onChange={(e) => handleMenuFormChange('name', e.target.value)}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="menu-category">Category</Label>
+                            <Select
+                              style={{"width":"50%"}}
+                              value={menuForm.category}
+                              onValueChange={(value: string) => handleMenuFormChange('category', value)}
+                            >
+                              <SelectTrigger id="menu-category">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {menuCategories.map((category) => (
+                                  <SelectItem key={category} value={category}>
+                                    {category}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-4">
+                            <Label htmlFor="menu-price">Price (USD) *</Label>
+                            <Input
+                              style={{"width":"50%"}}
+                              id="menu-price"
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="16.50"
+                              value={menuForm.price}
+                              onChange={(e) => handleMenuFormChange('price', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="menu-description">Description</Label>
+                          <Textarea
+                            id="menu-description"
+                            placeholder="Fresh tomato sauce, mozzarella, basil..."
+                            value={menuForm.description}
+                            onChange={(e) => handleMenuFormChange('description', e.target.value)}
+                            rows={2}
+                          />
+                        </div>
+                        <div className="space-y-2" style={{"width":"40%"}}>
+                          <ImageUpload
+                            value={menuForm.imageUrl ?? undefined}
+                            onChange={(value) =>
+                              setMenuForm({ ...menuForm, imageUrl: value ?? null })
+                            }
+                            label="Item Image"
+                          />
+                        </div>
                       </div>
                     </div>
                     <DialogFooter className="sm:justify-end">

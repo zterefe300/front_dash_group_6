@@ -26,7 +26,8 @@ export const createPasswordSlice: StateCreator<PasswordState> = (set) => ({
     set({ isPasswordUpdating: true, passwordError: null });
     try {
       await authApi.changePassword(token, username, data);
-      set({ isPasswordUpdating: false });
+      // After successful password change, mark user as no longer first-time login
+      set({ isPasswordUpdating: false, isFirstLogin: false } as any);
     } catch (error) {
       set({
         isPasswordUpdating: false,

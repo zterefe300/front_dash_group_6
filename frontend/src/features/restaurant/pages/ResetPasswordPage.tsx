@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,43 +15,38 @@ import { FrontDashLogo } from "./FrontDashLogo";
 import { BackgroundPattern } from "./BackgroundPattern";
 import { toast } from "sonner";
 import { CheckCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { useAppStore } from "@/store";
 
 export function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const { token, user, changePassword, isFirstLogin } = useAppStore();
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
+    currentPassword: "",
     password: "",
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
 
-  const token = searchParams.get("token");
+  const resetToken = searchParams.get("token");
 
   useEffect(() => {
-    // Simulate token validation
-    const validateToken = async () => {
-      if (!token) {
-        setTokenValid(false);
-        return;
-      }
-
-      // Simulate API call to validate token
-      setTimeout(() => {
-        // For demo purposes, consider token valid if it exists
-        setTokenValid(true);
-      }, 1000);
-    };
-
-    validateToken();
-  }, [token]);
+    // If user is logged in and it's their first login, they can reset password
+    // Otherwise, they need a reset token (from forgot password flow)
+    if (!isFirstLogin && !resetToken && !token) {
+      toast.error("Unauthorized access. Please log in first.");
+      navigate("/restaurant/login", { replace: true });
+    }
+  }, [isFirstLogin, resetToken, token, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.password || !formData.confirmPassword) {
+
+    if (!formData.currentPassword || !formData.password || !formData.confirmPassword) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -66,90 +61,28 @@ export function ResetPasswordPage() {
       return;
     }
 
+    if (!token || !user?.username) {
+      toast.error("Authentication required. Please log in again.");
+      navigate("/restaurant/login", { replace: true });
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate API call to reset password
-    setTimeout(() => {
+    try {
+      await changePassword(token, user.username, {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.password,
+      });
       toast.success("Password reset successfully!");
       setPasswordReset(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to reset password";
+      toast.error(message);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
-
-  // Loading state while validating token
-  if (tokenValid === null) {
-    return (
-      <div className="min-h-screen relative bg-gradient-to-br from-background via-background to-primary/5 px-4">
-        <BackgroundPattern variant="dots" opacity={0.06} />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <FrontDashLogo size="lg" />
-            </div>
-            <Card className="backdrop-blur-sm bg-card/90 border-border/50 shadow-xl">
-          <CardContent className="flex items-center justify-center py-8">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground">Validating reset link...</p>
-            </div>
-          </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Invalid token state
-  if (!tokenValid) {
-    return (
-      <div className="min-h-screen relative bg-gradient-to-br from-background via-background to-primary/5 px-4">
-        <BackgroundPattern variant="dots" opacity={0.06} />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center">
-              <FrontDashLogo size="lg" />
-            </div>
-            <Card className="backdrop-blur-sm bg-card/90 border-border/50 shadow-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-destructive">
-              Invalid Reset Link
-            </CardTitle>
-            <CardDescription>
-              This password reset link is invalid or has expired
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                The reset link you used is either invalid or has expired. 
-                Please request a new password reset link.
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-4">
-              <Link to="/restaurant/forgot-password">
-                <Button className="w-full">
-                  Request New Reset Link
-                </Button>
-              </Link>
-
-              <div className="text-center">
-                <Link to="/restaurant/login">
-                  <Button variant="ghost" className="text-sm">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Login
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Success state
   if (passwordReset) {
@@ -215,7 +148,47 @@ export function ResetPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isFirstLogin && (
+            <Alert>
+              <AlertDescription>
+                This is your first login. Please change your temporary password to a secure one.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showCurrentPassword ? "text" : "password"}
+                  placeholder="Enter your current password"
+                  value={formData.currentPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  disabled={isLoading}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>
               <div className="relative">

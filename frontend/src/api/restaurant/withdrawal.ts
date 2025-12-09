@@ -17,10 +17,21 @@ export const withdrawalApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to submit withdrawal request');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to submit withdrawal request');
     }
 
-    return response.json();
+    // Backend returns RestaurantResponse, we need to map it to WithdrawalResponse
+    const restaurantResponse = await response.json();
+
+    return {
+      id: restaurantResponse.restaurantId?.toString() || '',
+      reason: data.reason,
+      details: data.details,
+      status: restaurantResponse.status || 'pending',
+      createdAt: new Date().toISOString(),
+      message: 'Withdrawal request submitted successfully',
+    };
   },
 
   /**

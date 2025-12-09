@@ -13,7 +13,6 @@ public class RestaurantResponse {
 
     private Integer restaurantId;
     private String name;
-    private String cuisineType;
     private String pictureUrl;
     private Integer addressId;
     private String phoneNumber;

@@ -7,47 +7,30 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  LogOut,
-  AlertTriangle,
-  Phone,
-  Mail,
-  Clock,
-  FileText,
-  DollarSign,
-  MessageCircle
-} from 'lucide-react';
+import { LogOut, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store';
-
-interface WithdrawalRequest {
-  id: string;
-  reason: string;
-  details: string;
-  status: string;
-  createdAt: string;
-}
 
 export function BusinessActions() {
   const token = useAppStore((state) => state.token);
   const user = useAppStore((state) => state.user);
   const restaurantId = user?.id?.toString();
+  const restaurant = useAppStore((state) => state.restaurant);
   const isSubmittingWithdrawal = useAppStore((state) => state.isSubmittingWithdrawal);
-  const withdrawalRequests = useAppStore((state) => state.withdrawalRequests);
   const submitWithdrawal = useAppStore((state) => state.submitWithdrawal);
-  const fetchWithdrawalRequests = useAppStore((state) => state.fetchWithdrawalRequests);
+  const fetchProfile = useAppStore((state) => state.fetchProfile);
 
   const [withdrawalReason, setWithdrawalReason] = useState('');
   const [withdrawalDetails, setWithdrawalDetails] = useState('');
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      fetchWithdrawalRequests(token).catch((error) => {
-        console.error('Failed to fetch withdrawal requests:', error);
+    if (token && restaurantId) {
+      fetchProfile(token, restaurantId).catch((error) => {
+        console.error('Failed to fetch profile:', error);
       });
     }
-  }, [token, fetchWithdrawalRequests]);
+  }, [token, restaurantId, fetchProfile]);
 
   const handleWithdrawal = () => {
     if (!token) {
@@ -74,6 +57,13 @@ export function BusinessActions() {
         setWithdrawalReason('');
         setWithdrawalDetails('');
         setShowWithdrawDialog(false);
+
+        // Refresh profile to get updated status
+        if (restaurantId) {
+          fetchProfile(token, restaurantId).catch((error) => {
+            console.error('Failed to refresh profile:', error);
+          });
+        }
       })
       .catch((error) => {
         const message = error instanceof Error ? error.message : 'Failed to submit withdrawal request';
@@ -89,15 +79,33 @@ export function BusinessActions() {
       .join(' ') || value;
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' => {
-    switch (status) {
-      case 'completed':
+    switch (status.toLowerCase()) {
+      case 'active':
         return 'default';
-      case 'processing':
+      case 'new_reg':
       case 'pending':
         return 'secondary';
+      case 'withdraw_req':
       case 'cancelled':
-      default:
+      case 'rejected':
         return 'destructive';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusDisplay = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Active';
+      case 'new_reg':
+        return 'Pending Approval';
+      case 'withdraw_req':
+        return 'Withdrawal Requested';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return formatLabel(status);
     }
   };
 
@@ -118,6 +126,23 @@ export function BusinessActions() {
           <CardDescription>End your partnership with FrontDash platform</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Current Status Display */}
+          {restaurant?.status && (
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Current Status:</span>
+                <Badge variant={getStatusVariant(restaurant.status)}>
+                  {getStatusDisplay(restaurant.status)}
+                </Badge>
+              </div>
+              {restaurant.status.toLowerCase() === 'withdraw_req' && (
+                <p className="text-xs text-muted-foreground">
+                  Your withdrawal request is being reviewed
+                </p>
+              )}
+            </div>
+          )}
+
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -138,8 +163,13 @@ export function BusinessActions() {
           
           <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
             <DialogTrigger asChild>
-              <Button variant="destructive" disabled={isSubmittingWithdrawal}>
-                Request Withdrawal
+              <Button
+                variant="destructive"
+                disabled={isSubmittingWithdrawal || restaurant?.status.toLowerCase() === 'withdraw_req'}
+              >
+                {restaurant?.status.toLowerCase() === 'withdraw_req'
+                  ? 'Withdrawal Already Requested'
+                  : 'Request Withdrawal'}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -202,35 +232,6 @@ export function BusinessActions() {
           <p className="text-xs text-muted-foreground">
             Need help? Contact our support team before making this decision. We're here to help resolve any issues.
           </p>
-
-          {withdrawalRequests.length > 0 && (
-            <div className="space-y-3 border-t pt-4">
-              <h4 className="text-sm font-medium">Recent Withdrawal Requests</h4>
-              <div className="space-y-2">
-                {withdrawalRequests.slice(0, 3).map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-start justify-between rounded-md border border-border/60 bg-muted/40 p-3"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{formatLabel(request.reason)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Submitted {new Date(request.createdAt).toLocaleString()}
-                      </p>
-                      {request.details ? (
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {request.details}
-                        </p>
-                      ) : null}
-                    </div>
-                    <Badge variant={getStatusVariant(request.status)}>
-                      {formatLabel(request.status)}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

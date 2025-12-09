@@ -127,8 +127,6 @@ public class RestaurantService {
 
             Restaurant restaurant = Restaurant.builder()
                     .name(request.getName())
-                    .cuisineType(request.getCuisineType())
-                    .businessType(request.getCuisineType())
                     .pictureUrl(pictureUrl)
                     .addressId(savedAddress.getAddressId())
                     .phoneNumber(request.getPhoneNumber())
@@ -214,6 +212,7 @@ public class RestaurantService {
                                         .itemName(itemReq.getName())  // 如果是 getItemName()，改这里
                                         .description(itemReq.getDescription())
                                         .price(new BigDecimal(itemReq.getPrice()))
+                                        .pictureUrl(itemReq.getImageUrl())
                                         .availability(MenuItem.AvailabilityStatus.AVAILABLE)
                                         .build();
                             })
@@ -241,6 +240,7 @@ public class RestaurantService {
                         .username(givenLoginName)
                         .restaurantId(restaurantId)
                         .password(givenPassword)
+                        .isFirstLogin(true)
                         .build();
 
                 restaurantLoginRepository.save(login);
@@ -249,11 +249,45 @@ public class RestaurantService {
 
             System.out.println("[RestaurantRegister] SUCCESS. restaurantId=" + restaurantId);
 
+            // 7. Send confirmation email to restaurant
+            if (request.getEmailAddress() != null && !request.getEmailAddress().isEmpty()) {
+                try {
+                    String emailBody = String.format(
+                        "Dear %s,\n\n" +
+                        "Thank you for submitting your restaurant registration request for %s.\n\n" +
+                        "Registration Details:\n" +
+                        "- Restaurant Name: %s\n" +
+                        "- Contact Person: %s\n" +
+                        "- Phone: %s\n" +
+                        "- Email: %s\n\n" +
+                        "Your application is now under review. Our team will evaluate your submission and contact you shortly with the approval status.\n\n" +
+                        "If you have any questions, please feel free to contact our support team.\n\n" +
+                        "Best regards,\n" +
+                        "FrontDash Team",
+                        request.getContactPersonName(),
+                        request.getName(),
+                        request.getName(),
+                        request.getContactPersonName(),
+                        request.getPhoneNumber(),
+                        request.getEmailAddress()
+                    );
+                    emailService.sendEmail(
+                        request.getEmailAddress(),
+                        emailBody,
+                        com.frontdash.dao.MessageType.RESTAURANT_REGISTRATION_SUBMITTED
+                    );
+                    System.out.println("[Email] Registration confirmation sent to: " + request.getEmailAddress());
+                } catch (Exception e) {
+                    // Log error but don't fail the registration
+                    System.err.println("[Email] Failed to send registration confirmation email: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
 
             return RestaurantRegistrationResponse
                     .builder()
                     .id(String.valueOf(restaurantId))
-                    .generatedUsername(givenLoginName)
+                    .generatedUsername(savedRestaurant.getContactPersonName())
                     .submittedAt(LocalDateTime.now())
                     .build();
 
@@ -482,12 +516,11 @@ public class RestaurantService {
         return RestaurantProfileResponse.builder()
                 .restaurantId(restaurant.getRestaurantId())
                 .name(restaurant.getName())
-                .description(restaurant.getDescription())
-                .businessType(restaurant.getBusinessType() != null ? restaurant.getBusinessType() : restaurant.getCuisineType())
                 .contactName(restaurant.getContactPersonName())
                 .phoneNumber(restaurant.getPhoneNumber())
                 .email(restaurant.getEmailAddress())
                 .status(restaurant.getStatus().name())
+                .imageUrl(restaurant.getPictureUrl())
                 .address(address != null ? com.frontdash.dao.response.AddressResponse.builder()
                         .addressId(address.getAddressId())
                         .streetAddress(address.getStreetAddress())
@@ -501,6 +534,7 @@ public class RestaurantService {
 
     @Transactional
     public RestaurantProfileResponse updateRestaurantProfile(Integer restaurantId, RestaurantProfileUpdateRequest request) {
+        System.out.println(request.toString());
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 
@@ -508,9 +542,10 @@ public class RestaurantService {
             restaurant.setName(request.getName());
         }
 
-        if (request.getBusinessType() != null) {
-            restaurant.setBusinessType(request.getBusinessType());
-            restaurant.setCuisineType(request.getBusinessType());
+        if (request.getImageUrl() != null) {
+            restaurant.setPictureUrl(request.getImageUrl());
+        } else {
+            restaurant.setPictureUrl(null);
         }
 
         restaurantRepository.save(restaurant);
@@ -622,7 +657,6 @@ public class RestaurantService {
         return RestaurantResponse.builder()
                 .restaurantId(restaurant.getRestaurantId())
                 .name(restaurant.getName())
-                .cuisineType(restaurant.getCuisineType())
                 .pictureUrl(restaurant.getPictureUrl())
                 .addressId(restaurant.getAddressId())
                 .phoneNumber(restaurant.getPhoneNumber())

@@ -13,6 +13,7 @@ export interface RestaurantSummary {
   description?: string;
   businessType?: string;
   contactName?: string;
+  imageUrl?: string;
 }
 
 export interface RestaurantAddress {
@@ -37,6 +38,7 @@ export interface MenuItemPayload {
   category: string;
   price: number;
   description?: string;
+  imageUrl?: string;
 }
 
 export interface MenuItem {
@@ -58,8 +60,6 @@ export interface MenuCategory {
 // Registration Types
 export interface RegistrationPayload {
   name: string;
-  cuisineType: string;
-  description: string;
   contactPersonName: string;
   emailAddress: string;
   phoneNumber: string;
@@ -98,13 +98,13 @@ export interface AuthResponse {
   email: string;
   status: string;
   message?: string;
+  isFirstLogin?: boolean;
 }
 
 // Profile Update Types
 export interface ProfileUpdatePayload {
   name: string;
-  description: string;
-  businessType: string;
+  imageUrl?: string;
 }
 
 export interface ContactUpdatePayload {
