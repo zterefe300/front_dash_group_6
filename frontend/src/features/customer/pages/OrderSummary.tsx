@@ -25,7 +25,6 @@ export function OrderSummary() {
 
   // Order details
   const orderDate = new Date();
-  const orderNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
 
   // Handle tip calculations
   const handleTipPercentageChange = (value: string) => {
@@ -68,7 +67,7 @@ export function OrderSummary() {
               </p>
             </div>
             <Badge variant="outline" className="text-sm">
-              Order #{orderNumber}
+              Order Review
             </Badge>
           </div>
         </CardContent>

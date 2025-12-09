@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,4 +21,5 @@ public class OrderRequest {
     private List<OrderItemRequest> items;
     private BigDecimal subtotal;
     private BigDecimal tips;
+    private LocalDateTime estimatedDeliveryTime; // estimated delivery time from frontend
 }

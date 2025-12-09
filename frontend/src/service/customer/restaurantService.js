@@ -31,15 +31,35 @@ const isRestaurantOpen = (operatingHours) => {
   const currentDay = now.toLocaleString('en-US', { weekday: 'long' }).toUpperCase();
   const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 
+  console.log('Checking restaurant hours:', { currentDay, currentTime, operatingHours });
+
   // Find today's operating hours
   const todayHours = operatingHours.find(hour => hour.weekDay === currentDay);
   
   if (!todayHours) {
+    console.log('No hours found for today:', currentDay);
     return false; // Restaurant is closed today
   }
 
+  console.log('Today\'s hours:', todayHours);
+
+  // Check if restaurant is closed (null open/close times)
+  if (!todayHours.openTime || !todayHours.closeTime) {
+    console.log('Restaurant is closed today (null times)');
+    return false;
+  }
+
+  // Normalize closeTime: treat "24:00" as "23:59:59" for comparison
+  let closeTime = todayHours.closeTime;
+  if (closeTime.startsWith('24:00')) {
+    closeTime = '23:59:59';
+  }
+
   // Compare current time with opening and closing times
-  return currentTime >= todayHours.openTime && currentTime <= todayHours.closeTime;
+  const isOpen = currentTime >= todayHours.openTime && currentTime <= closeTime;
+  console.log('Is restaurant open?', isOpen, { currentTime, openTime: todayHours.openTime, closeTime: closeTime, originalCloseTime: todayHours.closeTime });
+  
+  return isOpen;
 };
 
 export const restaurantService = {
@@ -98,7 +118,8 @@ export const restaurantService = {
           priceRange: '$$',
           menu: [],
           address: address,
-          fullAddress: fullAddress // Include the full address object for delivery time calculations
+          fullAddress: fullAddress, // Include the full address object for delivery time calculations
+          phoneNumber: restaurant.phoneNumber || ''
         };
       })
     );

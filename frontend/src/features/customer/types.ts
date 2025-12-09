@@ -14,6 +14,7 @@ export interface Restaurant {
   deliveryFee: number;
   logo?: string;
   address?: string;
+  phoneNumber?: string;
   fullAddress?: {
     bldg: string;
     streetAddress: string;
@@ -26,7 +27,6 @@ export interface Restaurant {
 export interface DeliveryAddress {
   buildingNumber: string;
   streetName: string;
-  apartmentUnit?: string;
   city: string;
   state: string;
   zipCode: string;

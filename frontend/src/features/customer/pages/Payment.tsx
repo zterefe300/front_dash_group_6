@@ -11,12 +11,20 @@ import { useCart } from '../../../contexts/CartContext';
 import { PaymentInfo } from '../types';
 
 export function Payment() {
-  const { items, restaurant, paymentInfo, setPaymentInfo, goToOrderConfirmation, goToDelivery } = useCart();
+  const { items, restaurant, paymentInfo, deliveryAddress, setPaymentInfo, goToOrderConfirmation, goToDelivery } = useCart();
+  
+  // Format delivery address for billing
+  const formattedDeliveryAddress = deliveryAddress ? [
+    deliveryAddress.buildingNumber,
+    deliveryAddress.streetName,
+    `${deliveryAddress.city}, ${deliveryAddress.state} ${deliveryAddress.zipCode}`
+  ].filter(Boolean).join(' ') : '';
+
   const [formData, setFormData] = useState<PaymentInfo>({
     cardType: paymentInfo?.cardType || '',
     cardNumber: paymentInfo?.cardNumber || '',
     cardholderName: paymentInfo?.cardholderName || '',
-    billingAddress: paymentInfo?.billingAddress || '',
+    billingAddress: formattedDeliveryAddress || paymentInfo?.billingAddress || '',
     expiryMonth: paymentInfo?.expiryMonth || '',
     expiryYear: paymentInfo?.expiryYear || '',
     securityCode: paymentInfo?.securityCode || ''
@@ -330,9 +338,10 @@ export function Payment() {
             {/* Billing Address */}
             <div className="space-y-2">
               <Label htmlFor="billingAddress">Billing Address *</Label>
+              <p className="text-sm text-muted-foreground mb-2">Defaults to delivery address</p>
               <Textarea
                 id="billingAddress"
-                placeholder="123 Main Street, Apt 4B, New York, NY 10001"
+                placeholder="123 Main Street, New York, NY 10001"
                 value={formData.billingAddress}
                 onChange={(e) => handleInputChange('billingAddress', e.target.value)}
                 rows={3}

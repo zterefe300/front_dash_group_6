@@ -2,36 +2,43 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/co
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
 import { Separator } from '../../../components/common/separator';
-import { CheckCircle, Clock, MapPin, CreditCard, Phone, Star } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, CreditCard, Phone } from 'lucide-react';
 import { useCart } from '../../../contexts/CartContext';
 import { useEffect, useState } from 'react';
 // @ts-ignore - JS module without type definitions
 import { geoapifyService } from '../../../service/customer/geoapifyService';
+// @ts-ignore - JS module without type definitions
+import { orderService } from '../../../service/customer/orderService';
 
 export function OrderConfirmation() {
   const { items, restaurant, paymentInfo, deliveryAddress, goToNewOrder, goToPayment, clearCart } = useCart();
   const [estimatedDeliveryMinutes, setEstimatedDeliveryMinutes] = useState<number>(35);
   const [isCalculatingDelivery, setIsCalculatingDelivery] = useState<boolean>(true);
+  const [backendOrderId, setBackendOrderId] = useState<string | null>(null);
+  const [orderSubmissionError, setOrderSubmissionError] = useState<string | null>(null);
   
-  // Store order snapshot before clearing cart - generate order details once
+  // Store order snapshot before clearing cart
   const [orderSnapshot] = useState(() => {
     const orderDate = new Date();
-    const orderNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
     
     return {
       items: items,
       restaurant: restaurant,
       paymentInfo: paymentInfo,
       deliveryAddress: deliveryAddress,
-      orderDate,
-      orderNumber
+      orderDate
     };
   });
 
   // Calculate estimated delivery time using Geoapify
   useEffect(() => {
     const calculateDeliveryTime = async () => {
+      console.log('Starting delivery time calculation...');
+      console.log('Restaurant:', orderSnapshot.restaurant);
+      console.log('Delivery Address:', orderSnapshot.deliveryAddress);
+
       if (!orderSnapshot.restaurant || !orderSnapshot.deliveryAddress) {
+        console.warn('Missing restaurant or delivery address for calculation');
         setIsCalculatingDelivery(false);
         return;
       }
@@ -39,22 +46,33 @@ export function OrderConfirmation() {
       try {
         // Use actual restaurant address from backend
         const restaurantAddress = orderSnapshot.restaurant.address || '';
+        console.log('Restaurant address:', restaurantAddress);
         
+        if (!restaurantAddress) {
+          console.warn('Restaurant address is empty, using default delivery time');
+          setIsCalculatingDelivery(false);
+          return;
+        }
+
         // Format delivery address
         const deliveryAddr = geoapifyService.formatAddress(orderSnapshot.deliveryAddress);
+        console.log('Formatted delivery address:', deliveryAddr);
 
         // Get delivery estimate
+        console.log('Calling Geoapify API...');
         const estimate = await geoapifyService.getDeliveryEstimate(
           restaurantAddress,
           deliveryAddr,
           15 // 15 minutes preparation time
         );
 
+        console.log('Delivery estimate received:', estimate);
         setEstimatedDeliveryMinutes(estimate.estimatedTime);
       } catch (error) {
         console.error('Failed to calculate delivery time:', error);
         // Keep default 35 minutes
       } finally {
+        console.log('Delivery time calculation complete, setting isCalculatingDelivery to false');
         setIsCalculatingDelivery(false);
       }
     };
@@ -62,6 +80,78 @@ export function OrderConfirmation() {
     calculateDeliveryTime();
   }, [orderSnapshot.restaurant, orderSnapshot.deliveryAddress]);
   
+  // Submit order to backend (only after estimated delivery time is calculated)
+  useEffect(() => {
+    const submitOrder = async () => {
+      // Wait for delivery time calculation to complete
+      if (isCalculatingDelivery) {
+        console.log('Waiting for delivery time calculation to complete...');
+        return;
+      }
+
+      // Check if order was already submitted
+      if (backendOrderId) {
+        console.log('Order already submitted, skipping:', backendOrderId);
+        return;
+      }
+
+      if (!orderSnapshot.restaurant || !orderSnapshot.items || orderSnapshot.items.length === 0) {
+        console.error('Missing required order data:', {
+          hasRestaurant: !!orderSnapshot.restaurant,
+          hasItems: !!orderSnapshot.items,
+          itemCount: orderSnapshot.items?.length || 0
+        });
+        return;
+      }
+
+      try {
+        // Calculate subtotal and tips (service charge)
+        const subtotal = orderSnapshot.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        const tips = subtotal * 0.0825;
+
+        // Calculate estimated delivery time as DateTime
+        const estimatedDeliveryDateTime = new Date(orderSnapshot.orderDate.getTime() + (estimatedDeliveryMinutes * 60000));
+        
+        // Format as ISO string for backend (will be parsed as LocalDateTime)
+        const estimatedDeliveryTimeISO = estimatedDeliveryDateTime.toISOString().slice(0, 19);
+
+        // Prepare order request
+        const orderRequest = {
+          restaurantId: parseInt(orderSnapshot.restaurant.id),
+          customerName: orderSnapshot.paymentInfo?.cardholderName || 'Guest',
+          customerPhone: '000-000-0000', // Default phone - could be collected in delivery form
+          addressId: null, // Will be created by backend if null
+          items: orderSnapshot.items.map(item => ({
+            menuItemId: parseInt(item.id),
+            quantity: item.quantity,
+            notes: null
+          })),
+          subtotal: subtotal,
+          tips: tips,
+          estimatedDeliveryTime: estimatedDeliveryTimeISO
+        };
+
+        console.log('Submitting order to backend:', orderRequest);
+        const response = await orderService.createOrder(orderRequest);
+        console.log('Order created successfully. Full response:', response);
+        console.log('Response orderId:', response.orderId);
+        console.log('Response keys:', Object.keys(response));
+        
+        if (response.orderId) {
+          setBackendOrderId(response.orderId);
+          console.log('Backend order ID set to:', response.orderId);
+        } else {
+          console.error('No orderId in response!');
+        }
+      } catch (error) {
+        console.error('Failed to submit order to backend:', error);
+        setOrderSubmissionError(error instanceof Error ? error.message : 'Failed to submit order');
+      }
+    };
+
+    submitOrder();
+  }, [isCalculatingDelivery, backendOrderId]);
+
   // Clear cart when order is confirmed
   useEffect(() => {
     // Clear the cart after a brief delay to ensure snapshot is captured
@@ -78,7 +168,8 @@ export function OrderConfirmation() {
   const displayPaymentInfo = orderSnapshot.paymentInfo;
   const displayDeliveryAddress = orderSnapshot.deliveryAddress;
   const orderDate = orderSnapshot.orderDate;
-  const orderNumber = orderSnapshot.orderNumber;
+  // Use backend-generated order ID (format: FD####)
+  const orderNumber = backendOrderId || 'Pending...';
   
   // Calculate estimated delivery date/time
   const estimatedDelivery = new Date(orderSnapshot.orderDate.getTime() + (estimatedDeliveryMinutes * 60000));
@@ -92,7 +183,6 @@ export function OrderConfirmation() {
   const fullAddress = displayDeliveryAddress ? [
     displayDeliveryAddress.buildingNumber,
     displayDeliveryAddress.streetName,
-    displayDeliveryAddress.apartmentUnit && `Apt ${displayDeliveryAddress.apartmentUnit}`,
     `${displayDeliveryAddress.city}, ${displayDeliveryAddress.state} ${displayDeliveryAddress.zipCode}`
   ].filter(Boolean).join(' ') : '';
 
@@ -170,18 +260,10 @@ export function OrderConfirmation() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{displayRestaurant.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{displayRestaurant.rating}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">•</span>
-                  <span className="text-sm text-muted-foreground">{displayRestaurant.deliveryTime}</span>
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{displayRestaurant.phoneNumber || 'N/A'}</span>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
-                <Phone className="h-4 w-4 mr-2" />
-                Contact
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -301,7 +383,7 @@ export function OrderConfirmation() {
             </div>
             
             <div className="text-sm text-muted-foreground">
-              <p>Transaction ID: TXN{orderNumber}2024</p>
+              <p>Transaction ID: {orderNumber ? `TXN${orderNumber}2024` : 'Processing...'}</p>
               <p>Payment processed securely on {orderDate.toLocaleDateString()}</p>
             </div>
           </div>
