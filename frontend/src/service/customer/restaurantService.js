@@ -21,6 +21,27 @@ const demoMenuImages = [
   'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop'
 ];
 
+// Helper function to check if restaurant is currently open based on operating hours
+const isRestaurantOpen = (operatingHours) => {
+  if (!operatingHours || operatingHours.length === 0) {
+    return false; // If no hours provided, assume closed
+  }
+
+  const now = new Date();
+  const currentDay = now.toLocaleString('en-US', { weekday: 'long' }).toUpperCase();
+  const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+  // Find today's operating hours
+  const todayHours = operatingHours.find(hour => hour.weekDay === currentDay);
+  
+  if (!todayHours) {
+    return false; // Restaurant is closed today
+  }
+
+  // Compare current time with opening and closing times
+  return currentTime >= todayHours.openTime && currentTime <= todayHours.closeTime;
+};
+
 export const restaurantService = {
   // Get all restaurants
   getAllRestaurants: async () => {
@@ -30,20 +51,59 @@ export const restaurantService = {
     }
     const data = await response.json();
     
-    // Map backend response to frontend format with demo data for missing fields
-    return data.map((restaurant, index) => ({
-      id: restaurant.restaurantId?.toString() || '',
-      name: restaurant.name || '',
-      image: restaurant.pictureUrl || demoImages[index % demoImages.length],
-      logo: restaurant.pictureUrl || demoLogos[index % demoLogos.length],
-      cuisine: restaurant.cuisineType || 'Various',
-      rating: 4.5,
-      deliveryTime: '20-30 min',
-      deliveryFee: 2.99,
-      isOpen: restaurant.status === 'ACTIVE',
-      priceRange: '$$',
-      menu: []
-    }));
+    // Fetch operating hours for all restaurants and determine if they're open
+    const restaurantsWithHours = await Promise.all(
+      data.map(async (restaurant, index) => {
+        let isOpen = false;
+        
+        try {
+          // Fetch operating hours for this restaurant
+          const hoursResponse = await fetch(`${API_BASE_URL}/restaurant/${restaurant.restaurantId}/hours`);
+          if (hoursResponse.ok) {
+            const operatingHours = await hoursResponse.json();
+            isOpen = restaurant.status === 'ACTIVE' && isRestaurantOpen(operatingHours);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch hours for restaurant ${restaurant.restaurantId}:`, error);
+        }
+        
+        return {
+          id: restaurant.restaurantId?.toString() || '',
+          name: restaurant.name || '',
+          image: restaurant.pictureUrl || demoImages[index % demoImages.length],
+          logo: restaurant.pictureUrl || demoLogos[index % demoLogos.length],
+          cuisine: restaurant.cuisineType || 'Various',
+          rating: 4.5,
+          deliveryTime: '20-30 min',
+          deliveryFee: 2.99,
+          isOpen: isOpen,
+          priceRange: '$$',
+          menu: []
+        };
+      })
+    );
+    
+    return restaurantsWithHours;
+  },
+
+  // Get operating hours for a restaurant
+  getOperatingHours: async (restaurantId) => {
+    const response = await fetch(`${API_BASE_URL}/restaurant/${restaurantId}/hours`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch operating hours');
+    }
+    return await response.json();
+  },
+
+  // Check if a specific restaurant is currently open
+  checkIfOpen: async (restaurantId) => {
+    try {
+      const operatingHours = await restaurantService.getOperatingHours(restaurantId);
+      return isRestaurantOpen(operatingHours);
+    } catch (error) {
+      console.error('Failed to check restaurant hours:', error);
+      return false;
+    }
   },
 
   // Get restaurant menu by ID

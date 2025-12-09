@@ -266,17 +266,15 @@ export function RestaurantList() {
         {restaurants.map((restaurant) => (
           <Card
             key={restaurant.id}
-            className={`cursor-pointer hover:shadow-lg transition-all duration-200 ${
-              !restaurant.isOpen ? 'opacity-75 grayscale' : ''
-            }`}
-            onClick={() => restaurant.isOpen && navigate(`/customer/restaurant/${restaurant.id}`)}
+            className="cursor-pointer hover:shadow-lg transition-all duration-200"
+            onClick={() => navigate(`/customer/restaurant/${restaurant.id}`)}
           >
             <CardContent className="p-0">
               <div className="relative">
                 <ImageWithFallback
                   src={restaurant.image}
                   alt={restaurant.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
+                  className={`w-full h-48 object-cover rounded-t-lg ${!restaurant.isOpen ? 'opacity-50 grayscale' : ''}`}
                 />
                 <Badge className="absolute top-4 right-4 bg-white/90 text-white backdrop-blur-sm border border-white/20">
                   {restaurant.cuisine}
@@ -302,7 +300,7 @@ export function RestaurantList() {
                       <ImageWithFallback
                         src={restaurant.logo}
                         alt={`${restaurant.name} logo`}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${!restaurant.isOpen ? 'opacity-50 grayscale' : ''}`}
                       />
                     </div>
                   )}
