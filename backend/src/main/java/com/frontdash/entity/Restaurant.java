@@ -22,15 +22,6 @@ public class Restaurant {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(name = "cuisine_type")
-    private String cuisineType;
-
-    @Column(name = "business_type")
-    private String businessType;
-
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-
     @Column(name = "picture_url")
     private String pictureUrl;
 

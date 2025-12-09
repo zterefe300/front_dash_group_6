@@ -3,14 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store';
 
 type ProfileFormState = {
   name: string;
-  description: string;
-  businessType: string;
 };
 
 export function RestaurantProfile() {
@@ -25,8 +22,6 @@ export function RestaurantProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileFormState>({
     name: restaurantProfile?.name || restaurant?.name || '',
-    description: restaurantProfile?.description || '',
-    businessType: restaurantProfile?.businessType || '',
   });
 
   useEffect(() => {
@@ -40,8 +35,6 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
-        description: restaurantProfile.description || '',
-        businessType: restaurantProfile.businessType || '',
       });
     }
   }, [restaurantProfile]);
@@ -53,8 +46,6 @@ export function RestaurantProfile() {
     }
     updateProfile(token, restaurant.id, {
       name: profile.name,
-      description: profile.description,
-      businessType: profile.businessType,
     })
       .then(() => {
         setIsEditing(false);
@@ -71,8 +62,6 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
-        description: restaurantProfile.description || '',
-        businessType: restaurantProfile.businessType || '',
       });
     }
   };
@@ -90,7 +79,7 @@ export function RestaurantProfile() {
           </Button>
         ) : (
           <div className="space-x-2">
-            <Button variant="outline" onClick={handleCancel} disabled={isProfileUpdating}>
+            <Button onClick={handleCancel} disabled={isProfileUpdating}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isProfileUpdating}>
@@ -114,27 +103,6 @@ export function RestaurantProfile() {
               onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))}
               disabled={!isEditing}
               placeholder="FrontDash Demo Kitchen"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Restaurant Description</Label>
-            <Textarea
-              id="description"
-              value={profile.description}
-              onChange={(e) => setProfile((prev) => ({ ...prev, description: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="Describe your restaurant, atmosphere, and offerings"
-              rows={5}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="businessType">Business Type</Label>
-            <Input
-              id="businessType"
-              value={profile.businessType}
-              onChange={(e) => setProfile((prev) => ({ ...prev, businessType: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="Restaurant, Cafe, Bakery..."
             />
           </div>
         </CardContent>

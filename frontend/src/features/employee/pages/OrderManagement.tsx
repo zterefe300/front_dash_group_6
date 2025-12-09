@@ -59,7 +59,6 @@ interface Order {
   restaurant: {
     restaurantId: number;
     name: string;
-    cuisineType: string;
     pictureUrl?: string;
     addressId: number;
     phoneNumber?: string;

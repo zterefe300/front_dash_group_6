@@ -16,6 +16,4 @@ import lombok.NoArgsConstructor;
 public class RestaurantProfileUpdateRequest {
 
     private String name;
-    private String description;
-    private String businessType;
 }

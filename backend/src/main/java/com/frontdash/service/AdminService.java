@@ -98,7 +98,6 @@ public class AdminService {
         return new RestaurantResponse(
                 restaurant.getRestaurantId(),
                 restaurant.getName(),
-                restaurant.getCuisineType(),
                 restaurant.getPictureUrl(),
                 restaurant.getAddressId(),
                 restaurant.getPhoneNumber(),

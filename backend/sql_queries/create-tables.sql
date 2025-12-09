@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS Address (
 CREATE TABLE IF NOT EXISTS Restaurant (
     restaurant_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
-    cuisine_type VARCHAR(100),
     picture_url VARCHAR(500),
     address_id INT,
     phone_number VARCHAR(20),

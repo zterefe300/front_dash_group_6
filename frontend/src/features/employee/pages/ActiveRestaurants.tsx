@@ -28,7 +28,6 @@ import { Loader } from "../components/Loader";
 interface Restaurant {
   restaurantId: number;
   name: string;
-  cuisineType: string;
   contactPersonName: string;
   emailAddress: string;
   phoneNumber: string;

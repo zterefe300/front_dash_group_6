@@ -10,8 +10,6 @@ export interface RestaurantSummary {
   username?: string;
   address?: RestaurantAddress;
   operatingHours?: OperatingDay[];
-  description?: string;
-  businessType?: string;
   contactName?: string;
 }
 
@@ -58,8 +56,6 @@ export interface MenuCategory {
 // Registration Types
 export interface RegistrationPayload {
   name: string;
-  cuisineType: string;
-  description: string;
   contactPersonName: string;
   emailAddress: string;
   phoneNumber: string;
@@ -103,8 +99,6 @@ export interface AuthResponse {
 // Profile Update Types
 export interface ProfileUpdatePayload {
   name: string;
-  description: string;
-  businessType: string;
 }
 
 export interface ContactUpdatePayload {

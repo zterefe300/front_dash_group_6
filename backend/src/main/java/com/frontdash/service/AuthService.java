@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.frontdash.dao.request.LoginRequest;
 import com.frontdash.dao.response.EmployeeLoginResponse;
-import com.frontdash.dao.response.LoginResponse;
+import com.frontdash.dao.response.RestaurantLoginResponse;
 import com.frontdash.entity.EmployeeLogin;
 import com.frontdash.entity.Restaurant;
 import com.frontdash.entity.RestaurantLogin;
@@ -15,10 +15,6 @@ import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.RestaurantLoginRepository;
 import com.frontdash.repository.RestaurantRepository;
 import com.frontdash.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -97,11 +93,11 @@ public class AuthService {
                 .build();
     }
 
-    public LoginResponse loginOwner(String username, String password) {
+    public RestaurantLoginResponse loginOwner(String username, String password) {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), restaurantLogin.getPassword())) {
+        if (!passwordEncoder.matches(password, restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
@@ -115,7 +111,7 @@ public class AuthService {
         // Generate JWT token
         String token = jwtUtil.generateToken(username, restaurant.getRestaurantId(), "OWNER");
 
-        return LoginResponse.builder()
+        return RestaurantLoginResponse.builder()
                 .success(true)
                 .message("Restaurant owner login successful")
                 .role("OWNER")

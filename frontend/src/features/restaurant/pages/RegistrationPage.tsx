@@ -73,8 +73,6 @@ const DEFAULT_MENU_CATEGORIES = [
 
 const createInitialApplicationData = () => ({
   name: '',
-  cuisineType: '',
-  description: '',
   contactPersonName: '',
   emailAddress: '',
   phoneNumber: '',
@@ -556,8 +554,6 @@ export function RegistrationPage() {
   const validateForm = () => {
     const requiredFields = [
       'name',
-      'cuisineType',
-      'description',
       'contactPersonName',
       'emailAddress',
       'phoneNumber',
@@ -686,8 +682,6 @@ export function RegistrationPage() {
 
     const submissionPayload: RegistrationPayload = {
       name: applicationData.name.trim(),
-      cuisineType: applicationData.cuisineType,
-      description: applicationData.description.trim(),
       contactPersonName: applicationData.contactPersonName.trim(),
       emailAddress: applicationData.emailAddress.trim(),
       phoneNumber: applicationData.phoneNumber.trim(),
@@ -833,44 +827,13 @@ export function RegistrationPage() {
                   <p className="text-sm text-muted-foreground">Tell us about your restaurant</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="restaurantName">Restaurant Name *</Label>
-                    <Input
-                      id="name"
-                      placeholder="Your Restaurant Name"
-                      value={applicationData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="businessType">Cuisine Type *</Label>
-                    <Select
-                      value={applicationData.cuisineType}
-                      onValueChange={(value) => handleInputChange('cuisineType', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select business type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BUSINESS_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="description">Restaurant Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your restaurant, specialties, and what makes you unique..."
-                    rows={4}
-                    value={applicationData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                  <Label htmlFor="restaurantName">Restaurant Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your Restaurant Name"
+                    value={applicationData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                   />
                 </div>
               </section>

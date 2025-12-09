@@ -18,7 +18,6 @@ import java.util.List;
 public class RestaurantRegistrationRequest {
 
     private String name;
-    private String cuisineType;
     private String pictureUrl;
 
     private String contactPersonName;
