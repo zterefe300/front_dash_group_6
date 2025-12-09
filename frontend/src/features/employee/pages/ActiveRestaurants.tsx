@@ -45,7 +45,9 @@ export const ActiveRestaurants = () => {
     const fetchRestaurants = async () => {
       try {
         const data = await restaurantService.getAllRestaurants();
-        setActiveRestaurants(data);
+        // Filter to only show restaurants with ACTIVE status
+        const activeOnly = data.filter((restaurant: Restaurant) => restaurant.status === "ACTIVE");
+        setActiveRestaurants(activeOnly);
       } catch (error) {
         console.error("Failed to fetch restaurants:", error);
       } finally {

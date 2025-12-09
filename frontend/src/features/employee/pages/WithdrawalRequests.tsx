@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "../../../components/common/table";
 import { ArrowLeft, UserX, Search, Check, X, Clock, Mail, Phone } from "lucide-react";
+import { toast } from "sonner";
 import { Loader } from "../components/Loader";
 
 export const WithdrawalRequests = () => {
@@ -42,27 +43,29 @@ export const WithdrawalRequests = () => {
       request.contactPersonName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const pendingRequests = filteredRequests.filter((req) => req.status === "WITHDRAW_REQ");
-
   const handleApprove = async (id: number) => {
     try {
       await adminService.approveWithdrawal(id);
+      toast.success("Withdrawal request approved successfully");
       // Refresh the list
       const data = await adminService.getWithdrawalRequests();
       setWithdrawalRequests(data);
     } catch (error) {
       console.error('Failed to approve withdrawal:', error);
+      toast.error("Failed to approve withdrawal request");
     }
   };
 
   const handleReject = async (id: number, reason: string) => {
     try {
       await adminService.rejectWithdrawal(id);
+      toast.success("Withdrawal request rejected successfully");
       // Refresh the list
       const data = await adminService.getWithdrawalRequests();
       setWithdrawalRequests(data);
     } catch (error) {
       console.error('Failed to reject withdrawal:', error);
+      toast.error("Failed to reject withdrawal request");
     }
   };
 

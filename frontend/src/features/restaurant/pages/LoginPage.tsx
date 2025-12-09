@@ -26,9 +26,9 @@ export function LoginPage() {
   const validateUsername = useCallback((username: string) => {
     if (!username) return "Username is required";
     if (username.length < 3) return "Username must be at least 3 characters long";
-    const usernameRegex = /^[a-zA-Z]+\d{2}$/;
+    const usernameRegex = /^[a-zA-Z]+\d+$/;
     if (!usernameRegex.test(username)) {
-      return "Username must be lastname + 2 digits (e.g., smith01)";
+      return "Username must be letters followed by numbers (e.g., smithh4)";
     }
     return "";
   }, []);
@@ -160,7 +160,7 @@ export function LoginPage() {
                     <Input
                       id="username"
                       type="text"
-                      placeholder="smith01"
+                      placeholder="smithh4"
                       value={loginData.username}
                       onChange={(e) => handleUsernameChange(e.target.value)}
                       disabled={isAuthenticating}
@@ -170,7 +170,7 @@ export function LoginPage() {
                       <p className="text-xs text-destructive">{usernameError}</p>
                     ) : (
                       <p className="text-xs text-muted-foreground">
-                        Format: lastname + 2 digits (e.g., smith01)
+                        Format: letters + numbers (e.g., smithh4)
                       </p>
                     )}
                   </div>
