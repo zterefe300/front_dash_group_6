@@ -23,10 +23,10 @@ address_id, street_address, bldg, city, state, zip_code
 Missing fields: None
 
 Restaurant
-restaurant_id, name, cuisine_type, picture_url, address_id, phone_number, contact_person_name, email_address, status
-1, All Chicken Meals, , , 1, 617-478-3785, Laura Wimbleton, ????????, ACTIVE
-2, Pizza Only, , , 2, 857-477-2773, Russel Beverton, ????????, ACTIVE
-3, Best Burgers, , , 3, 781-467-0073, Eager Alloysis, ????????, ACTIVE
+restaurant_id, name, picture_url, address_id, phone_number, contact_person_name, email_address, status
+1, All Chicken Meals, , 1, 617-478-3785, Laura Wimbleton, ????????, ACTIVE
+2, Pizza Only, , 2, 857-477-2773, Russel Beverton, ????????, ACTIVE
+3, Best Burgers, , 3, 781-467-0073, Eager Alloysis, ????????, ACTIVE
 Missing fields: Contact Email (mapped to email_address)
 
 OperatingHour

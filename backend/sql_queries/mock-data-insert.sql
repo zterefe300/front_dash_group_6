@@ -22,10 +22,10 @@ INSERT INTO Address (address_id, street_address, bldg, city, state, zip_code) VA
 (18, 'York Terrace', '17286', 'Corey Hill', 'MA', '02491');
 
 -- Insert data into Restaurant
-INSERT INTO Restaurant (restaurant_id, name, cuisine_type, picture_url, address_id, phone_number, contact_person_name, email_address, status) VALUES
-(1, 'All Chicken Meals', '', '', 1, '617-478-3785', 'Laura Wimbleton', 'info@allchickenmeals.com', 'ACTIVE'),
-(2, 'Pizza Only', '', '', 2, '857-477-2773', 'Russel Beverton', 'info@pizzaonly.com', 'ACTIVE'),
-(3, 'Best Burgers', '', '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
+INSERT INTO Restaurant (restaurant_id, name, picture_url, address_id, phone_number, contact_person_name, email_address, status) VALUES
+(1, 'All Chicken Meals', '', 1, '617-478-3785', 'Laura Wimbleton', 'info@allchickenmeals.com', 'ACTIVE'),
+(2, 'Pizza Only', '', 2, '857-477-2773', 'Russel Beverton', 'info@pizzaonly.com', 'ACTIVE'),
+(3, 'Best Burgers', '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
 
 -- Insert data into RestaurantLogin
 -- Passwords are BCrypt encrypted
@@ -68,22 +68,22 @@ INSERT INTO MenuCategory (category_id, restaurant_id, category_name) VALUES
 (3, 3, 'Burgers');
 
 -- Insert data into MenuItem
-INSERT INTO MenuItem (menu_item_id, category_id, item_name, picture_url, price, availability) VALUES
-(1, 1, 'Nuggets', '', 5.99, 'AVAILABLE'),
-(2, 1, 'Wings', '', 10.99, 'AVAILABLE'),
-(3, 1, 'Combo', '', 23.99, 'AVAILABLE'),
-(4, 1, 'Sandwich', '', 8.99, 'AVAILABLE'),
-(5, 1, 'Wrap', '', 6.99, 'AVAILABLE'),
-(6, 2, 'Pepperoni(Small)', '', 12.99, 'AVAILABLE'),
-(7, 2, 'Pepperoni(Large)', '', 17.99, 'AVAILABLE'),
-(8, 2, 'Supreme', '', 21.99, 'AVAILABLE'),
-(9, 2, 'Hawaiian', '', 24.99, 'AVAILABLE'),
-(10, 2, 'Your 3 topping', '', 15.99, 'AVAILABLE'),
-(11, 3, 'Butter burger', '', 9.99, 'AVAILABLE'),
-(12, 3, 'Cheese Burger', '', 5.99, 'AVAILABLE'),
-(13, 3, 'Hamburger', '', 4.99, 'AVAILABLE'),
-(14, 3, 'BBSpecial', '', 12.99, 'AVAILABLE'),
-(15, 3, 'BBDouble', '', 11.99, 'AVAILABLE');
+INSERT INTO MenuItem (menu_item_id, category_id, item_name, description, picture_url, price, availability) VALUES
+(1, 1, 'Nuggets', '', '', 5.99, 'AVAILABLE'),
+(2, 1, 'Wings', '', '', 10.99, 'AVAILABLE'),
+(3, 1, 'Combo', '', '', 23.99, 'AVAILABLE'),
+(4, 1, 'Sandwich', '', '', 8.99, 'AVAILABLE'),
+(5, 1, 'Wrap', '', '', 6.99, 'AVAILABLE'),
+(6, 2, 'Pepperoni(Small)', '', '', 12.99, 'AVAILABLE'),
+(7, 2, 'Pepperoni(Large)', '', '', 17.99, 'AVAILABLE'),
+(8, 2, 'Supreme', '', '', 21.99, 'AVAILABLE'),
+(9, 2, 'Hawaiian', '', '', 24.99, 'AVAILABLE'),
+(10, 2, 'Your 3 topping', '', '', 15.99, 'AVAILABLE'),
+(11, 3, 'Butter burger', '', '', 9.99, 'AVAILABLE'),
+(12, 3, 'Cheese Burger', '', '', 5.99, 'AVAILABLE'),
+(13, 3, 'Hamburger', '', '', 4.99, 'AVAILABLE'),
+(14, 3, 'BBSpecial', '', '', 12.99, 'AVAILABLE'),
+(15, 3, 'BBDouble', '', '', 11.99, 'AVAILABLE');
 
 -- Insert data into Driver
 INSERT INTO Driver (driver_id, firstname, lastname, availability_status) VALUES
