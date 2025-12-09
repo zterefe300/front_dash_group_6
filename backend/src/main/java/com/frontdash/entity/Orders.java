@@ -62,6 +62,7 @@ public class Orders {
     public enum OrderStatus {
         PENDING,
         OUT_FOR_DELIVERY,
-        DELIVERED
+        DELIVERED,
+        NOT_DELIVERED
     }
 }
