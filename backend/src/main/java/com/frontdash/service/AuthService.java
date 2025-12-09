@@ -73,6 +73,10 @@ public class AuthService {
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
+        System.out.println(request.getPassword());
+        System.out.println(passwordEncoder.encode(request.getPassword()));
+        System.out.println(login.getPassword());
+
         if (!passwordEncoder.matches(request.getPassword(), login.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }

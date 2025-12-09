@@ -19,7 +19,7 @@ import { useAppStore } from "@/store";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { token, user, changePassword, isFirstLogin } = useAppStore();
+  const { token, user, changePassword, logout, isFirstLogin } = useAppStore();
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -28,9 +28,6 @@ export function ResetPasswordPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const resetToken = searchParams.get("token");
 
@@ -74,12 +71,18 @@ export function ResetPasswordPage() {
         currentPassword: formData.currentPassword,
         newPassword: formData.password,
       });
-      toast.success("Password reset successfully!");
-      setPasswordReset(true);
+      toast.success("Password reset successfully! Redirecting to login...");
+
+      // Clear token and authentication state
+      await logout();
+
+      // Navigate to login page
+      setTimeout(() => {
+        navigate("/restaurant/login", { replace: true });
+      }, 1500); // Small delay to show success message
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to reset password";
       toast.error(message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -159,66 +162,36 @@ export function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Current Password</Label>
-              <div className="relative">
-                <Input
-                  id="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  placeholder="Enter your current password"
-                  value={formData.currentPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentPassword: e.target.value,
-                    })
-                  }
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  disabled={isLoading}
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <Input
+                id="currentPassword"
+                type="password"
+                placeholder="Enter your current password"
+                value={formData.currentPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    currentPassword: e.target.value,
+                  })
+                }
+                disabled={isLoading}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your new password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      password: e.target.value,
-                    })
-                  }
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your new password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+                disabled={isLoading}
+              />
               <p className="text-xs text-muted-foreground">
                 Password must be at least 8 characters long
               </p>
@@ -226,34 +199,19 @@ export function ResetPasswordPage() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your new password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your new password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                disabled={isLoading}
+              />
             </div>
             
             <Button

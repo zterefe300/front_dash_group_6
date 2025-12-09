@@ -5,37 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="779f0e7f-94b4-4c20-bc22-ea12452ee8b8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/MessageType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/MessageType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantProfileUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantProfileUpdateRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantRegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantRegistrationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/request/RestaurantRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/LoginResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/LoginResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/RestaurantProfileResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/RestaurantProfileResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/RestaurantResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/dao/response/RestaurantResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/entity/Restaurant.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/entity/Restaurant.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/entity/RestaurantLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/entity/RestaurantLogin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/service/AdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/service/AdminService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/service/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/service/EmailService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/frontdash/service/RestaurantService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/frontdash/service/RestaurantService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/demo_data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/demo_data.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/4506d71d-690d-4832-bfde-2fa5817ae32e.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/8e99d53c-ff4d-4b7a-b818-14195e549a76.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/a0b4b081-89d3-490f-b5a1-e63126f30d7b.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/ce5151c7-cf7e-4fe4-ad03-647758ff12b5.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/cf58e5b0-c852-47a0-829f-523719d0ba77.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/upload/de98c3ce-2cc3-4cf8-abee-ac7253004fe6.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/api/restaurant/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/api/restaurant/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/api/restaurant/withdrawal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/api/restaurant/withdrawal.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/BusinessActions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/BusinessActions.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/ImageUpload.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/ImageUpload.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/RegistrationPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/RegistrationPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/ResetPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/features/restaurant/pages/ResetPasswordPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/routes/RouteGuards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/routes/RouteGuards.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/store/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/store/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/store/restaurantSlices/authSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/store/restaurantSlices/authSlice.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/store/restaurantSlices/passwordSlice.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/store/restaurantSlices/passwordSlice.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,25 +30,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "Spring Boot.FrontDashBackendApplication.executor": "Run",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/MistS/OneDrive/Desktop/New folder/front_dash_group_6/backend",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;Spring Boot.FrontDashBackendApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/MistS/OneDrive/Desktop/New folder/front_dash_group_6/backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="FrontDashBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
@@ -101,7 +77,11 @@
       <updated>1765061350103</updated>
       <workItem from="1765061351139" duration="17609000" />
       <workItem from="1765222168851" duration="606000" />
-      <workItem from="1765223000895" duration="22169000" />
+      <workItem from="1765223000895" duration="22868000" />
+      <workItem from="1765255835224" duration="965000" />
+      <workItem from="1765256889155" duration="1277000" />
+      <workItem from="1765262492862" duration="1884000" />
+      <workItem from="1765265471225" duration="1158000" />
     </task>
     <servers />
   </component>

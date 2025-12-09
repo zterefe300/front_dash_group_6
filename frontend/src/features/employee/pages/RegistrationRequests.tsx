@@ -22,6 +22,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import { toast } from "sonner";
 import { adminService } from "../../../service/employee/adminService";
 
 
@@ -57,22 +58,26 @@ export const RegistrationRequests = () => {
   const handleApprove = async (id: number) => {
     try {
       await adminService.approveRegistration(id);
+      toast.success("Registration request approved successfully");
       // Refresh the list
       const data = await adminService.getRegistrationRequests();
       setRegistrationRequests(data);
     } catch (error) {
       console.error('Failed to approve registration:', error);
+      toast.error("Failed to approve registration request");
     }
   };
 
   const handleReject = async (id: number, reason: string) => {
     try {
       await adminService.rejectRegistration(id);
+      toast.success("Registration request rejected successfully");
       // Refresh the list
       const data = await adminService.getRegistrationRequests();
       setRegistrationRequests(data);
     } catch (error) {
       console.error('Failed to reject registration:', error);
+      toast.error("Failed to reject registration request");
     }
   };
 
