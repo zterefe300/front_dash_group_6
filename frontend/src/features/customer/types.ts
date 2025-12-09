@@ -13,6 +13,14 @@ export interface Restaurant {
   deliveryTime: string;
   deliveryFee: number;
   logo?: string;
+  address?: string;
+  fullAddress?: {
+    bldg: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
 }
 
 export interface DeliveryAddress {

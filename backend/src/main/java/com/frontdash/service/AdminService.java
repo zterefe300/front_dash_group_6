@@ -103,16 +103,16 @@ public class AdminService {
 
     // Helper method to convert Restaurant entity to RestaurantResponse DTO
     private RestaurantResponse convertToResponse(Restaurant restaurant) {
-        return new RestaurantResponse(
-                restaurant.getRestaurantId(),
-                restaurant.getName(),
-                restaurant.getPictureUrl(),
-                restaurant.getAddressId(),
-                restaurant.getPhoneNumber(),
-                restaurant.getContactPersonName(),
-                restaurant.getEmailAddress(),
-                restaurant.getStatus().toString()
-        );
+        return RestaurantResponse.builder()
+                .restaurantId(restaurant.getRestaurantId())
+                .name(restaurant.getName())
+                .pictureUrl(restaurant.getPictureUrl())
+                .addressId(restaurant.getAddressId())
+                .phoneNumber(restaurant.getPhoneNumber())
+                .contactPersonName(restaurant.getContactPersonName())
+                .emailAddress(restaurant.getEmailAddress())
+                .status(restaurant.getStatus().toString())
+                .build();
     }
 
     /**

@@ -60,6 +60,13 @@ public class RestaurantService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    public List<RestaurantWithAddressResponse> getAllRestaurantsWithAddress() {
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+        return restaurants.stream()
+                .map(this::convertToRestaurantWithAddress)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     @Transactional
     public RestaurantRegistrationResponse registerRestaurant(RestaurantRegistrationRequest request) {
         logger.info("Starting restaurant registration for: {}", request.getName());
@@ -827,7 +834,7 @@ public class RestaurantService {
     }
 
     private RestaurantResponse convertToResponse(Restaurant restaurant) {
-        RestaurantResponse.RestaurantResponseBuilder builder = RestaurantResponse.builder()
+        return RestaurantResponse.builder()
                 .restaurantId(restaurant.getRestaurantId())
                 .name(restaurant.getName())
                 .pictureUrl(restaurant.getPictureUrl())
@@ -835,20 +842,35 @@ public class RestaurantService {
                 .phoneNumber(restaurant.getPhoneNumber())
                 .contactPersonName(restaurant.getContactPersonName())
                 .emailAddress(restaurant.getEmailAddress())
-                .status(restaurant.getStatus().name());
-        
-        // Fetch and include address information if available
+                .status(restaurant.getStatus().name())
+                .build();
+    }
+
+    private RestaurantWithAddressResponse convertToRestaurantWithAddress(Restaurant restaurant) {
+        AddressResponse addressResponse = null;
         if (restaurant.getAddressId() != null) {
-            addressRepository.findById(restaurant.getAddressId()).ifPresent(address -> {
-                builder.streetAddress(address.getStreetAddress())
-                       .building(address.getBldg())
-                       .city(address.getCity())
-                       .state(address.getState())
-                       .zipCode(address.getZipCode());
-            });
+            addressResponse = addressRepository.findById(restaurant.getAddressId())
+                    .map(address -> AddressResponse.builder()
+                            .addressId(address.getAddressId())
+                            .streetAddress(address.getStreetAddress())
+                            .bldg(address.getBldg())
+                            .city(address.getCity())
+                            .state(address.getState())
+                            .zipCode(address.getZipCode())
+                            .build())
+                    .orElse(null);
         }
-        
-        return builder.build();
+
+        return RestaurantWithAddressResponse.builder()
+                .restaurantId(restaurant.getRestaurantId())
+                .name(restaurant.getName())
+                .pictureUrl(restaurant.getPictureUrl())
+                .phoneNumber(restaurant.getPhoneNumber())
+                .contactPersonName(restaurant.getContactPersonName())
+                .emailAddress(restaurant.getEmailAddress())
+                .status(restaurant.getStatus().name())
+                .address(addressResponse)
+                .build();
     }
 
     private MenuItemResponse convertToResponse(MenuItem menuItem) {

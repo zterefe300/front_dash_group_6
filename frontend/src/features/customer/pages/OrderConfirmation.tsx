@@ -37,10 +37,8 @@ export function OrderConfirmation() {
       }
 
       try {
-        // Format restaurant address (using restaurant name and delivery city as fallback)
-        // TODO: Fetch actual restaurant address from backend
-        const restaurantAddress = orderSnapshot.restaurant.name ? 
-          `${orderSnapshot.restaurant.name}, ${orderSnapshot.deliveryAddress?.city || ''}, ${orderSnapshot.deliveryAddress?.state || ''}` : '';
+        // Use actual restaurant address from backend
+        const restaurantAddress = orderSnapshot.restaurant.address || '';
         
         // Format delivery address
         const deliveryAddr = geoapifyService.formatAddress(orderSnapshot.deliveryAddress);
@@ -259,7 +257,7 @@ export function OrderConfirmation() {
                   hour: 'numeric', 
                   minute: '2-digit',
                   hour12: true 
-                })} ({restaurant?.deliveryTime})
+                })}
               </p>
             </div>
             

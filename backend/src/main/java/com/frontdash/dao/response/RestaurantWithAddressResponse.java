@@ -9,14 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantResponse {
-
+public class RestaurantWithAddressResponse {
     private Integer restaurantId;
     private String name;
     private String pictureUrl;
-    private Integer addressId;
     private String phoneNumber;
     private String contactPersonName;
     private String emailAddress;
     private String status;
+    private AddressResponse address;
 }

@@ -43,9 +43,9 @@ const isRestaurantOpen = (operatingHours) => {
 };
 
 export const restaurantService = {
-  // Get all restaurants
+  // Get all restaurants with address information
   getAllRestaurants: async () => {
-    const response = await fetch(`${API_BASE_URL}/restaurant`);
+    const response = await fetch(`${API_BASE_URL}/restaurant/with-address`);
     if (!response.ok) {
       throw new Error('Failed to fetch restaurants');
     }
@@ -71,17 +71,19 @@ export const restaurantService = {
           // Keep default isOpen value based on status
         }
         
-        // Format address if available
+        // Format address if available from nested address object
         let address = '';
-        if (restaurant.building || restaurant.streetAddress || restaurant.city) {
+        let fullAddress = null;
+        if (restaurant.address) {
           const parts = [
-            restaurant.building,
-            restaurant.streetAddress,
-            restaurant.city,
-            restaurant.state,
-            restaurant.zipCode
+            restaurant.address.bldg,
+            restaurant.address.streetAddress,
+            restaurant.address.city,
+            restaurant.address.state,
+            restaurant.address.zipCode
           ].filter(Boolean);
           address = parts.join(', ');
+          fullAddress = restaurant.address;
         }
         
         return {
@@ -95,7 +97,8 @@ export const restaurantService = {
           isOpen: isOpen,
           priceRange: '$$',
           menu: [],
-          address: address
+          address: address,
+          fullAddress: fullAddress // Include the full address object for delivery time calculations
         };
       })
     );
