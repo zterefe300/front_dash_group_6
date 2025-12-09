@@ -32,10 +32,10 @@ INSERT INTO Restaurant (restaurant_id, name, cuisine_type, picture_url, address_
 -- restaurant1 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 -- restaurant2 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 -- restaurant3 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
-INSERT INTO RestaurantLogin (user_name, restaurant_id, password) VALUES
-('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
-('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
-('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe');
+INSERT INTO RestaurantLogin (user_name, restaurant_id, password, is_first_login) VALUES
+('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
+('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
+('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true);
 
 -- Insert data into OperatingHour
 INSERT INTO OperatingHour (operating_hour_id, restaurant_id, week_day, open_time, close_time) VALUES
