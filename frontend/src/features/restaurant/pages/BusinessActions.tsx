@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,17 +7,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  LogOut, 
-  AlertTriangle, 
-  Phone, 
-  Mail, 
+import {
+  LogOut,
+  AlertTriangle,
+  Phone,
+  Mail,
   Clock,
   FileText,
   DollarSign,
   MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 interface WithdrawalRequest {
   id: string;
@@ -28,37 +29,56 @@ interface WithdrawalRequest {
 }
 
 export function BusinessActions() {
-  // TODO: Replace with real store data later
-  const restaurant = { id: 'mock-restaurant-id', name: 'Mock Restaurant' };
-  const isSubmittingWithdrawal = false;
-
-  // Mock withdrawal requests data
-  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
+  const token = useAppStore((state) => state.token);
+  const user = useAppStore((state) => state.user);
+  const restaurantId = user?.id?.toString();
+  const isSubmittingWithdrawal = useAppStore((state) => state.isSubmittingWithdrawal);
+  const withdrawalRequests = useAppStore((state) => state.withdrawalRequests);
+  const submitWithdrawal = useAppStore((state) => state.submitWithdrawal);
+  const fetchWithdrawalRequests = useAppStore((state) => state.fetchWithdrawalRequests);
 
   const [withdrawalReason, setWithdrawalReason] = useState('');
   const [withdrawalDetails, setWithdrawalDetails] = useState('');
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
 
+  useEffect(() => {
+    if (token) {
+      fetchWithdrawalRequests(token).catch((error) => {
+        console.error('Failed to fetch withdrawal requests:', error);
+      });
+    }
+  }, [token, fetchWithdrawalRequests]);
+
   const handleWithdrawal = () => {
+    if (!token) {
+      toast.error('Please sign in again');
+      return;
+    }
+
+    if (!restaurantId) {
+      toast.error('Restaurant information not found');
+      return;
+    }
+
     if (!withdrawalReason || !withdrawalDetails) {
       toast.error('Please provide a reason and details for withdrawal');
       return;
     }
 
-    // Mock: Add withdrawal request to local state
-    const newRequest: WithdrawalRequest = {
-      id: Date.now().toString(),
+    submitWithdrawal(token, restaurantId, {
       reason: withdrawalReason,
       details: withdrawalDetails,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
-
-    setWithdrawalRequests([newRequest, ...withdrawalRequests]);
-    toast.success('Withdrawal request submitted. You will be contacted within 2 business days.');
-    setWithdrawalReason('');
-    setWithdrawalDetails('');
-    setShowWithdrawDialog(false);
+    })
+      .then(() => {
+        toast.success('Withdrawal request submitted successfully! A confirmation email has been sent.');
+        setWithdrawalReason('');
+        setWithdrawalDetails('');
+        setShowWithdrawDialog(false);
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to submit withdrawal request';
+        toast.error(message);
+      });
   };
 
   const formatLabel = (value: string) =>

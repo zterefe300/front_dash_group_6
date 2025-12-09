@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 import { useAppStore } from '@/store';
 
 export function AccountSecurity() {
+  const token = useAppStore((state) => state.token);
+  const user = useAppStore((state) => state.user);
+  const username = user?.username;
   const changePassword = useAppStore((state) => state.changePassword);
   const isPasswordUpdating = useAppStore((state) => state.isPasswordUpdating);
 
@@ -17,8 +20,18 @@ export function AccountSecurity() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-
   const handlePasswordChange = async () => {
+
+    if (!token) {
+      toast.error('Please sign in again');
+      return;
+    }
+
+    if (!username) {
+      toast.error('Username not found. Please sign in again');
+      return;
+    }
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('Please fill in all password fields');
       return;
@@ -28,14 +41,14 @@ export function AccountSecurity() {
       toast.error('New passwords do not match');
       return;
     }
-    
+
     if (newPassword.length < 8) {
       toast.error('Password must be at least 8 characters long');
       return;
     }
 
     try {
-      await changePassword({
+      await changePassword(token, username, {
         currentPassword,
         newPassword,
       });

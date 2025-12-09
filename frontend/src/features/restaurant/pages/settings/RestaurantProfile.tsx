@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store';
 
 type ProfileFormState = {
   name: string;
@@ -13,24 +14,67 @@ type ProfileFormState = {
 };
 
 export function RestaurantProfile() {
-  // TODO: Replace with real store data later
+  const token = useAppStore((state) => state.token);
+  const restaurant = useAppStore((state) => state.user);
+  const restaurantProfile = useAppStore((state) => state.restaurant);
+  const isProfileLoading = useAppStore((state) => state.isProfileLoading);
+  const isProfileUpdating = useAppStore((state) => state.isProfileUpdating);
+  const fetchProfile = useAppStore((state) => state.fetchProfile);
+  const updateProfile = useAppStore((state) => state.updateProfile);
+
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileFormState>({
-    name: 'Mock Restaurant',
-    description: 'A wonderful restaurant serving delicious food',
-    businessType: 'Restaurant',
+    name: restaurantProfile?.name || restaurant?.name || '',
+    description: restaurantProfile?.description || '',
+    businessType: restaurantProfile?.businessType || '',
   });
 
+  useEffect(() => {
+    if (!token || !restaurant?.id) return;
+    fetchProfile(token, restaurant.id).catch((error) => {
+      console.error('Failed to fetch profile', error);
+    });
+  }, [token, restaurant?.id, fetchProfile]);
+
+  useEffect(() => {
+    if (restaurantProfile) {
+      setProfile({
+        name: restaurantProfile.name,
+        description: restaurantProfile.description || '',
+        businessType: restaurantProfile.businessType || '',
+      });
+    }
+  }, [restaurantProfile]);
+
   const handleSave = () => {
-    // Mock: Just update local state
-    setIsEditing(false);
-    toast.success('Profile updated successfully!');
+    if (!token || !restaurant?.id) {
+      toast.error('Please sign in again to update profile');
+      return;
+    }
+    updateProfile(token, restaurant.id, {
+      name: profile.name,
+      description: profile.description,
+      businessType: profile.businessType,
+    })
+      .then(() => {
+        setIsEditing(false);
+        toast.success('Profile updated successfully!');
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : 'Failed to update profile';
+        toast.error(message);
+      });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset to original values if needed
-    toast.info('Changes discarded');
+    if (restaurantProfile) {
+      setProfile({
+        name: restaurantProfile.name,
+        description: restaurantProfile.description || '',
+        businessType: restaurantProfile.businessType || '',
+      });
+    }
   };
 
   return (
@@ -41,14 +85,16 @@ export function RestaurantProfile() {
           <p className="text-muted-foreground">Manage your restaurant&apos;s public information</p>
         </div>
         {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+          <Button onClick={() => setIsEditing(true)} disabled={isProfileLoading}>
+            Edit Profile
+          </Button>
         ) : (
           <div className="space-x-2">
-            <Button variant="outline" onClick={handleCancel}>
+            <Button variant="outline" onClick={handleCancel} disabled={isProfileUpdating}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              Save Changes
+            <Button onClick={handleSave} disabled={isProfileUpdating}>
+              {isProfileUpdating ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         )}

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, Upload, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadApi } from '@/api/restaurant';
 
 interface ImageUploadProps {
   value?: string;
@@ -16,7 +17,7 @@ export function ImageUpload({ value, onChange, label = "Image", className }: Ima
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please select a valid image file');
       return;
@@ -29,19 +30,16 @@ export function ImageUpload({ value, onChange, label = "Image", className }: Ima
 
     setIsUploading(true);
 
-    // Create a FileReader to convert the file to base64
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      onChange(result);
-      setIsUploading(false);
+    try {
+      const result = await uploadApi.uploadImage(file);
+      onChange(result.url);
       toast.success('Image uploaded successfully');
-    };
-    reader.onerror = () => {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to upload image';
+      toast.error(message);
+    } finally {
       setIsUploading(false);
-      toast.error('Failed to upload image');
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {

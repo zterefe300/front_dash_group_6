@@ -32,9 +32,9 @@ public class OperatingHour {
     @Column(name = "week_day", nullable = false)
     private String weekDay;
 
-    @Column(name = "open_time", nullable = false)
+    @Column(name = "open_time")
     private LocalTime openTime;
 
-    @Column(name = "close_time", nullable = false)
+    @Column(name = "close_time")
     private LocalTime closeTime;
 }

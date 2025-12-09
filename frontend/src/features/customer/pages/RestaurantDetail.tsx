@@ -140,9 +140,11 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
                         <div className="flex-1 p-6">
                           <div className="space-y-3">
                             <h3>{item.name}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {item.description}
-                            </p>
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {item.description}
+                              </p>
+                            )}
                             <div className="flex items-center justify-between">
                               <span className="text-lg font-semibold">
                                 ${item.price.toFixed(2)}

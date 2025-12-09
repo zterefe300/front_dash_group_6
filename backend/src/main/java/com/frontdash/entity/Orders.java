@@ -33,7 +33,7 @@ public class Orders {
     @Column(name = "address_id")
     private Integer addressId;
 
-    @Column(name = "total_amount", nullable = false)
+    @Column(name = "total_amount")
     private BigDecimal totalAmount;
 
     @Column(name = "order_time", nullable = false)
@@ -53,7 +53,7 @@ public class Orders {
     @Column(name = "tips")
     private BigDecimal tips;
 
-    @Column(name = "subtotal", nullable = false)
+    @Column(name = "subtotal")
     private BigDecimal subtotal;
 
     @Column(name = "delivery_time")

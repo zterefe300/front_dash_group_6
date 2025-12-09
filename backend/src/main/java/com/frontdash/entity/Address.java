@@ -19,11 +19,11 @@ public class Address {
     @Column(name = "address_id")
     private Integer addressId;
 
+    @Column(nullable = false)
+    private String bldg;
+
     @Column(name = "street_address", nullable = false)
     private String streetAddress;
-
-    @Column
-    private String bldg;
 
     @Column(nullable = false)
     private String city;

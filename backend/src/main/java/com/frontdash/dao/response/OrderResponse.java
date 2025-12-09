@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OrderResponse {
     private String orderId;
+    private Integer restaurantId;
     private RestaurantResponse restaurant;
     private String customerName;
     private String customerPhone;

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.frontdash.dao.request.LoginRequest;
 import com.frontdash.dao.request.PasswordUpdateRequest;
 import com.frontdash.dao.response.EmployeeLoginResponse;
-import com.frontdash.dao.response.RestaurantLoginResponse;
+import com.frontdash.dao.response.LoginResponse;
 import com.frontdash.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +22,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -60,28 +64,39 @@ public class AuthController {
     @Operation(summary = "Restaurant owner login", description = "Authenticate a restaurant owner using username and password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Restaurant owner login successful",
-                    content = @Content(schema = @Schema(implementation = RestaurantLoginResponse.class))),
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials or restaurant not active",
-                    content = @Content(schema = @Schema(implementation = RestaurantLoginResponse.class)))
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class)))
     })
-    public ResponseEntity<RestaurantLoginResponse> ownerLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> ownerLogin(@RequestBody LoginRequest request) {
         try {
-            System.out.println(request);
-            RestaurantLoginResponse response = authService.loginOwner(request);
+            LoginResponse response = authService.loginOwner(request.getUsername(), request.getPassword());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    RestaurantLoginResponse.builder()
+                    LoginResponse.builder()
                             .success(false)
                             .message(ex.getMessage())
                             .role("OWNER")
-                            .restaurantId(null)
                             .build()
             );
         }
     }
 
-
+    @PostMapping("/owner/logout")
+    @Operation(summary = "Restaurant owner logout", description = "Logout restaurant owner and invalidate token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<LoginResponse> ownerLogout(@RequestHeader(value = "Authorization", required = false) String token) {
+        return ResponseEntity.ok(
+                LoginResponse.builder()
+                        .success(true)
+                        .message("Logout successful")
+                        .build()
+        );
+    }
 
     @PutMapping("/password")
     @Operation(summary = "Update password", description = "Update the password for the current user")
