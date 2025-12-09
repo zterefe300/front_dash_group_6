@@ -11,7 +11,7 @@ export interface WithdrawalState {
 
   // Actions
   fetchWithdrawalRequests: (token: string) => Promise<void>;
-  submitWithdrawal: (token: string, data: WithdrawalPayload) => Promise<void>;
+  submitWithdrawal: (token: string, restaurantId: string, data: WithdrawalPayload) => Promise<void>;
   clearWithdrawalError: () => void;
 }
 
@@ -37,12 +37,14 @@ export const createWithdrawalSlice: StateCreator<WithdrawalState> = (set) => ({
     }
   },
 
-  submitWithdrawal: async (token: string, data: WithdrawalPayload) => {
+  submitWithdrawal: async (token: string, restaurantId: string, data: WithdrawalPayload) => {
     if (!token) throw new Error('Not authenticated');
+    if (!restaurantId) throw new Error('Restaurant not selected');
 
     set({ isSubmittingWithdrawal: true, withdrawalError: null });
     try {
-      const newRequest = await withdrawalApi.submitWithdrawal(token, data);
+      const payload = { ...data, restaurantId: parseInt(restaurantId) };
+      const newRequest = await withdrawalApi.submitWithdrawal(token, payload);
       set((state) => ({
         withdrawalRequests: [newRequest, ...state.withdrawalRequests],
         isSubmittingWithdrawal: false,

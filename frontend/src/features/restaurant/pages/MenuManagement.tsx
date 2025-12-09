@@ -26,7 +26,7 @@ import { useAppStore } from '@/store';
 interface MenuItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   category: string;
   isAvailable: boolean;
@@ -117,7 +117,6 @@ export function MenuManagement() {
     }
     if (
       !newItem.name ||
-      !newItem.description ||
       newItem.price === undefined ||
       newItem.price === null ||
       newItem.category === undefined ||
@@ -246,9 +245,9 @@ export function MenuManagement() {
         (filterAvailability === 'unavailable' && !item.isAvailable);
       
       // Search filter
-      const searchMatch = searchTerm === '' || 
+      const searchMatch = searchTerm === '' ||
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       return categoryMatch && availabilityMatch && searchMatch;
     });
@@ -313,12 +312,12 @@ export function MenuManagement() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">Description (Optional)</Label>
                       <Textarea
                         id="description"
                         value={newItem.description || ''}
                         onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                        placeholder="Describe the item"
+                        placeholder="Describe the item (optional)"
                         rows={3}
                       />
                     </div>
@@ -355,7 +354,13 @@ export function MenuManagement() {
                       <Switch
                         id="available"
                         checked={newItem.isAvailable ?? true}
-                        onCheckedChange={(checked) => setNewItem({...newItem, isAvailable: checked})}
+                        onCheckedChange={(checked) =>
+                          setNewItem({ ...newItem, isAvailable: checked })
+                        }
+                        className="
+                          data-[state=checked]:bg-green-600
+                          data-[state=unchecked]:bg-red-600
+                        "
                       />
                       <Label htmlFor="available">Available</Label>
                     </div>
@@ -628,7 +633,7 @@ export function MenuManagement() {
                             {item.isAvailable ? 'Available' : 'Unavailable'}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
                         <p className="font-medium">${item.price.toFixed(2)}</p>
                       </div>
                     </div>
@@ -685,10 +690,10 @@ export function MenuManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="editDescription">Description</Label>
+                    <Label htmlFor="editDescription">Description (Optional)</Label>
                     <Textarea
                       id="editDescription"
-                      value={editingItem.description}
+                      value={editingItem.description || ''}
                       onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
                       rows={3}
                     />

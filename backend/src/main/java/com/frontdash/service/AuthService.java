@@ -1,5 +1,10 @@
 package com.frontdash.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.frontdash.dao.request.LoginRequest;
 import com.frontdash.dao.response.LoginResponse;
 import com.frontdash.entity.EmployeeLogin;
@@ -33,18 +38,51 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public LoginResponse loginStaff(LoginRequest request) {
+    @Transactional
+    public void updatePassword(String username, String newPassword) {
+        EmployeeLogin login = employeeLoginRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        login.setPassword(passwordEncoder.encode(newPassword));
+        employeeLoginRepository.save(login);
+    }
+
+    @Transactional
+    public void updateRestaurantPassword(String username, String currentPassword, String newPassword) {
+        RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Verify current password
+        if (!currentPassword.equals(restaurantLogin.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Validate new password strength
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        }
+
+        // Update password (Note: Should be encoded in production)
+        restaurantLogin.setPassword(newPassword);
+        restaurantLoginRepository.save(restaurantLogin);
+    }
+
+    public LoginResponse loginEmployee(LoginRequest request) {
+        System.out.println(request.getUsername());
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
-                .filter(employeeLogin -> employeeLogin.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
-        if (!request.getPassword().equals(login.getPassword())) {
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), login.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
+        String role = login.getEmployeeType().name(); // ADMIN or STAFF
+        String message = login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN ?
+            "Admin login successful" : "Staff login successful";
+
         return LoginResponse.builder()
                 .success(true)
-                .message("Staff login successful")
-                .role(EmployeeLogin.EmployeeType.STAFF.name())
+                .message(message)
+                .role(role)
                 .build();
     }
 
@@ -52,6 +90,8 @@ public class AuthService {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
+        System.out.println(password);
+        System.out.println(restaurantLogin);
         if (!password.equals(restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
@@ -78,4 +118,15 @@ public class AuthService {
                 .status(restaurant.getStatus().name())
                 .build();
     }
+
+    public LoginResponse login(LoginRequest request) {
+        try {
+            // First try employee login
+            return loginEmployee(request);
+        } catch (IllegalArgumentException e) {
+            // If employee login fails, try owner login
+            return loginOwner(request.getUsername(), request.getPassword());
+        }
+    }
+
 }

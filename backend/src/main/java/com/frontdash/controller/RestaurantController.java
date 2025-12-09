@@ -7,11 +7,9 @@ import com.frontdash.dao.request.RestaurantWithdrawalRequest;
 import com.frontdash.dao.request.RestaurantProfileUpdateRequest;
 import com.frontdash.dao.request.RestaurantContactUpdateRequest;
 import com.frontdash.dao.request.RestaurantAddressUpdateRequest;
-import com.frontdash.dao.response.MenuItemResponse;
-import com.frontdash.dao.response.OperatingHourResponse;
-import com.frontdash.dao.response.RestaurantProfileResponse;
-import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.dao.response.*;
 import com.frontdash.service.RestaurantService;
+import com.frontdash.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,13 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,6 +33,16 @@ public class RestaurantController {
     @Autowired
     private RestaurantService restaurantService;
 
+    @GetMapping
+    @Operation(summary = "Get all restaurants", description = "Retrieve a list of all restaurants")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurants")
+    })
+    public ResponseEntity<List<RestaurantResponse>> getAllRestaurants() {
+        List<RestaurantResponse> responseList = restaurantService.getAllRestaurants();
+        return ResponseEntity.ok(responseList);
+    }
+
     @PostMapping("/registration")
     @Operation(summary = "Submit restaurant registration", description = "Create a new restaurant registration request for approval")
     @ApiResponses(value = {
@@ -48,31 +50,10 @@ public class RestaurantController {
                     content = @Content(schema = @Schema(implementation = RestaurantResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid registration data")
     })
-    public ResponseEntity<RestaurantResponse> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
+    public ResponseEntity<RestaurantRegistrationResponse> registerRestaurant(@RequestBody RestaurantRegistrationRequest request) {
         try {
-            System.out.println(request.toString());
-            return null;
-//            RestaurantResponse response = restaurantService.registerRestaurant(request);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PutMapping("/{id}/menu")
-    @Operation(summary = "Update menu item", description = "Update an existing menu item for the specified restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Menu item updated",
-                    content = @Content(schema = @Schema(implementation = MenuItemResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid menu item data"),
-            @ApiResponse(responseCode = "404", description = "Menu item not found for restaurant")
-    })
-    public ResponseEntity<MenuItemResponse> updateMenuItem(
-            @PathVariable("id") Integer restaurantId,
-            @RequestBody MenuUpdateRequest request) {
-        try {
-            MenuItemResponse response = restaurantService.updateMenuItem(restaurantId, request);
-            return ResponseEntity.ok(response);
+            RestaurantRegistrationResponse response = restaurantService.registerRestaurant(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         }
@@ -89,6 +70,7 @@ public class RestaurantController {
             @PathVariable("id") Integer restaurantId,
             @RequestBody OperatingHoursUpdateRequest request) {
         try {
+            System.out.println(request);
             List<OperatingHourResponse> responses = restaurantService.updateOperatingHours(restaurantId, request);
             return ResponseEntity.ok(responses);
         } catch (IllegalArgumentException ex) {
@@ -160,6 +142,27 @@ public class RestaurantController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change restaurant owner password", description = "Update the password for the restaurant owner account")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid password change request")
+    })
+    public ResponseEntity<String> changePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody com.frontdash.dao.request.PasswordUpdateRequest request) {
+        try {
+            // Extract username from JWT token
+            String token = authHeader.replace("Bearer ", "");
+            // TODO: Extract username from token using JwtUtil
+            // For now, use username from request
+            restaurantService.changeRestaurantPassword(request.getUsername(), request.getCurrentPassword(), request.getNewPassword());
+            return ResponseEntity.ok("Password changed successfully");
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 }

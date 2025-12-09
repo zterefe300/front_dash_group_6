@@ -17,16 +17,16 @@ import java.util.List;
 @Builder
 public class RestaurantRegistrationRequest {
 
-    // Basic Restaurant Information
-    private String restaurantName;
-    private String businessType;
-    private String description;
+    private String name;
+    private String cuisineType;
+    private String pictureUrl;
 
-    // Contact Information
-    private String ownerName;
-    private String email;
-    private String phone;
+    private String contactPersonName;
+    private String emailAddress;
+    private String phoneNumber;
 
+
+    private AddressRequest address;
     // Business Address
     private String building;
     private String street;

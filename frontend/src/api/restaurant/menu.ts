@@ -27,10 +27,10 @@ type MenuCategoryResponse = {
 const toMenuItem = (data: MenuItemResponse): MenuItem => ({
   id: data.menuItemId.toString(),
   name: data.itemName,
-  description: data.description ?? '',
+  description: data.description ?? undefined,
   price: Number(data.price),
   category: data.categoryName ?? '',
-  isAvailable: data.availability?.toLowerCase() !== 'unavailable',
+  isAvailable: data.availability?.toUpperCase() !== 'UNAVAILABLE',
   imageUrl: data.pictureUrl ?? undefined,
 });
 

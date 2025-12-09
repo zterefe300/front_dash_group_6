@@ -29,11 +29,18 @@ export const withdrawalApi = {
    * @returns Array of withdrawal requests
    */
   getWithdrawalHistory: async (token: string): Promise<WithdrawalResponse[]> => {
-    const response = await fetch(`${API_BASE_URL}/restaurant/withdrawal/history`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    // const response = await fetch(`${API_BASE_URL}/restaurant/withdrawal/history`, {
+    //   headers: {
+    //     'Authorization': `Bearer ${token}`,
+    //   },
+    // });
+
+    const response = {
+      ok: true,
+      json: async () => {
+        return []; // mock 数据
+      }
+    };
 
     if (!response.ok) {
       throw new Error('Failed to fetch withdrawal history');

@@ -9,7 +9,7 @@ export interface PasswordState {
   passwordError: string | null;
 
   // Actions
-  changePassword: (token: string, data: ChangePasswordPayload) => Promise<void>;
+  changePassword: (token: string, username: string, data: ChangePasswordPayload) => Promise<void>;
   clearPasswordError: () => void;
 }
 
@@ -19,12 +19,13 @@ export const createPasswordSlice: StateCreator<PasswordState> = (set) => ({
   passwordError: null,
 
   // Actions
-  changePassword: async (token: string, data: ChangePasswordPayload) => {
+  changePassword: async (token: string, username: string, data: ChangePasswordPayload) => {
     if (!token) throw new Error('Not authenticated');
+    if (!username) throw new Error('Username is required');
 
     set({ isPasswordUpdating: true, passwordError: null });
     try {
-      await authApi.changePassword(token, data);
+      await authApi.changePassword(token, username, data);
       set({ isPasswordUpdating: false });
     } catch (error) {
       set({

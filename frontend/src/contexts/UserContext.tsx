@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { authService } from '../service/employee/authService';
 
 export type UserRole = 'admin' | 'staff';
 export type ViewMode = 'admin' | 'staff';
@@ -38,29 +39,52 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('admin');
 
   const login = async (username: string, password: string) => {
-    // Mock login - in real app, this would make API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Determine role based on username pattern
-    let role: UserRole;
-    if (username === 'administrator') {
-      role = 'admin';
-    } else {
-      // Check if username follows staff pattern (2+ chars followed by 2 digits)
-      const staffPattern = /^[a-zA-Z]{2,}[0-9]{2}$/;
-      role = staffPattern.test(username) ? 'staff' : 'admin';
+    try {
+      let response;
+
+      // First try employee login (covers admin and staff)
+      try {
+        response = await authService.loginEmployee(username, password);
+      } catch (employeeError) {
+        // If employee login fails, try owner login
+        try {
+          response = await authService.loginOwner(username, password);
+        } catch (ownerError) {
+          // If both fail, throw the employee error (more common case)
+          throw employeeError;
+        }
+      }
+
+      if (response.success) {
+        // Determine role from response
+        let role: UserRole;
+        if (response.role === 'ADMIN') {
+          role = 'admin';
+        } else if (response.role === 'STAFF') {
+          role = 'staff';
+        } else if (response.role === 'OWNER') {
+          role = 'admin';
+        } else {
+          throw new Error('Unknown user role');
+        }
+
+        // Create user object
+        const user: User = {
+          id: username, // Use username as ID
+          name: username === 'administrator' ? 'Administrator' : `${username.charAt(0).toUpperCase()}${username.slice(1)}`,
+          username,
+          role
+        };
+
+        setUser(user);
+        setCurrentView(user.role);
+      } else {
+        throw new Error(response.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-    
-    // Mock user data based on username
-    const mockUser: User = {
-      id: '1',
-      name: username === 'administrator' ? 'Administrator' : `${username.charAt(0).toUpperCase()}${username.slice(1)}`,
-      username,
-      role
-    };
-    
-    setUser(mockUser);
-    setCurrentView(mockUser.role);
   };
 
   const logout = () => {

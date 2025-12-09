@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAppStore } from '@/store';
 
 interface DayHours {
+  operatingHourId?: number;
   isOpen: boolean;
   openTime: string;
   closeTime: string;
@@ -58,6 +59,7 @@ export function OperatingHours() {
         const key = entry.day.toLowerCase() as DayKey;
         if (DAY_KEYS.includes(key)) {
           mapped[key] = {
+            operatingHourId: entry.operatingHourId,
             isOpen: entry.isOpen !== false,
             openTime: entry.openTime || '09:00',
             closeTime: entry.closeTime || '21:00',
@@ -95,6 +97,7 @@ export function OperatingHours() {
     }
     const payload = {
       hours: Object.entries(hours).map(([dayKey, cfg]) => ({
+        operatingHourId: cfg.operatingHourId,
         day: dayKey,
         isOpen: cfg.isOpen,
         openTime: cfg.isOpen ? cfg.openTime : '',

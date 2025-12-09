@@ -15,6 +15,7 @@ export * from './address';
 export * from './menu';
 export * from './operating-hours';
 export * from './withdrawal';
+export * from './upload';
 
 // Combined API object for convenience (backward compatibility)
 import { authApi } from './auth';
@@ -24,6 +25,7 @@ import { addressApi } from './address';
 import { menuApi } from './menu';
 import { operatingHoursApi } from './operating-hours';
 import { withdrawalApi } from './withdrawal';
+import { uploadApi } from './upload';
 
 export const restaurantApi = {
   // Auth
@@ -58,4 +60,7 @@ export const restaurantApi = {
   // Withdrawal
   submitWithdrawal: withdrawalApi.submitWithdrawal,
   getWithdrawalHistory: withdrawalApi.getWithdrawalHistory,
+
+  // Upload
+  uploadImage: uploadApi.uploadImage,
 };

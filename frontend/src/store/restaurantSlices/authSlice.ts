@@ -39,6 +39,7 @@ export const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
           email: response.email,
           phone: '',
           status: response.status as 'pending' | 'active' | 'suspended' | 'rejected',
+          username: response.username,
         },
         isAuthenticating: false,
         authError: null,

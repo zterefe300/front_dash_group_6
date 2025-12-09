@@ -15,6 +15,7 @@ import {
   Download
 } from "lucide-react";
 import { toast } from "sonner";
+import { uploadApi } from "@/api/restaurant";
 
 export interface DocumentFile {
   id: string;
@@ -45,7 +46,7 @@ export const DocumentUpload = memo(function DocumentUpload({
   label,
   description,
   required = false,
-  acceptedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
+  acceptedTypes = ['.jpg', '.jpeg', '.png'],
   maxSize = 10,
   files,
   onFilesChange,
@@ -95,33 +96,58 @@ export const DocumentUpload = memo(function DocumentUpload({
     return null;
   };
 
-  const simulateUpload = (fileId: string) => {
-    const interval = setInterval(() => {
+  const syncFileUpdate = (
+    fileId: string,
+    updater: (file: DocumentFile) => DocumentFile
+  ) => {
+    setLocalFiles((prev) => prev.map((file) => (file.id === fileId ? updater(file) : file)));
+    onFilesChange((prev) => prev.map((file) => (file.id === fileId ? updater(file) : file)));
+  };
+
+  const uploadFile = async (fileId: string, file: File) => {
+    let progressTimer: number | null = null;
+
+    progressTimer = window.setInterval(() => {
+      let fileStillPresent = false;
+
       setLocalFiles((prev) =>
         prev.map((f) => {
-          if (f.id !== fileId) return f;
-          const newProgress = Math.min(f.progress + Math.random() * 30, 100);
-          const isComplete = newProgress >= 100;
-
-          if (isComplete) {
-            clearInterval(interval);
-            const completedFile = {
-              ...f,
-              progress: 100,
-              status: 'uploaded' as const,
-              url: `https://example.com/documents/${f.name}`,
-            };
-            // Only update parent once when upload completes to avoid rerender thrash
-            onFilesChange((prevFiles) =>
-              prevFiles.map((pf) => (pf.id === fileId ? completedFile : pf))
-            );
-            return completedFile;
-          }
-
+          if (f.id !== fileId || f.status !== 'uploading') return f;
+          fileStillPresent = true;
+          const newProgress = Math.min(f.progress + Math.random() * 15, 90);
           return { ...f, progress: newProgress };
         })
       );
-    }, 200);
+
+      if (!fileStillPresent && progressTimer !== null) {
+        clearInterval(progressTimer);
+      }
+    }, 300);
+
+    try {
+      const result = await uploadApi.uploadImage(file);
+      if (progressTimer) clearInterval(progressTimer);
+
+      syncFileUpdate(fileId, (existing) => ({
+        ...existing,
+        status: 'uploaded',
+        progress: 100,
+        url: result.url,
+      }));
+
+      toast.success(`${file.name} uploaded successfully`);
+    } catch (error) {
+      if (progressTimer) clearInterval(progressTimer);
+      const message = error instanceof Error ? error.message : 'Failed to upload file';
+
+      syncFileUpdate(fileId, (existing) => ({
+        ...existing,
+        status: 'error',
+        progress: 0,
+      }));
+
+      toast.error(message);
+    }
   };
 
   const handleFileSelect = (selectedFiles: File[]) => {
@@ -145,9 +171,6 @@ export const DocumentUpload = memo(function DocumentUpload({
           progress: 0
         };
         validFiles.push(documentFile);
-        
-        // Start simulated upload
-        setTimeout(() => simulateUpload(fileId), 100);
       }
     });
 
@@ -167,6 +190,10 @@ export const DocumentUpload = memo(function DocumentUpload({
         return [...preserved, ...validFiles];
       });
       toast.success(`${validFiles.length} file(s) added for upload`);
+
+      validFiles.forEach((docFile) => {
+        uploadFile(docFile.id, docFile.file);
+      });
     }
   };
 

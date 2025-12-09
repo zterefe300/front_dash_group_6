@@ -7,6 +7,7 @@ export interface RestaurantSummary {
   email: string;
   phone: string;
   status: 'pending' | 'active' | 'suspended' | 'rejected';
+  username?: string;
   address?: RestaurantAddress;
   operatingHours?: OperatingDay[];
   description?: string;
@@ -23,6 +24,7 @@ export interface RestaurantAddress {
 }
 
 export interface OperatingDay {
+  operatingHourId?: number;
   day: string;
   isOpen: boolean;
   openTime?: string;
@@ -40,7 +42,7 @@ export interface MenuItemPayload {
 export interface MenuItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   category: string;
   isAvailable: boolean;
@@ -55,12 +57,12 @@ export interface MenuCategory {
 
 // Registration Types
 export interface RegistrationPayload {
-  restaurantName: string;
-  businessType: string;
+  name: string;
+  cuisineType: string;
   description: string;
-  ownerName: string;
-  email: string;
-  phone: string;
+  contactPersonName: string;
+  emailAddress: string;
+  phoneNumber: string;
   building: string;
   street: string;
   city: string;
@@ -151,6 +153,7 @@ export interface ChangePasswordPayload {
 
 // Withdrawal Types
 export interface WithdrawalPayload {
+  restaurantId?: number;
   reason: string;
   details: string;
 }
@@ -161,5 +164,12 @@ export interface WithdrawalResponse {
   details: string;
   status: string;
   createdAt: string;
+  message?: string;
+}
+
+// Image Upload Types
+export interface ImageUploadResponse {
+  filename: string;
+  url: string;
   message?: string;
 }

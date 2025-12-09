@@ -1,3 +1,29 @@
+button[data-slot="switch"][data-state="checked"] {
+  background-color: #16a34a; /* 绿色 */
+}
+button[data-slot="switch"][data-state="unchecked"] {
+  background-color: #dc2626; /* 红色 */
+}
+
+/* Switch Thumb 移动逻辑 */
+button[data-slot="switch"] [data-slot="switch-thumb"][data-state="checked"] {
+  transform: translateX(calc(100% - 2px)) !important;
+}
+
+button[data-slot="switch"] [data-slot="switch-thumb"][data-state="unchecked"] {
+  transform: translateX(0) !important;
+}
+
+/* Switch Thumb 颜色可选 */
+button[data-slot="switch"][data-state="checked"] [data-slot="switch-thumb"] {
+  background-color: white !important;
+}
+
+button[data-slot="switch"][data-state="unchecked"] [data-slot="switch-thumb"] {
+  background-color: white !important;
+}
+
+
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {

@@ -4,26 +4,58 @@ import { Badge } from '../../../components/common/badge';
 import { Separator } from '../../../components/common/separator';
 import { CheckCircle, Clock, MapPin, CreditCard, Phone, Star } from 'lucide-react';
 import { useCart } from '../../../contexts/CartContext';
+import { useEffect, useState } from 'react';
 
 export function OrderConfirmation() {
-  const { items, restaurant, paymentInfo, deliveryAddress, goToNewOrder, goToPayment } = useCart();
+  const { items, restaurant, paymentInfo, deliveryAddress, goToNewOrder, goToPayment, clearCart } = useCart();
+  
+  // Store order snapshot before clearing cart - generate order details once
+  const [orderSnapshot] = useState(() => {
+    const orderDate = new Date();
+    const orderNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const estimatedDelivery = new Date(orderDate.getTime() + (35 * 60000)); // Add 35 minutes
+    
+    return {
+      items: items,
+      restaurant: restaurant,
+      paymentInfo: paymentInfo,
+      deliveryAddress: deliveryAddress,
+      orderDate,
+      orderNumber,
+      estimatedDelivery
+    };
+  });
+  
+  // Clear cart when order is confirmed
+  useEffect(() => {
+    // Clear the cart after a brief delay to ensure snapshot is captured
+    const timer = setTimeout(() => {
+      clearCart();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [clearCart]);
+  
+  // Use snapshot data for display
+  const displayItems = orderSnapshot.items;
+  const displayRestaurant = orderSnapshot.restaurant;
+  const displayPaymentInfo = orderSnapshot.paymentInfo;
+  const displayDeliveryAddress = orderSnapshot.deliveryAddress;
+  const orderDate = orderSnapshot.orderDate;
+  const orderNumber = orderSnapshot.orderNumber;
+  const estimatedDelivery = orderSnapshot.estimatedDelivery;
+  
   // Calculate totals
-  const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = displayItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   const serviceCharge = subtotal * 0.0825;
-  const deliveryFee = restaurant?.deliveryFee || 0;
-  const grandTotal = subtotal + serviceCharge + deliveryFee;
-
-  // Order details
-  const orderDate = new Date();
-  const orderNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const estimatedDelivery = new Date(orderDate.getTime() + (35 * 60000)); // Add 35 minutes
+  const grandTotal = subtotal + serviceCharge;
 
   // Format address
-  const fullAddress = deliveryAddress ? [
-    deliveryAddress.buildingNumber,
-    deliveryAddress.streetName,
-    deliveryAddress.apartmentUnit && `Apt ${deliveryAddress.apartmentUnit}`,
-    `${deliveryAddress.city}, ${deliveryAddress.state} ${deliveryAddress.zipCode}`
+  const fullAddress = displayDeliveryAddress ? [
+    displayDeliveryAddress.buildingNumber,
+    displayDeliveryAddress.streetName,
+    displayDeliveryAddress.apartmentUnit && `Apt ${displayDeliveryAddress.apartmentUnit}`,
+    `${displayDeliveryAddress.city}, ${displayDeliveryAddress.state} ${displayDeliveryAddress.zipCode}`
   ].filter(Boolean).join(' ') : '';
 
   const maskCardNumber = (cardNumber: string) => {
@@ -69,7 +101,7 @@ export function OrderConfirmation() {
 
 
       {/* Restaurant Information */}
-      {restaurant && (
+      {displayRestaurant && (
         <Card>
           <CardHeader>
             <CardTitle>Restaurant Details</CardTitle>
@@ -77,30 +109,30 @@ export function OrderConfirmation() {
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border bg-white flex-shrink-0">
-                {restaurant.logo ? (
+                {displayRestaurant.logo ? (
                   <img
-                    src={restaurant.logo}
-                    alt={`${restaurant.name} logo`}
+                    src={displayRestaurant.logo}
+                    alt={`${displayRestaurant.name} logo`}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-blue-100 flex items-center justify-center">
                     <span className="text-blue-600 font-medium text-xl">
-                      {restaurant.name.charAt(0)}
+                      {displayRestaurant.name.charAt(0)}
                     </span>
                   </div>
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">{restaurant.name}</h3>
-                <p className="text-muted-foreground">{restaurant.cuisine} Cuisine</p>
+                <h3 className="font-semibold text-lg">{displayRestaurant.name}</h3>
+                <p className="text-muted-foreground">{displayRestaurant.cuisine} Cuisine</p>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{restaurant.rating}</span>
+                    <span className="text-sm font-medium">{displayRestaurant.rating}</span>
                   </div>
                   <span className="text-sm text-muted-foreground">•</span>
-                  <span className="text-sm text-muted-foreground">{restaurant.deliveryTime}</span>
+                  <span className="text-sm text-muted-foreground">{displayRestaurant.deliveryTime}</span>
                 </div>
               </div>
               <Button variant="outline" size="sm">
@@ -119,7 +151,7 @@ export function OrderConfirmation() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {items.map((item) => {
+            {displayItems.map((item) => {
               const itemTotal = item.price * item.quantity;
               return (
                 <div key={item.id} className="flex justify-between items-center">
@@ -145,11 +177,6 @@ export function OrderConfirmation() {
               <div className="flex justify-between text-sm">
                 <span>Service charge (8.25%)</span>
                 <span>${serviceCharge.toFixed(2)}</span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span>Delivery fee</span>
-                <span>${deliveryFee.toFixed(2)}</span>
               </div>
               
               <Separator />
@@ -218,13 +245,13 @@ export function OrderConfirmation() {
                   Paid
                 </Badge>
               </div>
-              {paymentInfo && (
+              {displayPaymentInfo && (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    {maskCardNumber(paymentInfo.cardNumber)} ({paymentInfo.cardType.toUpperCase()})
+                    {maskCardNumber(displayPaymentInfo.cardNumber)} ({displayPaymentInfo.cardType.toUpperCase()})
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {paymentInfo.cardholderName}
+                    {displayPaymentInfo.cardholderName}
                   </p>
                 </>
               )}

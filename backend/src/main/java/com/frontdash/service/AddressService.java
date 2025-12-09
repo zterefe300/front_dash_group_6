@@ -36,4 +36,19 @@ public class AddressService {
     public Address getAddressEntityById(Integer id) {
         return addressRepository.findById(id).orElse(null);
     }
+
+    public AddressResponse getAddressById(Integer id) {
+        Address address = addressRepository.findById(id).orElse(null);
+        if (address == null) {
+            return null;
+        }
+        return AddressResponse.builder()
+                .addressId(address.getAddressId())
+                .bldg(address.getBldg())
+                .streetAddress(address.getStreetAddress())
+                .city(address.getCity())
+                .state(address.getState())
+                .zipCode(address.getZipCode())
+                .build();
+    }
 }

@@ -12,4 +12,6 @@ public interface OrdersRepository extends JpaRepository<Orders, String> {
     List<Orders> findByRestaurantId(Integer restaurantId);
     List<Orders> findByAssignedDriverId(Integer driverId);
     List<Orders> findByOrderStatus(OrderStatus status);
+    List<Orders> findByOrderStatusAndAssignedDriverIdIsNull(OrderStatus status);
+    List<Orders> findByOrderStatusAndAssignedDriverIdIsNotNull(OrderStatus status);
 }

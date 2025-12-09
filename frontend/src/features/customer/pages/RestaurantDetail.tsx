@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from '../../../components/common/card';
 import { Button } from '../../../components/common/button';
 import { Badge } from '../../../components/common/badge';
-import { Star, Clock, DollarSign, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
@@ -109,21 +109,6 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
                 {restaurant.isOpen ? 'Open' : 'Closed'}
               </Badge>
             </div>
-            
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-foreground font-medium">{restaurant.rating}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{restaurant.deliveryTime}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4" />
-                <span>Delivery: ${restaurant.deliveryFee}</span>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -155,9 +140,11 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
                         <div className="flex-1 p-6">
                           <div className="space-y-3">
                             <h3>{item.name}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {item.description}
-                            </p>
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {item.description}
+                              </p>
+                            )}
                             <div className="flex items-center justify-between">
                               <span className="text-lg font-semibold">
                                 ${item.price.toFixed(2)}

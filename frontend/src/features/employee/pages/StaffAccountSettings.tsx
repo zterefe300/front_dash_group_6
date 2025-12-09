@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/common/dropdown-menu';
 
-export const AccountSettings: React.FC = () => {
+export const StaffAccountSettings: React.FC = () => {
   const { user, currentView, switchView } = useUser();
 
   const [profileData, setProfileData] = useState({

@@ -27,6 +27,7 @@ export const operatingHoursApi = {
 
     const data: BackendOperatingHour[] = await response.json();
     return data.map((entry) => ({
+      operatingHourId: entry.operatingHourId,
       day: entry.weekDay,
       isOpen: true,
       openTime: entry.openTime,
@@ -49,6 +50,7 @@ export const operatingHoursApi = {
       headers: getAuthHeaders(token),
       body: JSON.stringify({
         hours: data.hours.map((h) => ({
+          operatingHourId: h.operatingHourId,
           weekDay: h.day,
           openTime: h.openTime,
           closeTime: h.closeTime,

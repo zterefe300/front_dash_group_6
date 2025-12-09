@@ -1,17 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/common/card";
 import { Button } from "../../../components/common/button";
 import { Input } from "../../../components/common/input";
-import { Label } from "../../../components/common/label";
-import { Badge } from "../../../components/common/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/common/select";
 import {
   Table,
   TableBody,
@@ -21,15 +12,6 @@ import {
   TableRow,
 } from "../../../components/common/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../../components/common/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -38,92 +20,58 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "../../../components/common/alert-dialog";
-import { Search, Filter, Users, Trash2, ArrowLeft, UserCheck, UserX, AlertTriangle } from "lucide-react";
+import { Search, Filter, Users, Trash2, ArrowLeft, UserCheck, UserX, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { staffService } from "../../../service/employee/staffService";
 
 interface StaffMember {
-  id: string;
-  fullName: string;
   username: string;
-  status: "active" | "inactive";
-  dateCreated: string;
-  lastLogin: string;
-  role: string;
+  firstname: string;
+  lastname: string;
 }
 
 export const ManageStaff = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const roles = [
-    "Order Manager",
-    "Delivery Coordinator",
-    "Customer Service",
-    "Operations Manager",
-    "Support Staff",
-    "Supervisor",
-  ];
+  const [staffData, setStaffData] = useState({
+    staff: [] as StaffMember[],
+    loading: true,
+    error: null as string | null
+  });
 
-  // Mock staff data
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([
-    {
-      id: "1",
-      fullName: "John Smith",
-      username: "smith01",
-      status: "active",
-      dateCreated: "2024-01-15",
-      lastLogin: "2024-09-08",
-      role: "Order Manager",
-    },
-    {
-      id: "2",
-      fullName: "Emily Johnson",
-      username: "johnson02",
-      status: "active",
-      dateCreated: "2024-02-20",
-      lastLogin: "2024-09-09",
-      role: "Delivery Coordinator",
-    },
-    {
-      id: "3",
-      fullName: "Michael Brown",
-      username: "brown03",
-      status: "inactive",
-      dateCreated: "2024-01-10",
-      lastLogin: "2024-08-15",
-      role: "Customer Service",
-    },
-    {
-      id: "4",
-      fullName: "Sarah Davis",
-      username: "davis04",
-      status: "active",
-      dateCreated: "2024-03-05",
-      lastLogin: "2024-09-09",
-      role: "Operations Manager",
-    },
-    {
-      id: "5",
-      fullName: "David Wilson",
-      username: "wilson05",
-      status: "active",
-      dateCreated: "2024-02-28",
-      lastLogin: "2024-09-08",
-      role: "Support Staff",
-    },
-  ]);
+  useEffect(() => {
+    const fetchStaffData = async () => {
+      try {
+        setStaffData(prev => ({ ...prev, loading: true, error: null }));
+        const staff = await staffService.getAllStaff();
+        setStaffData({
+          staff: staff || [],
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        console.error('Failed to fetch staff data:', error);
+        setStaffData(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Failed to load staff data'
+        }));
+      }
+    };
 
-  const filteredStaff = staffMembers.filter((staff) => {
+    fetchStaffData();
+  }, []);
+
+  const filteredStaff = staffData.staff.filter((staff) => {
+    const fullName = `${staff.firstname} ${staff.lastname}`;
     const matchesSearch =
-      staff.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.username.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || staff.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const handleDeleteStaff = (staff: StaffMember) => {
@@ -131,23 +79,23 @@ export const ManageStaff = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!selectedStaff) return;
 
-    setStaffMembers((prev) => prev.filter((staff) => staff.id !== selectedStaff.id));
-    toast.success(`Staff account for ${selectedStaff.fullName} has been deleted`);
-    setDeleteDialogOpen(false);
-    setSelectedStaff(null);
+    try {
+      await staffService.deleteStaff(selectedStaff.username);
+      setStaffData(prev => ({
+        ...prev,
+        staff: prev.staff.filter(s => s.username !== selectedStaff.username)
+      }));
+      toast.success(`Staff account for ${selectedStaff.firstname} ${selectedStaff.lastname} has been deleted`);
+      setDeleteDialogOpen(false);
+      setSelectedStaff(null);
+    } catch (error) {
+      console.error('Failed to delete staff:', error);
+      toast.error('Failed to delete staff account');
+    }
   };
-
-  const toggleStaffStatus = (staff: StaffMember) => {
-    const newStatus = staff.status === "active" ? "inactive" : "active";
-    setStaffMembers((prev) => prev.map((s) => (s.id === staff.id ? { ...s, status: newStatus } : s)));
-    toast.success(`${staff.fullName} has been ${newStatus === "active" ? "activated" : "deactivated"}`);
-  };
-
-  const activeStaffCount = staffMembers.filter((s) => s.status === "active").length;
-  const inactiveStaffCount = staffMembers.filter((s) => s.status === "inactive").length;
 
   return (
     <div className="space-y-6">
@@ -182,20 +130,6 @@ export const ManageStaff = () => {
                 className="pl-10"
               />
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}
-            >
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="border rounded-lg">
@@ -204,42 +138,49 @@ export const ManageStaff = () => {
                 <TableRow>
                   <TableHead>Full Name</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Last Login</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStaff.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="font-medium">{staff.fullName}</TableCell>
-                    <TableCell className="font-mono text-sm">{staff.username}</TableCell>
-                    <TableCell>{staff.role}</TableCell>
-                    <TableCell>{new Date(staff.lastLogin).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteStaff(staff)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {staffData.loading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      <p className="text-muted-foreground">Loading staff data...</p>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredStaff.length > 0 ? (
+                  filteredStaff.map((staff) => (
+                    <TableRow key={staff.username}>
+                      <TableCell className="font-medium">
+                        {`${staff.firstname} ${staff.lastname}`}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">{staff.username}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteStaff(staff)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No staff members found matching your criteria.</p>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
-
-          {filteredStaff.length === 0 && (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No staff members found matching your criteria.</p>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -252,7 +193,7 @@ export const ManageStaff = () => {
               <span>Delete Staff Account</span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the staff account for <strong>{selectedStaff?.fullName}</strong>
+              Are you sure you want to delete the staff account for <strong>{selectedStaff ? `${selectedStaff.firstname} ${selectedStaff.lastname}` : ''}</strong>
               ? This action cannot be undone and will permanently remove all account data.
             </AlertDialogDescription>
           </AlertDialogHeader>

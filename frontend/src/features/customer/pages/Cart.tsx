@@ -13,9 +13,8 @@ interface CartProps {
 export function Cart({ isFullView = false }: CartProps) {
   const { items, updateQuantity, removeItem, goToCart, goToOrderSummary, restaurant } = useCart();
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const deliveryFee = restaurant?.deliveryFee || 0;
   const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + deliveryFee + tax;
+  const total = subtotal + tax;
 
   if (items.length === 0) {
     return (
@@ -23,11 +22,19 @@ export function Cart({ isFullView = false }: CartProps) {
         <CardContent className={isFullView ? "" : "p-6"}>
           <div className="flex flex-col items-center gap-4">
             <ShoppingBag className="h-12 w-12 text-muted-foreground" />
-            <div>
+            <div className="text-center">
               <h3>Your cart is empty</h3>
               <p className="text-muted-foreground text-sm mt-1">
                 Add some delicious items to get started
               </p>
+            </div>
+            <div className="flex flex-col gap-2 w-full mt-2">
+              <Button onClick={() => window.location.href = '/customer/restaurants'} className="w-full">
+                Browse Restaurants
+              </Button>
+              <Button onClick={() => window.history.back()} variant="outline" className="w-full">
+                Go Back
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -38,21 +45,14 @@ export function Cart({ isFullView = false }: CartProps) {
   return (
     <Card className={isFullView ? "" : "w-80 shadow-lg"}>
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
-            {isFullView ? 'Your Order' : 'Cart'}
-            {restaurant && (
-              <Badge variant="outline" className="ml-2 text-xs">
-                {restaurant.name}
-              </Badge>
-            )}
-          </CardTitle>
-          {!isFullView && (
-            <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
-              ×
-            </Button>
+        <CardTitle className="text-lg">
+          {isFullView ? 'Your Order' : 'Cart'}
+          {restaurant && (
+            <Badge variant="outline" className="ml-2 text-xs">
+              {restaurant.name}
+            </Badge>
           )}
-        </div>
+        </CardTitle>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -121,11 +121,6 @@ export function Cart({ isFullView = false }: CartProps) {
           </div>
           
           <div className="flex justify-between">
-            <span>Delivery fee</span>
-            <span>${deliveryFee.toFixed(2)}</span>
-          </div>
-          
-          <div className="flex justify-between">
             <span>Tax</span>
             <span>${tax.toFixed(2)}</span>
           </div>
@@ -139,13 +134,7 @@ export function Cart({ isFullView = false }: CartProps) {
         </div>
         
         {/* Action Buttons */}
-        <div className="space-y-2 pt-2">
-          {!isFullView && (
-            <Button onClick={goToCart} variant="outline" className="w-full">
-              View Cart
-            </Button>
-          )}
-
+        <div className="pt-2">
           <Button onClick={goToOrderSummary} className="w-full">
             {isFullView ? 'Place Order' : 'Checkout'}
           </Button>

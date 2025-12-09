@@ -43,21 +43,27 @@ export const authApi = {
   /**
    * Change password
    * @param token - Auth token
+   * @param username - Restaurant username
    * @param data - Current and new password
    */
   changePassword: async (
     token: string,
+    username: string,
     data: { currentPassword: string; newPassword: string }
   ): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/restaurant/change-password`, {
       method: 'POST',
       headers: getAuthHeaders(token),
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        username,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to change password');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to change password');
     }
   },
 };
