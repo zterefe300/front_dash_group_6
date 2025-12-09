@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS Address (
 CREATE TABLE IF NOT EXISTS Restaurant (
     restaurant_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
-    cuisine_type VARCHAR(100),
     picture_url VARCHAR(500),
     address_id INT,
     phone_number VARCHAR(20),
@@ -42,6 +41,7 @@ CREATE TABLE IF NOT EXISTS RestaurantLogin (
     user_name VARCHAR(255) PRIMARY KEY,
     restaurant_id INT UNIQUE,
     password VARCHAR(255) NOT NULL,
+    is_first_login BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id)
 );
 
@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS MenuItem (
     menu_item_id INT PRIMARY KEY AUTO_INCREMENT,
     category_id INT,
     item_name VARCHAR(255),
+    description VARCHAR(500),
     picture_url VARCHAR(500),
     price DECIMAL(10, 2) NOT NULL,
     availability ENUM('AVAILABLE', 'UNAVAILABLE') DEFAULT 'AVAILABLE',
