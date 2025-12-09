@@ -3,6 +3,8 @@ import { Badge } from '../../../components/common/badge';
 import { Star, Clock, DollarSign } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../../../service/customer/restaurantService';
 
 // Restaurant type definition
 interface Restaurant {
@@ -218,16 +220,50 @@ const mockRestaurants: Restaurant[] = [
 
 export function RestaurantList() {
   const navigate = useNavigate();
+  const [restaurants, setRestaurants] = useState<Restaurant[]>(mockRestaurants);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        const data = await restaurantService.getAllRestaurants();
+        setRestaurants(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching restaurants:', err);
+        setError('Failed to load restaurants. Showing mock data.');
+        // Keep using mock data on error
+        setRestaurants(mockRestaurants);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-lg text-muted-foreground">Loading restaurants...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl mb-2">Choose Your Restaurant</h2>
         <p className="text-muted-foreground">Discover amazing food from local restaurants</p>
+        {error && (
+          <p className="text-sm text-yellow-600 mt-2">{error}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockRestaurants.map((restaurant) => (
+        {restaurants.map((restaurant) => (
           <Card
             key={restaurant.id}
             className={`cursor-pointer hover:shadow-lg transition-all duration-200 ${
