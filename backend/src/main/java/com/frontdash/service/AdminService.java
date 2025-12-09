@@ -125,8 +125,7 @@ public class AdminService {
                 Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
 
                 // Create restaurant login with auto-generated credentials
-
-                String username = restaurant.getContactPersonName() + restaurantId;
+                String username = restaurant.getContactPersonName().split(" ")[0] + restaurantId;
                 String rawPassword = UUID.randomUUID().toString().substring(0, 8); // Generate 8-character password
                 String encodedPassword = passwordEncoder.encode(rawPassword);
 

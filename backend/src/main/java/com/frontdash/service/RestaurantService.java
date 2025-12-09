@@ -88,14 +88,14 @@ public class RestaurantService {
                         });
             }
 
-            if (request.getPhoneNumber() != null) {
-                System.out.println("[Check] Phone uniqueness: " + request.getPhoneNumber());
-                restaurantRepository.findByPhoneNumber(request.getPhoneNumber())
-                        .ifPresent(existing -> {
-                            System.out.println("[Error] Phone number already exists: " + request.getPhoneNumber());
-                            throw new IllegalArgumentException("Restaurant phone number already exists");
-                        });
-            }
+//            if (request.getPhoneNumber() != null) {
+//                System.out.println("[Check] Phone uniqueness: " + request.getPhoneNumber());
+//                restaurantRepository.findByPhoneNumber(request.getPhoneNumber())
+//                        .ifPresent(existing -> {
+//                            System.out.println("[Error] Phone number already exists: " + request.getPhoneNumber());
+//                            throw new IllegalArgumentException("Restaurant phone number already exists");
+//                        });
+//            }
 
             // 2. save Address
             System.out.println("[Step2] Save Address");
@@ -145,6 +145,7 @@ public class RestaurantService {
             saveOperatingHours(request, restaurantId);
             saveMenuItems(request, restaurantId);
 
+            // 4. save operation hour
             if (request.getOperatingHours() != null && !request.getOperatingHours().isEmpty()) {
 
                 List<OperatingHour> hours = new ArrayList<>();
@@ -181,7 +182,6 @@ public class RestaurantService {
 
             // 5. save MenuCategory + MenuItem
             System.out.println("[Step5] Save MenuCategories & MenuItems");
-
             if (request.getMenuItems() != null && !request.getMenuItems().isEmpty()) {
 
                 Map<String, List<RestaurantRegistrationRequest.MenuItemRequest>> itemsByCategory =
@@ -901,22 +901,18 @@ public class RestaurantService {
             throw new IllegalArgumentException("Contact person name is required to generate username");
         }
 
-        // 取 first name（按空格切分）并全部小写
         String firstName = contactPersonName.trim().split("\\s+")[0].toLowerCase();
 
-        // 在 firstName 后面拼接两位数字 01 ~ 99
         for (int i = 1; i <= 99; i++) {
             String suffix = String.format("%02d", i);  // 01, 02, ..., 99
             String candidate = firstName + suffix;
 
-            // 如果这个用户名还不存在，就用它
             boolean exists = restaurantLoginRepository.existsById(candidate);
             if (!exists) {
                 return candidate;
             }
         }
 
-        // 如果 01~99 都被占了，就报错（看你业务需求）
         throw new IllegalStateException("Cannot generate unique username for contact person: " + contactPersonName);
     }
 
