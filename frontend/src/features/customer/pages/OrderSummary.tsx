@@ -84,7 +84,7 @@ export function OrderSummary() {
         </CardHeader>
         <CardContent className="space-y-4">
           {restaurant && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border bg-white flex-shrink-0">
                 {restaurant.logo ? (
                   <img
@@ -106,35 +106,6 @@ export function OrderSummary() {
               </div>
             </div>
           )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div>
-              <p className="font-medium">Order Date & Time</p>
-              <p className="text-sm text-muted-foreground">
-                {orderDate.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {orderDate.toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: true 
-                })}
-              </p>
-            </div>
-            
-            <div>
-              <p className="font-medium">Estimated Delivery</p>
-              <p className="text-sm text-muted-foreground">
-                {restaurant?.deliveryTime || '30-40 min'}
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

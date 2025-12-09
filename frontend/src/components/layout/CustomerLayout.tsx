@@ -95,7 +95,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
 
@@ -122,7 +122,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       )}
 
       <footer className="border-t bg-card mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-muted-foreground">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-muted-foreground">
           <p>&copy; 2024 FrontDash. All rights reserved.</p>
         </div>
       </footer>
