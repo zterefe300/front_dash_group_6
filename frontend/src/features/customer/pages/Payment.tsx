@@ -32,6 +32,47 @@ export function Payment() {
     return /^\d{16}$/.test(cleanNumber);
   };
 
+  const validateCardType = (cardType: string, cardNumber: string) => {
+    // Remove spaces from card number
+    const cleanNumber = cardNumber.replace(/\s/g, '');
+    
+    if (!cleanNumber || cleanNumber.length === 0) {
+      return true; // Don't validate if card number is empty
+    }
+
+    switch (cardType.toLowerCase()) {
+      case 'visa':
+        // Visa starts with 4
+        return cleanNumber.startsWith('4');
+      
+      case 'mastercard':
+        // MasterCard starts with 51-55 or 2221-2720
+        const firstTwo = parseInt(cleanNumber.substring(0, 2));
+        const firstFour = parseInt(cleanNumber.substring(0, 4));
+        return (firstTwo >= 51 && firstTwo <= 55) || (firstFour >= 2221 && firstFour <= 2720);
+      
+      case 'discover':
+        // Discover starts with 6011, 622126-622925, 644-649, or 65
+        const discoverFirstFour = cleanNumber.substring(0, 4);
+        const discoverFirstThree = cleanNumber.substring(0, 3);
+        const discoverFirstTwo = cleanNumber.substring(0, 2);
+        const discoverFirstSix = parseInt(cleanNumber.substring(0, 6));
+        
+        return discoverFirstFour === '6011' ||
+               (discoverFirstSix >= 622126 && discoverFirstSix <= 622925) ||
+               (parseInt(discoverFirstThree) >= 644 && parseInt(discoverFirstThree) <= 649) ||
+               discoverFirstTwo === '65';
+      
+      case 'amex':
+        // American Express starts with 34 or 37
+        const amexFirstTwo = cleanNumber.substring(0, 2);
+        return amexFirstTwo === '34' || amexFirstTwo === '37';
+      
+      default:
+        return true; // If card type not recognized, don't invalidate
+    }
+  };
+
   const validateSecurityCode = (code: string) => {
     // Must be exactly 3 digits
     return /^\d{3}$/.test(code);
@@ -84,6 +125,9 @@ export function Payment() {
       newErrors.cardNumber = 'Card number is required';
     } else if (!validateCardNumber(formData.cardNumber)) {
       newErrors.cardNumber = 'Card number must be exactly 16 digits';
+    } else if (formData.cardType && !validateCardType(formData.cardType, formData.cardNumber)) {
+      const cardTypeDisplay = formData.cardType.charAt(0).toUpperCase() + formData.cardType.slice(1);
+      newErrors.cardNumber = `Card number does not match ${cardTypeDisplay} format`;
     }
 
     if (!formData.cardholderName.trim()) {
@@ -117,8 +161,8 @@ export function Payment() {
   const simulatePaymentValidation = () => {
     return new Promise<boolean>((resolve) => {
       setTimeout(() => {
-        // Simulate validation - 90% success rate
-        const success = Math.random() > 0.1;
+        // Payment succeeds if all validation conditions are met
+        const success = true;
         resolve(success);
       }, 2000);
     });
