@@ -18,6 +18,7 @@ public class RestaurantProfileResponse {
     private String phoneNumber;
     private String email;
     private String status;
+    private String imageUrl;
     private AddressResponse address;
     private List<OperatingHourResponse> operatingHours;
 }

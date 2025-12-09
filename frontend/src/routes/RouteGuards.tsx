@@ -48,6 +48,7 @@ export const RestaurantPortalProtectedRoute = ({ element }: { element: JSX.Eleme
 };
 
 export const RestaurantPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useAppStore();
-  return !isAuthenticated ? element : <Navigate to="/restaurant/dashboard" />;
+  const { isAuthenticated, isFirstLogin } = useAppStore();
+  // Allow access if user is not authenticated OR if it's their first login (for password reset)
+  return !isAuthenticated || isFirstLogin ? element : <Navigate to="/restaurant/dashboard" />;
 };

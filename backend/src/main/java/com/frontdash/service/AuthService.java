@@ -49,7 +49,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Verify current password
-        if (!currentPassword.equals(restaurantLogin.getPassword())) {
+        if (!passwordEncoder.matches(currentPassword, restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect");
         }
 
@@ -59,7 +59,11 @@ public class AuthService {
         }
 
         // Update password (Note: Should be encoded in production)
-        restaurantLogin.setPassword(newPassword);
+        restaurantLogin.setPassword(passwordEncoder.encode(newPassword));
+
+        // Mark as no longer first login
+        restaurantLogin.setIsFirstLogin(false);
+
         restaurantLoginRepository.save(restaurantLogin);
     }
 
@@ -121,6 +125,7 @@ public class AuthService {
                 .restaurantName(restaurant.getName())
                 .email(restaurant.getEmailAddress())
                 .status(restaurant.getStatus().name())
+                .isFirstLogin(restaurantLogin.getIsFirstLogin())
                 .build();
     }
 }

@@ -26,4 +26,7 @@ public class RestaurantLogin {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "is_first_login", nullable = false)
+    private Boolean isFirstLogin = true;
 }

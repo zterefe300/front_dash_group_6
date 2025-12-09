@@ -11,6 +11,7 @@ export interface RestaurantSummary {
   address?: RestaurantAddress;
   operatingHours?: OperatingDay[];
   contactName?: string;
+  imageUrl?: string;
 }
 
 export interface RestaurantAddress {
@@ -35,6 +36,7 @@ export interface MenuItemPayload {
   category: string;
   price: number;
   description?: string;
+  imageUrl?: string;
 }
 
 export interface MenuItem {
@@ -94,11 +96,13 @@ export interface AuthResponse {
   email: string;
   status: string;
   message?: string;
+  isFirstLogin?: boolean;
 }
 
 // Profile Update Types
 export interface ProfileUpdatePayload {
   name: string;
+  imageUrl?: string;
 }
 
 export interface ContactUpdatePayload {

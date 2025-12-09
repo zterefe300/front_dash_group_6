@@ -62,6 +62,8 @@ public class EmailService {
                 return "Restaurant Withdrawal Rejected";
             case RESTAURANT_WITHDRAWAL_REQUEST:
                 return "Restaurant Withdrawal Request Received";
+            case RESTAURANT_REGISTRATION_SUBMITTED:
+                return "Restaurant Registration Submitted Successfully";
             case STAFF_ACCOUNT_CREDENTIALS_SHARING:
                 return "Your Staff Account Credentials";
             case RESTAURANT_ACCOUNT_CREATION_CREDENTIALS_SHARING:
@@ -83,6 +85,8 @@ public class EmailService {
                 return "Your restaurant withdrawal request has been rejected.";
             case RESTAURANT_WITHDRAWAL_REQUEST:
                 return "We have received your restaurant withdrawal request. Our team will review it and contact you shortly.";
+            case RESTAURANT_REGISTRATION_SUBMITTED:
+                return "Thank you for submitting your restaurant registration request. Our team will review your application and contact you shortly.";
             default:
                 return "This is a notification from FrontDash.";
         }

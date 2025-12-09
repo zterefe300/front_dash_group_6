@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store';
+import { ImageUpload } from '../ImageUpload';
 
 type ProfileFormState = {
   name: string;
+  imageUrl?: string;
 };
 
 export function RestaurantProfile() {
@@ -22,6 +24,7 @@ export function RestaurantProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileFormState>({
     name: restaurantProfile?.name || restaurant?.name || '',
+    imageUrl: restaurantProfile?.imageUrl,
   });
 
   useEffect(() => {
@@ -35,6 +38,7 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
+        imageUrl: restaurantProfile.imageUrl,
       });
     }
   }, [restaurantProfile]);
@@ -46,6 +50,7 @@ export function RestaurantProfile() {
     }
     updateProfile(token, restaurant.id, {
       name: profile.name,
+      imageUrl: profile.imageUrl,
     })
       .then(() => {
         setIsEditing(false);
@@ -62,6 +67,7 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
+        imageUrl: restaurantProfile.imageUrl,
       });
     }
   };
@@ -92,7 +98,7 @@ export function RestaurantProfile() {
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Tell customers more about your restaurant</CardDescription>
+          <CardDescription>Manage your restaurant&apos;s Image</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -105,6 +111,12 @@ export function RestaurantProfile() {
               placeholder="FrontDash Demo Kitchen"
             />
           </div>
+          <ImageUpload
+            value={profile.imageUrl}
+            onChange={(url) => setProfile((prev) => ({ ...prev, imageUrl: url }))}
+            label="Restaurant Image"
+            disabled={!isEditing}
+          />
         </CardContent>
       </Card>
     </div>

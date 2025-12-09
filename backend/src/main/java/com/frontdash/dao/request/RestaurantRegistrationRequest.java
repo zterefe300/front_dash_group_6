@@ -56,6 +56,7 @@ public class RestaurantRegistrationRequest {
         private String category;
         private Double price;
         private String description;
+        private String imageUrl;
     }
 
     @Data
