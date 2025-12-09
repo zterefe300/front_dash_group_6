@@ -115,12 +115,30 @@ export function OrderConfirmation() {
         // Format as ISO string for backend (will be parsed as LocalDateTime)
         const estimatedDeliveryTimeISO = estimatedDeliveryDateTime.toISOString().slice(0, 19);
 
+        // Create address first if delivery address exists
+        let addressId = null;
+        if (orderSnapshot.deliveryAddress) {
+          try {
+            const addressResponse = await orderService.createAddress({
+              streetAddress: orderSnapshot.deliveryAddress.streetName,
+              building: orderSnapshot.deliveryAddress.buildingNumber || null,
+              city: orderSnapshot.deliveryAddress.city,
+              state: orderSnapshot.deliveryAddress.state,
+              zipCode: orderSnapshot.deliveryAddress.zipCode
+            });
+            addressId = addressResponse.addressId;
+            console.log('Address created with ID:', addressId);
+          } catch (error) {
+            console.error('Failed to create address:', error);
+          }
+        }
+
         // Prepare order request
         const orderRequest = {
           restaurantId: parseInt(orderSnapshot.restaurant.id),
           customerName: orderSnapshot.paymentInfo?.cardholderName || 'Guest',
           customerPhone: '000-000-0000', // Default phone - could be collected in delivery form
-          addressId: null, // Will be created by backend if null
+          addressId: addressId,
           items: orderSnapshot.items.map(item => ({
             menuItemId: parseInt(item.id),
             quantity: item.quantity,
