@@ -116,22 +116,7 @@ public class AdminController {
         return ResponseEntity.ok(responseList);
     }
 
-    @GetMapping("/profile")
-    @Operation(summary = "Get admin profile", description = "Retrieve the current admin's profile information")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved admin profile"),
-            @ApiResponse(responseCode = "404", description = "Admin not found")
-    })
-    public ResponseEntity<EmployeeLogin> getAdminProfile(@RequestParam String username) {
-        try {
-            EmployeeLogin profile = adminService.getAdminProfile(username);
-            // Don't return password in response
-            profile.setPassword(null);
-            return ResponseEntity.ok(profile);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+
 
     @PutMapping("/password")
     @Operation(summary = "Update admin password", description = "Update the password for the specified admin")

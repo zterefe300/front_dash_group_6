@@ -5,15 +5,18 @@ import { Separator } from '../../../components/common/separator';
 import { CheckCircle, Clock, MapPin, CreditCard, Phone, Star } from 'lucide-react';
 import { useCart } from '../../../contexts/CartContext';
 import { useEffect, useState } from 'react';
+// @ts-ignore - JS module without type definitions
+import { geoapifyService } from '../../../service/customer/geoapifyService';
 
 export function OrderConfirmation() {
   const { items, restaurant, paymentInfo, deliveryAddress, goToNewOrder, goToPayment, clearCart } = useCart();
+  const [estimatedDeliveryMinutes, setEstimatedDeliveryMinutes] = useState<number>(35);
+  const [isCalculatingDelivery, setIsCalculatingDelivery] = useState<boolean>(true);
   
   // Store order snapshot before clearing cart - generate order details once
   const [orderSnapshot] = useState(() => {
     const orderDate = new Date();
     const orderNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const estimatedDelivery = new Date(orderDate.getTime() + (35 * 60000)); // Add 35 minutes
     
     return {
       items: items,
@@ -21,10 +24,43 @@ export function OrderConfirmation() {
       paymentInfo: paymentInfo,
       deliveryAddress: deliveryAddress,
       orderDate,
-      orderNumber,
-      estimatedDelivery
+      orderNumber
     };
   });
+
+  // Calculate estimated delivery time using Geoapify
+  useEffect(() => {
+    const calculateDeliveryTime = async () => {
+      if (!orderSnapshot.restaurant || !orderSnapshot.deliveryAddress) {
+        setIsCalculatingDelivery(false);
+        return;
+      }
+
+      try {
+        // Use actual restaurant address from backend
+        const restaurantAddress = orderSnapshot.restaurant.address || '';
+        
+        // Format delivery address
+        const deliveryAddr = geoapifyService.formatAddress(orderSnapshot.deliveryAddress);
+
+        // Get delivery estimate
+        const estimate = await geoapifyService.getDeliveryEstimate(
+          restaurantAddress,
+          deliveryAddr,
+          15 // 15 minutes preparation time
+        );
+
+        setEstimatedDeliveryMinutes(estimate.estimatedTime);
+      } catch (error) {
+        console.error('Failed to calculate delivery time:', error);
+        // Keep default 35 minutes
+      } finally {
+        setIsCalculatingDelivery(false);
+      }
+    };
+
+    calculateDeliveryTime();
+  }, [orderSnapshot.restaurant, orderSnapshot.deliveryAddress]);
   
   // Clear cart when order is confirmed
   useEffect(() => {
@@ -43,7 +79,9 @@ export function OrderConfirmation() {
   const displayDeliveryAddress = orderSnapshot.deliveryAddress;
   const orderDate = orderSnapshot.orderDate;
   const orderNumber = orderSnapshot.orderNumber;
-  const estimatedDelivery = orderSnapshot.estimatedDelivery;
+  
+  // Calculate estimated delivery date/time
+  const estimatedDelivery = new Date(orderSnapshot.orderDate.getTime() + (estimatedDeliveryMinutes * 60000));
   
   // Calculate totals
   const subtotal = displayItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -87,11 +125,17 @@ export function OrderConfirmation() {
             <div className="flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-full">
               <Clock className="h-5 w-5 text-orange-600" />
               <span className="text-orange-600 font-medium">
-                Estimated delivery: {estimatedDelivery.toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  hour12: true 
-                })}
+                {isCalculatingDelivery ? (
+                  'Calculating delivery time...'
+                ) : (
+                  <>
+                    Estimated delivery: {estimatedDelivery.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })} ({estimatedDeliveryMinutes} mins)
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -125,7 +169,6 @@ export function OrderConfirmation() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{displayRestaurant.name}</h3>
-                <p className="text-muted-foreground">{displayRestaurant.cuisine} Cuisine</p>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -214,7 +257,7 @@ export function OrderConfirmation() {
                   hour: 'numeric', 
                   minute: '2-digit',
                   hour12: true 
-                })} ({restaurant?.deliveryTime})
+                })}
               </p>
             </div>
             

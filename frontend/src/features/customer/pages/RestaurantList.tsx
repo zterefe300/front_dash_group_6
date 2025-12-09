@@ -4,6 +4,7 @@ import { Star, Clock, DollarSign } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+// @ts-ignore - JS module without type definitions
 import { restaurantService } from '../../../service/customer/restaurantService';
 
 // Restaurant type definition
@@ -12,7 +13,6 @@ interface Restaurant {
   name: string;
   image: string;
   logo?: string;
-  cuisine: string;
   rating: number;
   deliveryTime: string;
   deliveryFee: number;
@@ -37,7 +37,6 @@ const mockRestaurants: Restaurant[] = [
     name: 'Pasta Palace',
     image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop',
     logo: 'https://images.unsplash.com/photo-1653557659183-9701378e2c9e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwbG9nbyUyMHBhc3RhJTIwaXRhbGlhbnxlbnwxfHx8fDE3NTczNjIwMzR8MA&ixlib=rb-4.1.0&q=80&w=80&utm_source=figma&utm_medium=referral',
-    cuisine: 'Italian',
     rating: 4.8,
     deliveryTime: '20-30 min',
     deliveryFee: 2.99,
@@ -83,7 +82,6 @@ const mockRestaurants: Restaurant[] = [
     name: 'Dragon Wok',
     image: 'https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=400&h=300&fit=crop',
     logo: 'https://images.unsplash.com/photo-1663250714088-4f4657e584a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwbG9nbyUyMGNoaW5lc2UlMjBkcmFnb258ZW58MXx8fHwxNzU3MzYyMDM3fDA&ixlib=rb-4.1.0&q=80&w=80&utm_source=figma&utm_medium=referral',
-    cuisine: 'Chinese',
     rating: 4.6,
     deliveryTime: '25-35 min',
     deliveryFee: 3.49,
@@ -129,7 +127,6 @@ const mockRestaurants: Restaurant[] = [
     name: 'Burger Boulevard',
     image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop',
     logo: 'https://images.unsplash.com/photo-1625331725309-83e4f3c1373b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwbG9nbyUyMGJ1cmdlciUyMGFtZXJpY2FufGVufDF8fHx8MTc1NzM2MjA0MXww&ixlib=rb-4.1.0&q=80&w=80&utm_source=figma&utm_medium=referral',
-    cuisine: 'American',
     rating: 4.4,
     deliveryTime: '15-25 min',
     deliveryFee: 2.49,
@@ -175,7 +172,6 @@ const mockRestaurants: Restaurant[] = [
     name: 'Sushi Sakura',
     image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
     logo: 'https://images.unsplash.com/photo-1695335753896-946f9297be0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwbG9nbyUyMHN1c2hpJTIwamFwYW5lc2V8ZW58MXx8fHwxNzU3MzYyMDQ2fDA&ixlib=rb-4.1.0&q=80&w=80&utm_source=figma&utm_medium=referral',
-    cuisine: 'Japanese',
     rating: 4.9,
     deliveryTime: '30-40 min',
     deliveryFee: 4.99,
@@ -276,9 +272,6 @@ export function RestaurantList() {
                   alt={restaurant.name}
                   className={`w-full h-48 object-cover rounded-t-lg ${!restaurant.isOpen ? 'opacity-50 grayscale' : ''}`}
                 />
-                <Badge className="absolute top-4 right-4 bg-white/90 text-white backdrop-blur-sm border border-white/20">
-                  {restaurant.cuisine}
-                </Badge>
                 
                 {/* Open/Closed Status */}
                 <Badge 

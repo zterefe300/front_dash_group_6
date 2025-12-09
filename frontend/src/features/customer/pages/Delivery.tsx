@@ -195,7 +195,7 @@ export function Delivery() {
               <div>
                 <p className="font-medium">{restaurant.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {restaurant.cuisine} • Delivery: {restaurant.deliveryTime}
+                  Delivery: {restaurant.deliveryTime}
                 </p>
               </div>
             </div>
