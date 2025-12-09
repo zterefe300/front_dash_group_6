@@ -14,12 +14,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FrontDashLogo } from "./FrontDashLogo";
 import { BackgroundPattern } from "./BackgroundPattern";
 import { toast } from "sonner";
-import { CheckCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useAppStore } from "@/store";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { token, user, changePassword, isFirstLogin } = useAppStore();
+  const { token, user, changePassword, logout, isFirstLogin } = useAppStore();
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -71,12 +71,18 @@ export function ResetPasswordPage() {
         currentPassword: formData.currentPassword,
         newPassword: formData.password,
       });
-      toast.success("Password reset successfully!");
-      setPasswordReset(true);
+      toast.success("Password reset successfully! Redirecting to login...");
+
+      // Clear token and authentication state
+      await logout();
+
+      // Navigate to login page
+      setTimeout(() => {
+        navigate("/restaurant/login", { replace: true });
+      }, 1500); // Small delay to show success message
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to reset password";
       toast.error(message);
-    } finally {
       setIsLoading(false);
     }
   };

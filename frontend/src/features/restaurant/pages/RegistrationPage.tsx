@@ -746,7 +746,7 @@ export function RegistrationPage() {
 
             <div className="space-y-1 text-sm text-muted-foreground">
               <p>
-                <span className="font-medium text-foreground">Given Login Username:</span>{' '}
+                <span className="font-medium text-foreground">Contact Person Name:</span>{' '}
                 {registrationResult.generatedUsername}
               </p>
               {/* <p>

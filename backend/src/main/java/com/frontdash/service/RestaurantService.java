@@ -1,8 +1,19 @@
 package com.frontdash.service;
 
+import com.frontdash.dao.request.*;
+import com.frontdash.dao.response.*;
+import com.frontdash.entity.*;
+import com.frontdash.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -820,22 +831,19 @@ public class RestaurantService {
             throw new IllegalArgumentException("Contact person name is required to generate username");
         }
 
-        // 取 first name（按空格切分）并全部小写
         String firstName = contactPersonName.trim().split("\\s+")[0].toLowerCase();
 
-        // 在 firstName 后面拼接两位数字 01 ~ 99
         for (int i = 1; i <= 99; i++) {
             String suffix = String.format("%02d", i);  // 01, 02, ..., 99
             String candidate = firstName + suffix;
 
-            // 如果这个用户名还不存在，就用它
+
             boolean exists = restaurantLoginRepository.existsById(candidate);
             if (!exists) {
                 return candidate;
             }
         }
 
-        // 如果 01~99 都被占了，就报错（看你业务需求）
         throw new IllegalStateException("Cannot generate unique username for contact person: " + contactPersonName);
     }
 
