@@ -1,6 +1,24 @@
 import { API_BASE_URL } from '../../config';
 
 export const orderService = {
+  // Create a new address
+  createAddress: async (addressData) => {
+    const response = await fetch(`${API_BASE_URL}/addresses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(addressData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create address: ${errorText}`);
+    }
+
+    return await response.json();
+  },
+
   // Create a new order
   createOrder: async (orderData) => {
     const response = await fetch(`${API_BASE_URL}/orders`, {
