@@ -98,6 +98,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setCurrentView('admin');
+    window.location.href = '/login';
   };
 
   const switchView = (view: ViewMode) => {
