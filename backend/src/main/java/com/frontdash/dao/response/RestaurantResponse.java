@@ -13,11 +13,17 @@ public class RestaurantResponse {
 
     private Integer restaurantId;
     private String name;
-    private String cuisineType;
     private String pictureUrl;
     private Integer addressId;
     private String phoneNumber;
     private String contactPersonName;
     private String emailAddress;
     private String status;
+    
+    // Address fields
+    private String streetAddress;
+    private String building;
+    private String city;
+    private String state;
+    private String zipCode;
 }

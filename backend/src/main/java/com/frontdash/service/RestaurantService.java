@@ -619,17 +619,28 @@ public class RestaurantService {
     }
 
     private RestaurantResponse convertToResponse(Restaurant restaurant) {
-        return RestaurantResponse.builder()
+        RestaurantResponse.RestaurantResponseBuilder builder = RestaurantResponse.builder()
                 .restaurantId(restaurant.getRestaurantId())
                 .name(restaurant.getName())
-                .cuisineType(restaurant.getCuisineType())
                 .pictureUrl(restaurant.getPictureUrl())
                 .addressId(restaurant.getAddressId())
                 .phoneNumber(restaurant.getPhoneNumber())
                 .contactPersonName(restaurant.getContactPersonName())
                 .emailAddress(restaurant.getEmailAddress())
-                .status(restaurant.getStatus().name())
-                .build();
+                .status(restaurant.getStatus().name());
+        
+        // Fetch and include address information if available
+        if (restaurant.getAddressId() != null) {
+            addressRepository.findById(restaurant.getAddressId()).ifPresent(address -> {
+                builder.streetAddress(address.getStreetAddress())
+                       .building(address.getBldg())
+                       .city(address.getCity())
+                       .state(address.getState())
+                       .zipCode(address.getZipCode());
+            });
+        }
+        
+        return builder.build();
     }
 
     private MenuItemResponse convertToResponse(MenuItem menuItem) {

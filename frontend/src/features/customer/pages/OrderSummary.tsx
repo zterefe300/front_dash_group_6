@@ -102,7 +102,6 @@ export function OrderSummary() {
               </div>
               <div>
                 <p className="font-medium">{restaurant.name}</p>
-                <p className="text-sm text-muted-foreground">{restaurant.cuisine} Cuisine</p>
               </div>
             </div>
           )}

@@ -54,17 +54,34 @@ export const restaurantService = {
     // Fetch operating hours for all restaurants and determine if they're open
     const restaurantsWithHours = await Promise.all(
       data.map(async (restaurant, index) => {
-        let isOpen = false;
+        let isOpen = restaurant.status === 'ACTIVE'; // Default to ACTIVE status
         
         try {
-          // Fetch operating hours for this restaurant
-          const hoursResponse = await fetch(`${API_BASE_URL}/restaurant/${restaurant.restaurantId}/hours`);
+          // Fetch operating hours for this restaurant with timeout
+          const hoursResponse = await Promise.race([
+            fetch(`${API_BASE_URL}/restaurant/${restaurant.restaurantId}/hours`),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+          ]);
           if (hoursResponse.ok) {
             const operatingHours = await hoursResponse.json();
             isOpen = restaurant.status === 'ACTIVE' && isRestaurantOpen(operatingHours);
           }
         } catch (error) {
-          console.error(`Failed to fetch hours for restaurant ${restaurant.restaurantId}:`, error);
+          console.warn(`Could not fetch hours for restaurant ${restaurant.restaurantId}, using status only:`, error.message);
+          // Keep default isOpen value based on status
+        }
+        
+        // Format address if available
+        let address = '';
+        if (restaurant.building || restaurant.streetAddress || restaurant.city) {
+          const parts = [
+            restaurant.building,
+            restaurant.streetAddress,
+            restaurant.city,
+            restaurant.state,
+            restaurant.zipCode
+          ].filter(Boolean);
+          address = parts.join(', ');
         }
         
         return {
@@ -72,13 +89,13 @@ export const restaurantService = {
           name: restaurant.name || '',
           image: restaurant.pictureUrl || demoImages[index % demoImages.length],
           logo: restaurant.pictureUrl || demoLogos[index % demoLogos.length],
-          cuisine: restaurant.cuisineType || 'Various',
           rating: 4.5,
           deliveryTime: '20-30 min',
           deliveryFee: 2.99,
           isOpen: isOpen,
           priceRange: '$$',
-          menu: []
+          menu: [],
+          address: address
         };
       })
     );

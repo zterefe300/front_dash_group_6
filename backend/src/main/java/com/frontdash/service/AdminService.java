@@ -11,12 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.entity.Address;
 import com.frontdash.entity.EmployeeLogin;
 import com.frontdash.entity.MenuCategory;
 import com.frontdash.entity.Orders;
 import com.frontdash.entity.Restaurant;
 import com.frontdash.entity.RestaurantLogin;
 import com.frontdash.entity.ServiceCharge;
+import com.frontdash.repository.AddressRepository;
 import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.MenuCategoryRepository;
 import com.frontdash.repository.MenuItemRepository;
@@ -54,6 +56,9 @@ public class AdminService {
 
     @Autowired
     private EmployeeLoginRepository employeeLoginRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     @Autowired
     private ServiceChargeRepository serviceChargeRepository;
@@ -95,17 +100,41 @@ public class AdminService {
 
     // Helper method to convert Restaurant entity to RestaurantResponse DTO
     private RestaurantResponse convertToResponse(Restaurant restaurant) {
-        return new RestaurantResponse(
-                restaurant.getRestaurantId(),
-                restaurant.getName(),
-                restaurant.getCuisineType(),
-                restaurant.getPictureUrl(),
-                restaurant.getAddressId(),
-                restaurant.getPhoneNumber(),
-                restaurant.getContactPersonName(),
-                restaurant.getEmailAddress(),
-                restaurant.getStatus().toString()
-        );
+        // Fetch address details if addressId exists
+        String streetAddress = null;
+        String building = null;
+        String city = null;
+        String state = null;
+        String zipCode = null;
+
+        if (restaurant.getAddressId() != null) {
+            Optional<Address> addressOpt = addressRepository.findById(restaurant.getAddressId());
+            if (addressOpt.isPresent()) {
+                Address address = addressOpt.get();
+                streetAddress = address.getStreetAddress();
+                building = address.getBuilding();
+                city = address.getCity();
+                state = address.getState();
+                zipCode = address.getZipCode();
+            }
+        }
+
+        return RestaurantResponse.builder()
+                .restaurantId(restaurant.getRestaurantId())
+                .name(restaurant.getName())
+                .cuisineType(restaurant.getCuisineType())
+                .pictureUrl(restaurant.getPictureUrl())
+                .addressId(restaurant.getAddressId())
+                .phoneNumber(restaurant.getPhoneNumber())
+                .contactPersonName(restaurant.getContactPersonName())
+                .emailAddress(restaurant.getEmailAddress())
+                .status(restaurant.getStatus().toString())
+                .streetAddress(streetAddress)
+                .building(building)
+                .city(city)
+                .state(state)
+                .zipCode(zipCode)
+                .build();
     }
 
     /**
