@@ -33,7 +33,7 @@ INSERT INTO Restaurant (restaurant_id, name, picture_url, address_id, phone_numb
 -- restaurant2 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 -- restaurant3 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 INSERT INTO RestaurantLogin (user_name, restaurant_id, password, is_first_login) VALUES
-('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
+('restaurant1', 1, '$2b$12$Ij4nxCEvxlWtJFwXpSL8nO5.VLBjcMr8uddOJ/kk250rvUWVRkRh.', true),
 ('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
 ('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true);
 
@@ -104,7 +104,7 @@ INSERT INTO Driver (driver_id, firstname, lastname, availability_status) VALUES
 -- mullard05 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
 -- administrator password: 'Admin123!' -> $2b$12$7qw32vzcbpxmBdSm1DGFxOU2yE7vPmXdxL.zOKStJVgA3ey9fL9c.
 INSERT INTO EmployeeLogin (username, password, employeeType, dateCreated, lastLogin) VALUES
-('richard01', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 09:30:00'),
+('richard01', '$2b$12$DUWa3srN6dI218OVVOZPQ.XyjkBtOSK07bJeX29j8w.4Tv1tp8.dS', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 09:30:00'),
 ('cox02', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 10:15:00'),
 ('deckon03', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 11:45:00'),
 ('cox04', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 14:20:00'),
