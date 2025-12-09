@@ -15,11 +15,48 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.frontdash.dao.request.MenuCategoryCreateRequest;
+import com.frontdash.dao.request.MenuItemCreateRequest;
+import com.frontdash.dao.request.MenuItemUpdateRequest;
+import com.frontdash.dao.request.MenuUpdateRequest;
+import com.frontdash.dao.request.OperatingHourEntryRequest;
+import com.frontdash.dao.request.OperatingHoursUpdateRequest;
+import com.frontdash.dao.request.RestaurantAddressUpdateRequest;
+import com.frontdash.dao.request.RestaurantContactUpdateRequest;
+import com.frontdash.dao.request.RestaurantProfileUpdateRequest;
+import com.frontdash.dao.request.RestaurantRegistrationRequest;
+import com.frontdash.dao.request.RestaurantWithdrawalRequest;
+import com.frontdash.dao.response.AddressResponse;
+import com.frontdash.dao.response.MenuItemResponse;
+import com.frontdash.dao.response.OperatingHourResponse;
+import com.frontdash.dao.response.RestaurantProfileResponse;
+import com.frontdash.dao.response.RestaurantRegistrationResponse;
+import com.frontdash.dao.response.RestaurantResponse;
+import com.frontdash.dao.response.RestaurantWithAddressResponse;
+import com.frontdash.entity.Address;
+import com.frontdash.entity.MenuCategory;
+import com.frontdash.entity.MenuItem;
+import com.frontdash.entity.OperatingHour;
+import com.frontdash.entity.Restaurant;
+import com.frontdash.repository.AddressRepository;
+import com.frontdash.repository.MenuCategoryRepository;
+import com.frontdash.repository.MenuItemRepository;
+import com.frontdash.repository.OperatingHourRepository;
+import com.frontdash.repository.RestaurantLoginRepository;
+import com.frontdash.repository.RestaurantRepository;
 
 @Service
 public class RestaurantService {
@@ -72,199 +109,19 @@ public class RestaurantService {
         logger.info("Starting restaurant registration for: {}", request.getName());
 
         try {
+            validateRegistrationRequest(request);
 
-            // 1. validate
-            System.out.println("[Step1] Validate basic fields");
+            Address savedAddress = saveAddress(request);
 
-            if (request.getName() == null || request.getName().isBlank()) {
-                System.out.println("[Error] Restaurant name is null");
-                throw new IllegalArgumentException("Restaurant name is required");
-            }
+            Restaurant savedRestaurant = saveRestaurant(request, savedAddress);
 
-            if (restaurantRepository.existsByName(request.getName())) {
-                System.out.println("[Error] Restaurant name already exists: " + request.getName());
-                throw new IllegalArgumentException("Restaurant name already exists");
-            }
-
-            if (request.getEmailAddress() != null) {
-                System.out.println("[Check] Email uniqueness: " + request.getEmailAddress());
-                restaurantRepository.findByEmailAddress(request.getEmailAddress())
-                        .ifPresent(existing -> {
-                            System.out.println("[Error] Email already exists: " + request.getEmailAddress());
-                            throw new IllegalArgumentException("Restaurant email already exists");
-                        });
-            }
-
-//            if (request.getPhoneNumber() != null) {
-//                System.out.println("[Check] Phone uniqueness: " + request.getPhoneNumber());
-//                restaurantRepository.findByPhoneNumber(request.getPhoneNumber())
-//                        .ifPresent(existing -> {
-//                            System.out.println("[Error] Phone number already exists: " + request.getPhoneNumber());
-//                            throw new IllegalArgumentException("Restaurant phone number already exists");
-//                        });
-//            }
-
-            // 2. save Address
-            System.out.println("[Step2] Save Address");
-
-//            if (request.getAddress() == null) {
-//                System.out.println("[Error] Address is null");
-//                throw new IllegalArgumentException("Restaurant address is required");
-//            }
-//
-//            System.out.println("[Address] " + request.getAddress());
-
-            Address address = Address.builder()
-                    .bldg(request.getBuilding())
-                    .streetAddress(request.getStreet())
-                    .city(request.getCity())
-                    .state(request.getState())
-                    .zipCode(request.getZipCode())
-                    .build();
-
-            Address savedAddress = addressRepository.save(address);
-            System.out.println("[Saved Address ID] " + savedAddress.getAddressId());
-
-            // 3. save Restaurant
-            System.out.println("[Step3] Save Restaurant");
-
-            String pictureUrl = null;
-            if (request.getSupportingFiles() != null && !request.getSupportingFiles().isEmpty()) {
-                pictureUrl = request.getSupportingFiles().get(0);
-            }
-            System.out.println("[PictureUrl] " + pictureUrl);
-
-            Restaurant restaurant = Restaurant.builder()
-                    .name(request.getName())
-                    .pictureUrl(pictureUrl)
-                    .addressId(savedAddress.getAddressId())
-                    .phoneNumber(request.getPhoneNumber())
-                    .contactPersonName(request.getContactPersonName())
-                    .emailAddress(request.getEmailAddress())
-                    .status(Restaurant.RestaurantStatus.NEW_REG)
-                    .build();
-
-            System.out.println("[Restaurant to save] " + restaurant);
-
-            Restaurant savedRestaurant = restaurantRepository.save(restaurant);
             Integer restaurantId = savedRestaurant.getRestaurantId();
 
             saveOperatingHours(request, restaurantId);
+
             saveMenuItems(request, restaurantId);
 
-            // 4. save operation hour
-            if (request.getOperatingHours() != null && !request.getOperatingHours().isEmpty()) {
-
-                List<OperatingHour> hours = new ArrayList<>();
-                for (RestaurantRegistrationRequest.OperatingHourRequest h : request.getOperatingHours()) {
-                    System.out.println("[OperatingHour Request] " + h);
-
-                    if (h.getDay() == null || h.getDay().isBlank()) {
-                        System.out.println("[Skip] OperatingHour missing day: " + h);
-                        continue;
-                    }
-
-                    LocalTime open = (h.getOpenTime() == null || h.getOpenTime().isBlank())
-                            ? null : LocalTime.parse(h.getOpenTime());
-                    LocalTime close = (h.getCloseTime() == null || h.getCloseTime().isBlank())
-                            ? null : LocalTime.parse(h.getCloseTime());
-
-                    OperatingHour hour = OperatingHour.builder()
-                            .restaurantId(restaurantId)
-                            .weekDay(h.getDay().toUpperCase())
-                            .openTime(open)
-                            .closeTime(close)
-                            .build();
-
-                    hours.add(hour);
-                }
-
-                if (!hours.isEmpty()) {
-                    operatingHourRepository.saveAll(hours);
-                    System.out.println("[Saved OperatingHours Count] " + hours.size());
-                } else {
-                    System.out.println("[OperatingHours] No valid hours to save");
-                }
-            }
-
-            // 5. save MenuCategory + MenuItem
-            System.out.println("[Step5] Save MenuCategories & MenuItems");
-            if (request.getMenuItems() != null && !request.getMenuItems().isEmpty()) {
-
-                Map<String, List<RestaurantRegistrationRequest.MenuItemRequest>> itemsByCategory =
-                        request.getMenuItems().stream()
-                                .collect(Collectors.groupingBy(RestaurantRegistrationRequest.MenuItemRequest::getCategory));
-
-                System.out.println("[Menu Categories Found] " + itemsByCategory.keySet());
-
-                for (Map.Entry<String, List<RestaurantRegistrationRequest.MenuItemRequest>> entry : itemsByCategory.entrySet()) {
-                    String categoryName = entry.getKey();
-                    List<RestaurantRegistrationRequest.MenuItemRequest> itemsInThisCategory = entry.getValue();
-
-                    System.out.println("[Saving Category] " + categoryName + ", items=" + itemsInThisCategory.size());
-
-                    MenuCategory category = MenuCategory.builder()
-                            .restaurantId(restaurantId)
-                            .categoryName(categoryName)
-                            .build();
-
-                    MenuCategory savedCategory = menuCategoryRepository.save(category);
-                    Integer categoryId = savedCategory.getCategoryId();
-                    System.out.println("[Saved Category ID] " + categoryId);
-
-                    List<MenuItem> menuItems = itemsInThisCategory.stream()
-                            .map(itemReq -> {
-                                System.out.println("[MenuItem Request] " + itemReq);
-                                return MenuItem.builder()
-                                        .categoryId(categoryId)
-                                        .itemName(itemReq.getName())  // 如果是 getItemName()，改这里
-                                        .description(itemReq.getDescription())
-                                        .price(new BigDecimal(itemReq.getPrice()))
-                                        .pictureUrl(itemReq.getImageUrl())
-                                        .availability(MenuItem.AvailabilityStatus.AVAILABLE)
-                                        .build();
-                            })
-                            .collect(Collectors.toList());
-
-                    menuItemRepository.saveAll(menuItems);
-                    System.out.println("[Saved MenuItems Count] " + menuItems.size());
-                }
-            }
-
-            // 7. Send confirmation email to restaurant
-            if (request.getEmailAddress() != null && !request.getEmailAddress().isEmpty()) {
-                try {
-                    String emailBody = String.format(
-                        "Dear %s,\n\n" +
-                        "Thank you for submitting your restaurant registration request for %s.\n\n" +
-                        "Registration Details:\n" +
-                        "- Restaurant Name: %s\n" +
-                        "- Contact Person: %s\n" +
-                        "- Phone: %s\n" +
-                        "- Email: %s\n\n" +
-                        "Your application is now under review. Our team will evaluate your submission and contact you shortly with the approval status.\n\n" +
-                        "If you have any questions, please feel free to contact our support team.\n\n" +
-                        "Best regards,\n" +
-                        "FrontDash Team",
-                        request.getContactPersonName(),
-                        request.getName(),
-                        request.getName(),
-                        request.getContactPersonName(),
-                        request.getPhoneNumber(),
-                        request.getEmailAddress()
-                    );
-                    emailService.sendEmail(
-                        request.getEmailAddress(),
-                        emailBody,
-                        com.frontdash.dao.MessageType.RESTAURANT_REGISTRATION_SUBMITTED
-                    );
-                    System.out.println("[Email] Registration confirmation sent to: " + request.getEmailAddress());
-                } catch (Exception e) {
-                    // Log error but don't fail the registration
-                    System.err.println("[Email] Failed to send registration confirmation email: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
+            sendRegistrationConfirmationEmail(request);
 
             return RestaurantRegistrationResponse
                     .builder()
@@ -474,8 +331,47 @@ public class RestaurantService {
                 .itemName(itemRequest.getName())
                 .description(itemRequest.getDescription())
                 .price(new BigDecimal(itemRequest.getPrice()))
+                .pictureUrl(itemRequest.getImageUrl())
                 .availability(MenuItem.AvailabilityStatus.AVAILABLE)
                 .build();
+    }
+
+    private void sendRegistrationConfirmationEmail(RestaurantRegistrationRequest request) {
+        if (request.getEmailAddress() == null || request.getEmailAddress().isEmpty()) {
+            logger.debug("No email address provided, skipping confirmation email");
+            return;
+        }
+
+        try {
+            String emailBody = String.format(
+                "Dear %s,\n\n" +
+                "Thank you for submitting your restaurant registration request for %s.\n\n" +
+                "Registration Details:\n" +
+                "- Restaurant Name: %s\n" +
+                "- Contact Person: %s\n" +
+                "- Phone: %s\n" +
+                "- Email: %s\n\n" +
+                "Your application is now under review. Our team will evaluate your submission and contact you shortly with the approval status.\n\n" +
+                "If you have any questions, please feel free to contact our support team.\n\n" +
+                "Best regards,\n" +
+                "FrontDash Team",
+                request.getContactPersonName(),
+                request.getName(),
+                request.getName(),
+                request.getContactPersonName(),
+                request.getPhoneNumber(),
+                request.getEmailAddress()
+            );
+            emailService.sendEmail(
+                request.getEmailAddress(),
+                emailBody,
+                com.frontdash.dao.MessageType.RESTAURANT_REGISTRATION_SUBMITTED
+            );
+            logger.info("Registration confirmation email sent to: {}", request.getEmailAddress());
+        } catch (Exception e) {
+            logger.error("Failed to send registration confirmation email: {}", e.getMessage(), e);
+            // Log error but don't fail the registration
+        }
     }
 
 
@@ -940,6 +836,7 @@ public class RestaurantService {
         for (int i = 1; i <= 99; i++) {
             String suffix = String.format("%02d", i);  // 01, 02, ..., 99
             String candidate = firstName + suffix;
+
 
             boolean exists = restaurantLoginRepository.existsById(candidate);
             if (!exists) {

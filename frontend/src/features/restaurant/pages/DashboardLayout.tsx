@@ -59,7 +59,7 @@ export default function DashboardLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/restaurant/login');
+    navigate('/login');
   };
 
   const basePath = '/restaurant';

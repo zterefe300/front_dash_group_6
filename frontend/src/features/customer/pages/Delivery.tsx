@@ -13,7 +13,6 @@ export function Delivery() {
   const [formData, setFormData] = useState<DeliveryAddress>({
     buildingNumber: deliveryAddress?.buildingNumber || '',
     streetName: deliveryAddress?.streetName || '',
-    apartmentUnit: deliveryAddress?.apartmentUnit || '',
     city: deliveryAddress?.city || '',
     state: deliveryAddress?.state || '',
     zipCode: deliveryAddress?.zipCode || ''
@@ -127,21 +126,9 @@ export function Delivery() {
     }
   };
 
-  // Calculate estimated delivery time
-  const getEstimatedDeliveryTime = () => {
-    const now = new Date();
-    const deliveryTime = new Date(now.getTime() + (35 * 60000)); // Add 35 minutes
-    return deliveryTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
-
   const fullAddress = [
     formData.buildingNumber,
     formData.streetName,
-    formData.apartmentUnit && `Apt ${formData.apartmentUnit}`,
     formData.city && formData.state && `${formData.city}, ${formData.state}`,
     formData.zipCode
   ].filter(Boolean).join(' ');
@@ -160,10 +147,6 @@ export function Delivery() {
               <p className="text-muted-foreground">
                 Enter your delivery address to complete the order
               </p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Truck className="h-4 w-4" />
-              Estimated delivery: {getEstimatedDeliveryTime()}
             </div>
           </div>
         </CardContent>
@@ -261,19 +244,6 @@ export function Delivery() {
               {errors.streetName && (
                 <p className="text-sm text-destructive">{errors.streetName}</p>
               )}
-            </div>
-
-            {/* Apartment/Unit Number */}
-            <div className="space-y-2">
-              <Label htmlFor="apartmentUnit">Apartment or Unit Number (Optional)</Label>
-              <Input
-                id="apartmentUnit"
-                type="text"
-                placeholder="4B"
-                value={formData.apartmentUnit}
-                onChange={(e) => handleInputChange('apartmentUnit', e.target.value)}
-                maxLength={10}
-              />
             </div>
 
             {/* City, State, ZIP */}

@@ -24,7 +24,6 @@ import com.frontdash.repository.OrderItemRepository;
 import com.frontdash.repository.OrdersRepository;
 
 @Service
-@Transactional
 public class OrderService {
 
     @Autowired
@@ -67,6 +66,7 @@ public class OrderService {
                 .tips(tips)
                 .totalAmount(total)
                 .orderTime(LocalDateTime.now())
+                .estimatedDeliveryTime(request.getEstimatedDeliveryTime())
                 .orderStatus(Orders.OrderStatus.PENDING)
                 .build();
 

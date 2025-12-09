@@ -29,17 +29,48 @@ const isRestaurantOpen = (operatingHours) => {
 
   const now = new Date();
   const currentDay = now.toLocaleString('en-US', { weekday: 'long' }).toUpperCase();
-  const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+  // Format time as HH:MM:SS to match database format
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const currentTime = `${hours}:${minutes}:${seconds}`;
 
-  // Find today's operating hours
-  const todayHours = operatingHours.find(hour => hour.weekDay === currentDay);
+  console.log('Checking restaurant hours:', { currentDay, currentTime, operatingHours });
+
+  // Find today's operating hours - check both uppercase and original case
+  let todayHours = operatingHours.find(hour => hour.weekDay === currentDay);
+  
+  // If not found, try case-insensitive comparison
+  if (!todayHours) {
+    todayHours = operatingHours.find(hour => 
+      hour.weekDay && hour.weekDay.toUpperCase() === currentDay
+    );
+  }
   
   if (!todayHours) {
+    console.log('No hours found for today:', currentDay, 'Available days:', operatingHours.map(h => h.weekDay));
     return false; // Restaurant is closed today
   }
 
+  console.log('Today\'s hours:', todayHours);
+
+  // Check if restaurant is closed (null open/close times)
+  if (!todayHours.openTime || !todayHours.closeTime) {
+    console.log('Restaurant is closed today (null times)');
+    return false;
+  }
+
+  // Normalize closeTime: treat "24:00" as "23:59:59" for comparison
+  let closeTime = todayHours.closeTime;
+  if (closeTime.startsWith('24:00')) {
+    closeTime = '23:59:59';
+  }
+
   // Compare current time with opening and closing times
-  return currentTime >= todayHours.openTime && currentTime <= todayHours.closeTime;
+  const isOpen = currentTime >= todayHours.openTime && currentTime <= closeTime;
+  console.log('Is restaurant open?', isOpen, { currentTime, openTime: todayHours.openTime, closeTime: closeTime, originalCloseTime: todayHours.closeTime });
+  
+  return isOpen;
 };
 
 export const restaurantService = {
@@ -51,9 +82,12 @@ export const restaurantService = {
     }
     const data = await response.json();
     
+    // Filter out restaurants that are not ACTIVE (only show accepted restaurants)
+    const activeRestaurants = data.filter(restaurant => restaurant.status === 'ACTIVE');
+    
     // Fetch operating hours for all restaurants and determine if they're open
     const restaurantsWithHours = await Promise.all(
-      data.map(async (restaurant, index) => {
+      activeRestaurants.map(async (restaurant, index) => {
         let isOpen = restaurant.status === 'ACTIVE'; // Default to ACTIVE status
         
         try {
@@ -64,12 +98,26 @@ export const restaurantService = {
           ]);
           if (hoursResponse.ok) {
             const operatingHours = await hoursResponse.json();
-            isOpen = restaurant.status === 'ACTIVE' && isRestaurantOpen(operatingHours);
+            console.log(`Fetched hours for restaurant ${restaurant.restaurantId}:`, operatingHours);
+            
+            // If no operating hours are set, show as open (based on ACTIVE status only)
+            if (!operatingHours || operatingHours.length === 0) {
+              console.log(`No operating hours set for ${restaurant.name}, using status only`);
+              isOpen = restaurant.status === 'ACTIVE';
+            } else {
+              const hoursCheck = isRestaurantOpen(operatingHours);
+              console.log(`Hours check result for ${restaurant.name}:`, hoursCheck);
+              isOpen = restaurant.status === 'ACTIVE' && hoursCheck;
+            }
+          } else {
+            console.warn(`Failed to fetch hours for restaurant ${restaurant.restaurantId}, status: ${hoursResponse.status}`);
           }
         } catch (error) {
           console.warn(`Could not fetch hours for restaurant ${restaurant.restaurantId}, using status only:`, error.message);
           // Keep default isOpen value based on status
         }
+        
+        console.log(`Final isOpen status for ${restaurant.name}:`, isOpen);
         
         // Format address if available from nested address object
         let address = '';
@@ -98,7 +146,8 @@ export const restaurantService = {
           priceRange: '$$',
           menu: [],
           address: address,
-          fullAddress: fullAddress // Include the full address object for delivery time calculations
+          fullAddress: fullAddress, // Include the full address object for delivery time calculations
+          phoneNumber: restaurant.phoneNumber || ''
         };
       })
     );
