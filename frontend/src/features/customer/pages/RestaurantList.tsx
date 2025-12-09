@@ -3,6 +3,8 @@ import { Badge } from '../../../components/common/badge';
 import { Star, Clock, DollarSign } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../../../service/customer/restaurantService';
 
 // Restaurant type definition
 interface Restaurant {
@@ -218,29 +220,61 @@ const mockRestaurants: Restaurant[] = [
 
 export function RestaurantList() {
   const navigate = useNavigate();
+  const [restaurants, setRestaurants] = useState<Restaurant[]>(mockRestaurants);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        const data = await restaurantService.getAllRestaurants();
+        setRestaurants(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching restaurants:', err);
+        setError('Failed to load restaurants. Showing mock data.');
+        // Keep using mock data on error
+        setRestaurants(mockRestaurants);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-lg text-muted-foreground">Loading restaurants...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl mb-2">Choose Your Restaurant</h2>
         <p className="text-muted-foreground">Discover amazing food from local restaurants</p>
+        {error && (
+          <p className="text-sm text-yellow-600 mt-2">{error}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockRestaurants.map((restaurant) => (
+        {restaurants.map((restaurant) => (
           <Card
             key={restaurant.id}
-            className={`cursor-pointer hover:shadow-lg transition-all duration-200 ${
-              !restaurant.isOpen ? 'opacity-75 grayscale' : ''
-            }`}
-            onClick={() => restaurant.isOpen && navigate(`/customer/restaurant/${restaurant.id}`)}
+            className="cursor-pointer hover:shadow-lg transition-all duration-200"
+            onClick={() => navigate(`/customer/restaurant/${restaurant.id}`)}
           >
             <CardContent className="p-0">
               <div className="relative">
                 <ImageWithFallback
                   src={restaurant.image}
                   alt={restaurant.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
+                  className={`w-full h-48 object-cover rounded-t-lg ${!restaurant.isOpen ? 'opacity-50 grayscale' : ''}`}
                 />
                 <Badge className="absolute top-4 right-4 bg-white/90 text-white backdrop-blur-sm border border-white/20">
                   {restaurant.cuisine}
@@ -266,7 +300,7 @@ export function RestaurantList() {
                       <ImageWithFallback
                         src={restaurant.logo}
                         alt={`${restaurant.name} logo`}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${!restaurant.isOpen ? 'opacity-50 grayscale' : ''}`}
                       />
                     </div>
                   )}

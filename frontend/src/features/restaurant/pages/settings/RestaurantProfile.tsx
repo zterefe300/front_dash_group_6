@@ -9,7 +9,10 @@ import { ImageUpload } from '../ImageUpload';
 
 type ProfileFormState = {
   name: string;
+<<<<<<< HEAD
   imageUrl?: string;
+=======
+>>>>>>> a0a5f5f87fb9e5cf008038fa5b1e4a585a1dc5ee
 };
 
 export function RestaurantProfile() {
@@ -24,7 +27,10 @@ export function RestaurantProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileFormState>({
     name: restaurantProfile?.name || restaurant?.name || '',
+<<<<<<< HEAD
     imageUrl: restaurantProfile?.imageUrl,
+=======
+>>>>>>> a0a5f5f87fb9e5cf008038fa5b1e4a585a1dc5ee
   });
 
   useEffect(() => {
@@ -38,7 +44,10 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
+<<<<<<< HEAD
         imageUrl: restaurantProfile.imageUrl,
+=======
+>>>>>>> a0a5f5f87fb9e5cf008038fa5b1e4a585a1dc5ee
       });
     }
   }, [restaurantProfile]);
@@ -50,7 +59,10 @@ export function RestaurantProfile() {
     }
     updateProfile(token, restaurant.id, {
       name: profile.name,
+<<<<<<< HEAD
       imageUrl: profile.imageUrl,
+=======
+>>>>>>> a0a5f5f87fb9e5cf008038fa5b1e4a585a1dc5ee
     })
       .then(() => {
         setIsEditing(false);
@@ -85,7 +97,7 @@ export function RestaurantProfile() {
           </Button>
         ) : (
           <div className="space-x-2">
-            <Button variant="outline" onClick={handleCancel} disabled={isProfileUpdating}>
+            <Button onClick={handleCancel} disabled={isProfileUpdating}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isProfileUpdating}>
@@ -111,12 +123,15 @@ export function RestaurantProfile() {
               placeholder="FrontDash Demo Kitchen"
             />
           </div>
+<<<<<<< HEAD
           <ImageUpload
             value={profile.imageUrl}
             onChange={(url) => setProfile((prev) => ({ ...prev, imageUrl: url }))}
             label="Restaurant Image"
             disabled={!isEditing}
           />
+=======
+>>>>>>> a0a5f5f87fb9e5cf008038fa5b1e4a585a1dc5ee
         </CardContent>
       </Card>
     </div>

@@ -4,7 +4,7 @@ import { Badge } from '../../../components/common/badge';
 import { Plus, Minus } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/common/ImageWithFallback';
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../../contexts/CartContext';
 
 // Restaurant type definition
@@ -140,11 +140,9 @@ export function RestaurantDetail({ restaurant, onAddToCart, cartItems, onUpdateQ
                         <div className="flex-1 p-6">
                           <div className="space-y-3">
                             <h3>{item.name}</h3>
-                            {item.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {item.description}
-                              </p>
-                            )}
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {item.description}
+                            </p>
                             <div className="flex items-center justify-between">
                               <span className="text-lg font-semibold">
                                 ${item.price.toFixed(2)}
@@ -407,14 +405,81 @@ const mockRestaurants: Restaurant[] = [
 export function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { items, addItem, updateQuantity, setRestaurant } = useCart();
+  const [restaurant, setRestaurantData] = useState<Restaurant | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const restaurant = mockRestaurants.find(r => r.id === id);
+  useEffect(() => {
+    const fetchRestaurantAndMenu = async () => {
+      try {
+        setLoading(true);
+        
+        // Import the service dynamically
+        const { restaurantService } = await import('../../../service/customer/restaurantService');
+        
+        // Fetch all restaurants and find the one we need
+        const restaurants = await restaurantService.getAllRestaurants();
+        const foundRestaurant = restaurants.find((r: any) => r.id === id);
+        
+        if (!foundRestaurant) {
+          setError('Restaurant not found');
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch menu for this restaurant
+        const menu = await restaurantService.getRestaurantMenu(id);
+        
+        // Get mock data for this restaurant to use as fallback
+        const mockRestaurant = mockRestaurants.find(r => r.id === id);
+        
+        // Combine restaurant data with menu and enrich with demo data if needed
+        setRestaurantData({
+          ...foundRestaurant,
+          // Use mock data for missing fields
+          image: foundRestaurant.image || mockRestaurant?.image || foundRestaurant.image,
+          logo: foundRestaurant.logo || mockRestaurant?.logo || foundRestaurant.logo,
+          cuisine: foundRestaurant.cuisine || mockRestaurant?.cuisine || 'Various',
+          rating: foundRestaurant.rating || mockRestaurant?.rating || 4.5,
+          deliveryTime: foundRestaurant.deliveryTime || mockRestaurant?.deliveryTime || '20-30 min',
+          deliveryFee: foundRestaurant.deliveryFee ?? mockRestaurant?.deliveryFee ?? 2.99,
+          priceRange: foundRestaurant.priceRange || mockRestaurant?.priceRange || '$$',
+          menu
+        });
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching restaurant:', err);
+        setError('Failed to load restaurant. Showing mock data.');
+        // Fallback to mock data
+        const mockRestaurant = mockRestaurants.find(r => r.id === id);
+        if (mockRestaurant) {
+          setRestaurantData(mockRestaurant);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchRestaurantAndMenu();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-lg text-muted-foreground">Loading restaurant...</p>
+      </div>
+    );
+  }
 
   if (!restaurant) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl mb-4">Restaurant not found</h2>
         <p className="text-muted-foreground">The restaurant you're looking for doesn't exist.</p>
+        {error && <p className="text-sm text-yellow-600 mt-2">{error}</p>}
       </div>
     );
   }

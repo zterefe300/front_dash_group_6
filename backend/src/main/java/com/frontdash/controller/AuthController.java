@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.frontdash.dao.request.LoginRequest;
 import com.frontdash.dao.request.PasswordUpdateRequest;
-import com.frontdash.dao.response.LoginResponse;
+import com.frontdash.dao.response.EmployeeLoginResponse;
+import com.frontdash.dao.response.RestaurantLoginResponse;
 import com.frontdash.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,9 +22,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,21 +37,21 @@ public class AuthController {
     @Operation(summary = "Employee login", description = "Authenticate an employee (admin or staff) using username and password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Employee login successful",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+                    content = @Content(schema = @Schema(implementation = EmployeeLoginResponse.class))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class)))
+                    content = @Content(schema = @Schema(implementation = EmployeeLoginResponse.class)))
     })
-    public ResponseEntity<LoginResponse> employeeLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<EmployeeLoginResponse> employeeLogin(@RequestBody LoginRequest request) {
         try {
-            LoginResponse response = authService.loginEmployee(request);
-            System.out.println("sadsajkdjsajdjsahdjashdjasdhhjashdjasdhjsahdjsahdjsa");
+            EmployeeLoginResponse response = authService.loginEmployee(request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    LoginResponse.builder()
+                    EmployeeLoginResponse.builder()
                             .success(false)
                             .message(ex.getMessage())
                             .role(null)
+                            .forcePasswordChange(false)
                             .build()
             );
         }
@@ -63,17 +61,17 @@ public class AuthController {
     @Operation(summary = "Restaurant owner login", description = "Authenticate a restaurant owner using username and password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Restaurant owner login successful",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+                    content = @Content(schema = @Schema(implementation = RestaurantLoginResponse.class))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials or restaurant not active",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class)))
+                    content = @Content(schema = @Schema(implementation = RestaurantLoginResponse.class)))
     })
-    public ResponseEntity<LoginResponse> ownerLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<RestaurantLoginResponse> ownerLogin(@RequestBody LoginRequest request) {
         try {
-            LoginResponse response = authService.loginOwner(request.getUsername(), request.getPassword());
+            RestaurantLoginResponse response = authService.loginOwner(request.getUsername(), request.getPassword());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    LoginResponse.builder()
+                    RestaurantLoginResponse.builder()
                             .success(false)
                             .message(ex.getMessage())
                             .role("OWNER")
@@ -88,9 +86,9 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Logout successful"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<LoginResponse> ownerLogout(@RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<RestaurantLoginResponse> ownerLogout(@RequestHeader(value = "Authorization", required = false) String token) {
         return ResponseEntity.ok(
-                LoginResponse.builder()
+                RestaurantLoginResponse.builder()
                         .success(true)
                         .message("Logout successful")
                         .build()

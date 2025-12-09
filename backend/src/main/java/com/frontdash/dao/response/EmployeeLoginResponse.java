@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StaffResponse {
-    private String username;
-    private String firstname;
-    private String lastname;
+public class EmployeeLoginResponse {
+
+    private boolean success;
+    private String message;
+    private String role;
+    private boolean forcePasswordChange;
 }

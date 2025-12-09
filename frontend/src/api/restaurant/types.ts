@@ -10,8 +10,6 @@ export interface RestaurantSummary {
   username?: string;
   address?: RestaurantAddress;
   operatingHours?: OperatingDay[];
-  description?: string;
-  businessType?: string;
   contactName?: string;
   imageUrl?: string;
 }

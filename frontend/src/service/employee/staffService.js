@@ -33,9 +33,16 @@ export const staffService = {
     }
   },
 
+  getStaffByUsername: async (username) => {
+    const response = await fetch(`${API_BASE_URL}/staff/${username}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch staff member');
+    }
+    return response.json();
+  },
+
   // For settings - current user info
   getCurrentUser: async () => {
-    // This might need authentication token
     const response = await fetch(`${API_BASE_URL}/auth/me`);
     if (!response.ok) {
       throw new Error('Failed to fetch current user');

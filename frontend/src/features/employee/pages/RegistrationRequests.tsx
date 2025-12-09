@@ -131,9 +131,6 @@ export const RegistrationRequests = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium">{restaurant.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {restaurant.cuisineType}
-                        </p>
                       </div>
                     </TableCell>
                     <TableCell>

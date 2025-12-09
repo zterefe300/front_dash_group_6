@@ -87,7 +87,8 @@ CREATE TABLE IF NOT EXISTS EmployeeLogin (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
     employeeType ENUM('ADMIN', 'STAFF') NOT NULL,
-    dateCreated DATETIME DEFAULT CURRENT_TIMESTAMP
+    dateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    lastLogin DATETIME NULL
 );
 
 CREATE INDEX idx_employee_login_username ON EmployeeLogin(username);

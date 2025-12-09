@@ -31,6 +31,9 @@ public class EmployeeLogin {
     @Builder.Default
     private LocalDateTime dateCreated = LocalDateTime.now();
 
+    @Column(name = "lastLogin")
+    private LocalDateTime lastLogin;
+
     public enum EmployeeType {
         ADMIN,
         STAFF
