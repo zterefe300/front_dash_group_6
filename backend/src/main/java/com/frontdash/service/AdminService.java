@@ -230,17 +230,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get admin profile by username
-     * @param username the admin username
-     * @return EmployeeLogin for the admin
-     * @throws IllegalArgumentException if admin not found
-     */
-    public EmployeeLogin getAdminProfile(String username) {
-        Optional<EmployeeLogin> admin = employeeLoginRepository.findByUsername(username)
-                .filter(login -> login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN);
-        return admin.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-    }
+
 
     /**
      * Update admin password
