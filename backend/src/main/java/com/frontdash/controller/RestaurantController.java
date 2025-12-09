@@ -43,6 +43,16 @@ public class RestaurantController {
         return ResponseEntity.ok(responseList);
     }
 
+    @GetMapping("/with-address")
+    @Operation(summary = "Get all restaurants with addresses", description = "Retrieve a list of all restaurants including their full address information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved restaurants with addresses")
+    })
+    public ResponseEntity<List<RestaurantWithAddressResponse>> getAllRestaurantsWithAddress() {
+        List<RestaurantWithAddressResponse> responseList = restaurantService.getAllRestaurantsWithAddress();
+        return ResponseEntity.ok(responseList);
+    }
+
     @PostMapping("/registration")
     @Operation(summary = "Submit restaurant registration", description = "Create a new restaurant registration request for approval")
     @ApiResponses(value = {
