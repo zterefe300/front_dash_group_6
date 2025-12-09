@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../components/common/card';
-import { Input } from '../../../components/common/input';
-import { Button } from '../../../components/common/button';
-import { Label } from '../../../components/common/label';
-import { Alert, AlertDescription } from '../../../components/common/alert';
-import { useUser } from '../../../contexts/UserContext';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, Lock } from 'lucide-react';
-import { staffService } from '../../../service/employee/staffService';
-import { toast } from 'sonner';
+import { Loader2, Lock } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "../../../components/common/alert";
+import { Button } from "../../../components/common/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../../../components/common/card";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
+import { useUser } from "../../../contexts/UserContext";
+import { staffService } from "../../../service/employee/staffService";
 
 export const ChangePasswordPage: React.FC = () => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { user, logout } = useUser();
+  const [error, setError] = useState("");
+  const { user, logoutEmployee } = useUser();
   const navigate = useNavigate();
 
   const validatePassword = (password: string): boolean => {
@@ -31,22 +38,24 @@ export const ChangePasswordPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     if (!newPassword || !confirmPassword) {
-      setError('All fields are required');
+      setError("All fields are required");
       setIsLoading(false);
       return;
     }
 
     if (!validatePassword(newPassword)) {
-      setError('Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      setError(
+        "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+      );
       setIsLoading(false);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -56,12 +65,12 @@ export const ChangePasswordPage: React.FC = () => {
         username: user?.username || "",
         newPassword: newPassword,
       });
-      toast.success('Password changed successfully! Please log in again.');
-      logout(); // Clear authentication state
-      navigate('/employee/login');
+      toast.success("Password changed successfully! Please log in again.");
+      logoutEmployee(); // Clear authentication state
+      navigate("/employee/login");
     } catch (err) {
-      console.error('Failed to change password:', err);
-      setError('Failed to change password. Please try again.');
+      console.error("Failed to change password:", err);
+      setError("Failed to change password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -115,18 +124,14 @@ export const ChangePasswordPage: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Changing Password...
                 </>
               ) : (
-                'Change Password'
+                "Change Password"
               )}
             </Button>
           </CardFooter>

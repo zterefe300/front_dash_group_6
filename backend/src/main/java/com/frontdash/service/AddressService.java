@@ -18,6 +18,7 @@ public class AddressService {
     public AddressResponse createAddress(AddressRequest request) {
         Address addr = Address.builder()
                 .streetAddress(request.getStreetAddress())
+                .bldg(request.getBuilding())
                 .city(request.getCity())
                 .state(request.getState())
                 .zipCode(request.getZipCode())
@@ -26,6 +27,7 @@ public class AddressService {
         Address saved = addressRepository.save(addr);
         return AddressResponse.builder()
                 .addressId(saved.getAddressId())
+                .bldg(saved.getBldg())
                 .streetAddress(saved.getStreetAddress())
                 .city(saved.getCity())
                 .state(saved.getState())

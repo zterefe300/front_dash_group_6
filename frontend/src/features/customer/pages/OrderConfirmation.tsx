@@ -119,6 +119,7 @@ export function OrderConfirmation() {
         let addressId = null;
         if (orderSnapshot.deliveryAddress) {
           try {
+            console.log('Creating address for delivery:', orderSnapshot.deliveryAddress);
             const addressResponse = await orderService.createAddress({
               streetAddress: orderSnapshot.deliveryAddress.streetName,
               building: orderSnapshot.deliveryAddress.buildingNumber || null,
@@ -127,9 +128,13 @@ export function OrderConfirmation() {
               zipCode: orderSnapshot.deliveryAddress.zipCode
             });
             addressId = addressResponse.addressId;
-            console.log('Address created with ID:', addressId);
+            console.log('Address created successfully with ID:', addressId);
           } catch (error) {
             console.error('Failed to create address:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Address creation error details:', errorMessage);
+            // Don't proceed with order creation if address creation fails
+            throw new Error(`Address creation failed: ${errorMessage}`);
           }
         }
 

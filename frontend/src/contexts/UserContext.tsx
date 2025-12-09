@@ -18,6 +18,7 @@ interface UserContextType {
   forcePasswordChange: boolean;
   login: (username: string, password: string) => Promise<{ forcePasswordChange?: boolean }>;
   logout: () => void;
+  logoutEmployee: () => void;
   switchView: (view: ViewMode) => void;
 }
 
@@ -101,6 +102,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     window.location.href = '/login';
   };
 
+  const logoutEmployee = () => {
+    setUser(null);
+    setCurrentView('admin');
+    setForcePasswordChange(false);
+  };
+
   const switchView = (view: ViewMode) => {
     if (user?.role === 'admin') {
       setCurrentView(view);
@@ -115,6 +122,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       forcePasswordChange,
       login,
       logout,
+      logoutEmployee,
       switchView
     }}>
       {children}
