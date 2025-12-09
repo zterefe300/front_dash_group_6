@@ -346,7 +346,7 @@ export function OrderConfirmation() {
             <div>
               <p className="font-medium">Delivery Instructions</p>
               <p className="text-sm text-muted-foreground">
-                Please ring doorbell upon arrival
+                Will ring doorbell upon arrival.
               </p>
             </div>
           </div>
