@@ -192,6 +192,7 @@ interface HoursSectionProps {
   timeOptions: string[];
   onChangeHour: (day: string, field: 'openTime' | 'closeTime', value: string) => void;
   onToggleDay: (day: string, isOpen: boolean) => void;
+  formatTimeWithAMPM: (time: string) => string;
 }
 
 const HoursSection = memo(function HoursSection({
@@ -199,6 +200,7 @@ const HoursSection = memo(function HoursSection({
   timeOptions,
   onChangeHour,
   onToggleDay,
+  formatTimeWithAMPM,
 }: HoursSectionProps) {
   return (
     <Card>
@@ -228,7 +230,7 @@ const HoursSection = memo(function HoursSection({
                   {entry.isOpen ? 'Customers can place orders on this day.' : 'Closed all day.'}
                 </p>
               </div>
-              <div className="space-y-2" style={{ width: '88px' }}>
+              <div className="space-y-2" style={{ width: '120px' }}>
                 <Label htmlFor={`${entry.day}-open`}>Opens</Label>
                 <Select
                   value={entry.openTime}
@@ -241,13 +243,13 @@ const HoursSection = memo(function HoursSection({
                   <SelectContent>
                     {timeOptions.map((time) => (
                       <SelectItem key={`${entry.day}-open-${time}`} value={time}>
-                        {time}
+                        {formatTimeWithAMPM(time)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2" style={{ width: '88px' }}>
+              <div className="space-y-2" style={{ width: '120px' }}>
                 <Label htmlFor={`${entry.day}-close`}>Closes</Label>
                 <Select
                   value={entry.closeTime}
@@ -260,7 +262,7 @@ const HoursSection = memo(function HoursSection({
                   <SelectContent>
                     {timeOptions.map((time) => (
                       <SelectItem key={`${entry.day}-close-${time}`} value={time}>
-                        {time}
+                        {formatTimeWithAMPM(time)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -319,6 +321,16 @@ export function RegistrationPage() {
 
     return options;
   }, []);
+
+  // Convert 24-hour time to 12-hour format with AM/PM
+  const formatTimeWithAMPM = (time: string) => {
+    if (!time) return '';
+    const [hourStr, minute] = time.split(':');
+    const hour = parseInt(hourStr, 10);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${hour12}:${minute} ${period}`;
+  };
 
   useEffect(() => {
     if (registrationError) {
@@ -1106,6 +1118,7 @@ export function RegistrationPage() {
                   timeOptions={timeOptions}
                   onChangeHour={updateOperatingHour}
                   onToggleDay={setDayOpen}
+                  formatTimeWithAMPM={formatTimeWithAMPM}
                 />
               </section>
 
