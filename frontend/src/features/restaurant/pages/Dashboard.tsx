@@ -3,8 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, TrendingDown, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
+  const navigate = useNavigate();
+
   const stats = [
     {
       title: 'Active Customers',
@@ -60,10 +63,18 @@ export function Dashboard() {
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button className="w-full justify-start" variant="outline">
+          <Button
+            className="w-full justify-start"
+            variant="outline"
+            onClick={() => navigate('/restaurant/menu')}
+          >
             Add New Menu Item
           </Button>
-          <Button className="w-full justify-start" variant="outline">
+          <Button
+            className="w-full justify-start"
+            variant="outline"
+            onClick={() => navigate('/restaurant/settings/hours')}
+          >
             Update Operating Hours
           </Button>
         </CardContent>

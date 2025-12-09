@@ -10,9 +10,10 @@ export interface AuthState {
   user: RestaurantSummary | null;
   isAuthenticating: boolean;
   authError: string | null;
+  isFirstLogin: boolean;
 
   // Actions
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   clearAuthError: () => void;
 }
@@ -24,6 +25,7 @@ export const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
   user: null,
   isAuthenticating: false,
   authError: null,
+  isFirstLogin: false,
 
   // Actions
   login: async (credentials: LoginCredentials) => {
@@ -43,7 +45,9 @@ export const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
         },
         isAuthenticating: false,
         authError: null,
+        isFirstLogin: response.isFirstLogin || false,
       });
+      return response;
     } catch (error) {
       set({
         isAuthenticating: false,

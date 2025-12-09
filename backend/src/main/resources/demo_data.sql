@@ -22,20 +22,20 @@ INSERT INTO Address (address_id, street_address, bldg, city, state, zip_code) VA
 (18, 'York Terrace', '17286', 'Corey Hill', 'MA', '02491');
 
 -- Insert data into Restaurant
-INSERT INTO Restaurant (restaurant_id, name, cuisine_type, picture_url, address_id, phone_number, contact_person_name, email_address, status) VALUES
-(1, 'All Chicken Meals', '', '', 1, '617-478-3785', 'Laura Wimbleton', 'info@allchickenmeals.com', 'ACTIVE'),
-(2, 'Pizza Only', '', '', 2, '857-477-2773', 'Russel Beverton', 'info@pizzaonly.com', 'ACTIVE'),
-(3, 'Best Burgers', '', '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
+INSERT INTO Restaurant (restaurant_id, name, picture_url, address_id, phone_number, contact_person_name, email_address, status) VALUES
+(1, 'All Chicken Meals', '',  1, '617-478-3785', 'Laura Wimbleton', 'info@allchickenmeals.com', 'ACTIVE'),
+(2, 'Pizza Only', '', 2, '857-477-2773', 'Russel Beverton', 'info@pizzaonly.com', 'ACTIVE'),
+(3, 'Best Burgers',  '', 3, '781-467-0073', 'Eager Alloysis', 'info@bestburgers.com', 'ACTIVE');
 
 -- Insert data into RestaurantLogin
 -- Passwords are BCrypt encrypted
 -- restaurant1 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 -- restaurant2 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
 -- restaurant3 password: 'password' -> $2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe
-INSERT INTO RestaurantLogin (user_name, restaurant_id, password) VALUES
-('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
-('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe'),
-('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe');
+INSERT INTO RestaurantLogin (user_name, restaurant_id, password, is_first_login) VALUES
+('restaurant1', 1, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
+('restaurant2', 2, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true),
+('restaurant3', 3, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIxDZcrmX5y2AGJjAKbAnd.62YcvKmfe', true);
 
 -- Insert data into OperatingHour
 INSERT INTO OperatingHour (operating_hour_id, restaurant_id, week_day, open_time, close_time) VALUES
@@ -102,14 +102,14 @@ INSERT INTO Driver (driver_id, firstname, lastname, availability_status) VALUES
 -- deckon03 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
 -- cox04 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
 -- mullard05 password: 'staff123' -> $2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ
--- administrator password: 'password' -> $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
-INSERT INTO EmployeeLogin (username, password, employeeType, dateCreated) VALUES
-('richard01', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
-('cox02', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
-('deckon03', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
-('cox04', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
-('mullard05', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', NULL),
-('administrator', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN', NULL);
+-- administrator password: 'Admin123!' -> $2b$12$7qw32vzcbpxmBdSm1DGFxOU2yE7vPmXdxL.zOKStJVgA3ey9fL9c.
+INSERT INTO EmployeeLogin (username, password, employeeType, dateCreated, lastLogin) VALUES
+('richard01', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 09:30:00'),
+('cox02', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 10:15:00'),
+('deckon03', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 11:45:00'),
+('cox04', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 14:20:00'),
+('mullard05', '$2a$10$8K2pzVjKvJc8I8Z6t3l9UeJ6d8YqkzJc8I8Z6t3l9UeJ6d8YqkzJ', 'STAFF', '2025-01-15 09:00:00', '2025-01-15 16:30:00'),
+('administrator', '$2b$12$7qw32vzcbpxmBdSm1DGFxOU2yE7vPmXdxL.zOKStJVgA3ey9fL9c.', 'ADMIN', '2025-01-15 09:00:00', '2025-01-15 17:00:00');
 
 -- Insert data into StaffUsers
 INSERT INTO StaffUsers (username, firstname, lastname) VALUES

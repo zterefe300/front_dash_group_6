@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LoginResponse {
+public class RestaurantLoginResponse {
 
     private boolean success;
     private String message;
@@ -22,4 +22,5 @@ public class LoginResponse {
     private String restaurantName;  // Restaurant name
     private String email;           // Email address
     private String status;          // Restaurant status (ACTIVE, NEW_REG, etc.)
+    private Boolean isFirstLogin;   // Indicates if this is the user's first login
 }

@@ -16,6 +16,7 @@ type BackendProfileResponse = {
   phoneNumber?: string | null;
   email?: string | null;
   status: string;
+  imageUrl?: string | null;
   address?: {
     addressId: number;
     streetAddress: string;
@@ -43,6 +44,7 @@ const mapProfile = (data: BackendProfileResponse): RestaurantSummary => ({
   description: data.description || undefined,
   businessType: data.businessType || undefined,
   contactName: data.contactName || undefined,
+  imageUrl: data.imageUrl || undefined,
 });
 
 export const profileApi = {

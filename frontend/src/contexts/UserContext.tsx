@@ -15,7 +15,8 @@ interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
   currentView: ViewMode;
-  login: (username: string, password: string) => Promise<void>;
+  forcePasswordChange: boolean;
+  login: (username: string, password: string) => Promise<{ forcePasswordChange?: boolean }>;
   logout: () => void;
   switchView: (view: ViewMode) => void;
 }
@@ -37,6 +38,7 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<ViewMode>('admin');
+  const [forcePasswordChange, setForcePasswordChange] = useState<boolean>(false);
 
   const login = async (username: string, password: string) => {
     try {
@@ -78,6 +80,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
         setUser(user);
         setCurrentView(user.role);
+
+        // Check if password change is required (for staff first login)
+        const forcePasswordChange = response.forcePasswordChange || false;
+        setForcePasswordChange(forcePasswordChange);
+
+        return { forcePasswordChange };
       } else {
         throw new Error(response.message || 'Login failed');
       }
@@ -103,6 +111,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       user,
       isAuthenticated: !!user,
       currentView,
+      forcePasswordChange,
       login,
       logout,
       switchView

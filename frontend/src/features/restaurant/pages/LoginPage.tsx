@@ -59,9 +59,16 @@ export function LoginPage() {
     }
 
     try {
-      await login({ username: loginData.username, password: loginData.password });
-      toast.success("Login successful!");
-      navigate("/restaurant/dashboard", { replace: true });
+      const response = await login({ username: loginData.username, password: loginData.password });
+
+      // Check if this is the user's first login
+      if (response.isFirstLogin) {
+        toast.success("First login detected. Please reset your password.");
+        navigate("/restaurant/reset-password", { replace: true });
+      } else {
+        toast.success("Login successful!");
+        navigate("/restaurant/dashboard", { replace: true });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed. Please try again.";
       toast.error(message);
@@ -194,13 +201,13 @@ export function LoginPage() {
                   </Link>
                 </div>
 
-                <div className="text-center">
+                {/* <div className="text-center">
                   <Link to="/restaurant/forgot-password">
                     <Button variant="ghost" className="text-sm">
                       Forgot password?
                     </Button>
                   </Link>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           </div>

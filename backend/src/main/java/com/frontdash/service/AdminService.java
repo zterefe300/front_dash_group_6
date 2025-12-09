@@ -66,6 +66,9 @@ public class AdminService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     // Helper method to delete all related records for a restaurant
     private void deleteRestaurantRelatedRecords(Integer restaurantId) {
         // Delete in order to avoid foreign key constraint violations
@@ -100,41 +103,16 @@ public class AdminService {
 
     // Helper method to convert Restaurant entity to RestaurantResponse DTO
     private RestaurantResponse convertToResponse(Restaurant restaurant) {
-        // Fetch address details if addressId exists
-        String streetAddress = null;
-        String building = null;
-        String city = null;
-        String state = null;
-        String zipCode = null;
-
-        if (restaurant.getAddressId() != null) {
-            Optional<Address> addressOpt = addressRepository.findById(restaurant.getAddressId());
-            if (addressOpt.isPresent()) {
-                Address address = addressOpt.get();
-                streetAddress = address.getStreetAddress();
-                building = address.getBuilding();
-                city = address.getCity();
-                state = address.getState();
-                zipCode = address.getZipCode();
-            }
-        }
-
-        return RestaurantResponse.builder()
-                .restaurantId(restaurant.getRestaurantId())
-                .name(restaurant.getName())
-                .cuisineType(restaurant.getCuisineType())
-                .pictureUrl(restaurant.getPictureUrl())
-                .addressId(restaurant.getAddressId())
-                .phoneNumber(restaurant.getPhoneNumber())
-                .contactPersonName(restaurant.getContactPersonName())
-                .emailAddress(restaurant.getEmailAddress())
-                .status(restaurant.getStatus().toString())
-                .streetAddress(streetAddress)
-                .building(building)
-                .city(city)
-                .state(state)
-                .zipCode(zipCode)
-                .build();
+        return new RestaurantResponse(
+                restaurant.getRestaurantId(),
+                restaurant.getName(),
+                restaurant.getPictureUrl(),
+                restaurant.getAddressId(),
+                restaurant.getPhoneNumber(),
+                restaurant.getContactPersonName(),
+                restaurant.getEmailAddress(),
+                restaurant.getStatus().toString()
+        );
     }
 
     /**
@@ -152,7 +130,8 @@ public class AdminService {
                 Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
 
                 // Create restaurant login with auto-generated credentials
-                String username = "restaurant_" + restaurantId;
+
+                String username = restaurant.getContactPersonName() + restaurantId;
                 String rawPassword = UUID.randomUUID().toString().substring(0, 8); // Generate 8-character password
                 String encodedPassword = passwordEncoder.encode(rawPassword);
 
@@ -160,9 +139,28 @@ public class AdminService {
                         .username(username)
                         .password(encodedPassword)
                         .restaurantId(restaurantId)
+                        .isFirstLogin(true)
                         .build();
 
                 restaurantLoginRepository.save(restaurantLogin);
+
+                // Send approval email with credentials
+                if (restaurant.getEmailAddress() != null && !restaurant.getEmailAddress().isEmpty()) {
+                    try {
+                        String emailBody = emailService.generateRestaurantCredentialsBody(username, rawPassword) +
+                            "\n\nCongratulations! Your restaurant registration has been approved. " +
+                            "You can now log in to the FrontDash system and start managing your restaurant operations.";
+                        emailService.sendEmail(
+                            restaurant.getEmailAddress(),
+                            emailBody,
+                            com.frontdash.dao.MessageType.RESTAURANT_REGISTRATION_APPROVAL
+                        );
+                        System.out.println("[Email] Approval notification sent to: " + restaurant.getEmailAddress());
+                    } catch (Exception e) {
+                        System.err.println("[Email] Failed to send approval email: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
 
                 return convertToResponse(updatedRestaurant);
             } else {
@@ -183,6 +181,32 @@ public class AdminService {
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
             if (restaurant.getStatus() == Restaurant.RestaurantStatus.NEW_REG) {
+                // Send rejection email before deleting
+                if (restaurant.getEmailAddress() != null && !restaurant.getEmailAddress().isEmpty()) {
+                    try {
+                        String emailBody = String.format(
+                            "Dear %s,\n\n" +
+                            "We regret to inform you that your restaurant registration for %s has been rejected after careful review.\n\n" +
+                            "If you believe this decision was made in error or would like more information about the reasons for rejection, " +
+                            "please contact our support team at your earliest convenience.\n\n" +
+                            "We appreciate your interest in FrontDash.\n\n" +
+                            "Best regards,\n" +
+                            "FrontDash Team",
+                            restaurant.getContactPersonName(),
+                            restaurant.getName()
+                        );
+                        emailService.sendEmail(
+                            restaurant.getEmailAddress(),
+                            emailBody,
+                            com.frontdash.dao.MessageType.RESTAURANT_APPROVAL_REJECTION
+                        );
+                        System.out.println("[Email] Rejection notification sent to: " + restaurant.getEmailAddress());
+                    } catch (Exception e) {
+                        System.err.println("[Email] Failed to send rejection email: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+
                 // For rejection, delete the restaurant as it's a rejected registration
                 deleteRestaurantRelatedRecords(restaurantId);
                 restaurantRepository.delete(restaurant);
@@ -204,6 +228,33 @@ public class AdminService {
         if (optionalRestaurant.isPresent()) {
             Restaurant restaurant = optionalRestaurant.get();
             if (restaurant.getStatus() == Restaurant.RestaurantStatus.WITHDRAW_REQ) {
+                // Send withdrawal approval email before deleting
+                if (restaurant.getEmailAddress() != null && !restaurant.getEmailAddress().isEmpty()) {
+                    try {
+                        String emailBody = String.format(
+                            "Dear %s,\n\n" +
+                            "Your withdrawal request for %s has been approved.\n\n" +
+                            "Your restaurant has been removed from the FrontDash platform. " +
+                            "All associated data and credentials have been deactivated.\n\n" +
+                            "Thank you for being a part of FrontDash. We wish you all the best in your future endeavors.\n\n" +
+                            "If you have any questions, please contact our support team.\n\n" +
+                            "Best regards,\n" +
+                            "FrontDash Team",
+                            restaurant.getContactPersonName(),
+                            restaurant.getName()
+                        );
+                        emailService.sendEmail(
+                            restaurant.getEmailAddress(),
+                            emailBody,
+                            com.frontdash.dao.MessageType.RESTAURANT_WITHDRAWAL_APPROVAL
+                        );
+                        System.out.println("[Email] Withdrawal approval notification sent to: " + restaurant.getEmailAddress());
+                    } catch (Exception e) {
+                        System.err.println("[Email] Failed to send withdrawal approval email: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+
                 // For approved withdrawal, delete the restaurant
                 deleteRestaurantRelatedRecords(restaurantId);
                 restaurantRepository.delete(restaurant);
@@ -229,6 +280,34 @@ public class AdminService {
                 // For rejected withdrawal, set status back to ACTIVE
                 restaurant.setStatus(Restaurant.RestaurantStatus.ACTIVE);
                 Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
+
+                // Send withdrawal rejection email
+                if (restaurant.getEmailAddress() != null && !restaurant.getEmailAddress().isEmpty()) {
+                    try {
+                        String emailBody = String.format(
+                            "Dear %s,\n\n" +
+                            "Your withdrawal request for %s has been reviewed and rejected.\n\n" +
+                            "Your restaurant remains active on the FrontDash platform. " +
+                            "You can continue to manage your restaurant operations as usual.\n\n" +
+                            "If you have any questions or concerns about this decision, " +
+                            "please contact our support team.\n\n" +
+                            "Best regards,\n" +
+                            "FrontDash Team",
+                            restaurant.getContactPersonName(),
+                            restaurant.getName()
+                        );
+                        emailService.sendEmail(
+                            restaurant.getEmailAddress(),
+                            emailBody,
+                            com.frontdash.dao.MessageType.RESTAURANT_WITHDRAWAL_REJECTION
+                        );
+                        System.out.println("[Email] Withdrawal rejection notification sent to: " + restaurant.getEmailAddress());
+                    } catch (Exception e) {
+                        System.err.println("[Email] Failed to send withdrawal rejection email: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+
                 return convertToResponse(updatedRestaurant);
             } else {
                 throw new IllegalArgumentException("Restaurant is not in WITHDRAW_REQ status");
@@ -260,17 +339,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get admin profile by username
-     * @param username the admin username
-     * @return EmployeeLogin for the admin
-     * @throws IllegalArgumentException if admin not found
-     */
-    public EmployeeLogin getAdminProfile(String username) {
-        Optional<EmployeeLogin> admin = employeeLoginRepository.findByUsername(username)
-                .filter(login -> login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN);
-        return admin.orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-    }
+
 
     /**
      * Update admin password

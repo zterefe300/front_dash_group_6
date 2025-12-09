@@ -166,9 +166,6 @@ export const WithdrawalRequests = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium">{request.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {request.cuisineType}
-                        </p>
                       </div>
                     </TableCell>
                     <TableCell>

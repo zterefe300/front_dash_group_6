@@ -5,6 +5,7 @@ import { ActiveDrivers } from "../features/employee/pages/ActiveDrivers";
 import { ActiveRestaurants } from "../features/employee/pages/ActiveRestaurants";
 import { AddNewStaff } from "../features/employee/pages/AddNewStaff";
 import { AdminSettings } from "../features/employee/pages/AdminSettings";
+import { ChangePasswordPage } from "../features/employee/pages/ChangePasswordPage";
 import { Dashboard } from "../features/employee/pages/Dashboard";
 import { DriverManagement } from "../features/employee/pages/DriverManagement";
 import { LoginPage } from "../features/employee/pages/LoginPage";
@@ -40,6 +41,7 @@ const protectedRoutes = [
 const EmployeePortalRoutes = () => (
   <Routes>
     <Route path="/login" element={<EmployeePortalPublicRoute element={<LoginPage />} />} />
+    <Route path="/change-password" element={<EmployeePortalPublicRoute element={<ChangePasswordPage />} />} />
     {protectedRoutes.map(({ path, element }) => (
       <Route key={path} path={path} element={<EmployeePortalProtectedRoute element={element} />} />
     ))}

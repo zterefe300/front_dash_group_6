@@ -4,6 +4,8 @@ import com.frontdash.dao.request.*;
 import com.frontdash.dao.response.*;
 import com.frontdash.entity.*;
 import com.frontdash.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RestaurantService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RestaurantService.class);
 
     private static final DateTimeFormatter TIME_FORMATTER_WITH_SECONDS = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter TIME_FORMATTER_NO_SECONDS = DateTimeFormatter.ofPattern("HH:mm");
@@ -58,9 +62,7 @@ public class RestaurantService {
 
     @Transactional
     public RestaurantRegistrationResponse registerRestaurant(RestaurantRegistrationRequest request) {
-
-        System.out.println("[RestaurantRegister] Start register restaurant.");
-        System.out.println("[Request] " + request);
+        logger.info("Starting restaurant registration for: {}", request.getName());
 
         try {
 
@@ -127,8 +129,6 @@ public class RestaurantService {
 
             Restaurant restaurant = Restaurant.builder()
                     .name(request.getName())
-                    .cuisineType(request.getCuisineType())
-                    .businessType(request.getCuisineType())
                     .pictureUrl(pictureUrl)
                     .addressId(savedAddress.getAddressId())
                     .phoneNumber(request.getPhoneNumber())
@@ -141,10 +141,9 @@ public class RestaurantService {
 
             Restaurant savedRestaurant = restaurantRepository.save(restaurant);
             Integer restaurantId = savedRestaurant.getRestaurantId();
-            System.out.println("[Saved Restaurant ID] " + restaurantId);
 
-            // 4. save OperatingHour
-            System.out.println("[Step4] Save OperatingHours");
+            saveOperatingHours(request, restaurantId);
+            saveMenuItems(request, restaurantId);
 
             if (request.getOperatingHours() != null && !request.getOperatingHours().isEmpty()) {
 
@@ -214,6 +213,7 @@ public class RestaurantService {
                                         .itemName(itemReq.getName())  // 如果是 getItemName()，改这里
                                         .description(itemReq.getDescription())
                                         .price(new BigDecimal(itemReq.getPrice()))
+                                        .pictureUrl(itemReq.getImageUrl())
                                         .availability(MenuItem.AvailabilityStatus.AVAILABLE)
                                         .build();
                             })
@@ -224,44 +224,251 @@ public class RestaurantService {
                 }
             }
 
-            // 6. save RestaurantLogin
-
-            System.out.println("[Step6] Save RestaurantLogin");
-            String givenLoginName = null;
-            if (request.getContactPersonName() != null) {
-                String contactPersonName = request.getContactPersonName();
-                givenLoginName = generateUniqueUsername(contactPersonName);
-
-                String givenPassword = "CS5336_" + contactPersonName;
-
-                System.out.println("[Generated Login] username=" + givenLoginName +
-                        ", password=" + givenPassword);
-
-                RestaurantLogin login = RestaurantLogin.builder()
-                        .username(givenLoginName)
-                        .restaurantId(restaurantId)
-                        .password(givenPassword)
-                        .build();
-
-                restaurantLoginRepository.save(login);
-                System.out.println("[Saved RestaurantLogin]");
+            // 7. Send confirmation email to restaurant
+            if (request.getEmailAddress() != null && !request.getEmailAddress().isEmpty()) {
+                try {
+                    String emailBody = String.format(
+                        "Dear %s,\n\n" +
+                        "Thank you for submitting your restaurant registration request for %s.\n\n" +
+                        "Registration Details:\n" +
+                        "- Restaurant Name: %s\n" +
+                        "- Contact Person: %s\n" +
+                        "- Phone: %s\n" +
+                        "- Email: %s\n\n" +
+                        "Your application is now under review. Our team will evaluate your submission and contact you shortly with the approval status.\n\n" +
+                        "If you have any questions, please feel free to contact our support team.\n\n" +
+                        "Best regards,\n" +
+                        "FrontDash Team",
+                        request.getContactPersonName(),
+                        request.getName(),
+                        request.getName(),
+                        request.getContactPersonName(),
+                        request.getPhoneNumber(),
+                        request.getEmailAddress()
+                    );
+                    emailService.sendEmail(
+                        request.getEmailAddress(),
+                        emailBody,
+                        com.frontdash.dao.MessageType.RESTAURANT_REGISTRATION_SUBMITTED
+                    );
+                    System.out.println("[Email] Registration confirmation sent to: " + request.getEmailAddress());
+                } catch (Exception e) {
+                    // Log error but don't fail the registration
+                    System.err.println("[Email] Failed to send registration confirmation email: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
-
-            System.out.println("[RestaurantRegister] SUCCESS. restaurantId=" + restaurantId);
-
 
             return RestaurantRegistrationResponse
                     .builder()
                     .id(String.valueOf(restaurantId))
-                    .generatedUsername(givenLoginName)
+                    .generatedUsername(savedRestaurant.getContactPersonName())
                     .submittedAt(LocalDateTime.now())
                     .build();
 
         } catch (Exception e) {
-            System.out.println("[RestaurantRegister] ERROR: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to register restaurant: {}", e.getMessage(), e);
             throw e;
         }
+    }
+
+    private void validateRegistrationRequest(RestaurantRegistrationRequest request) {
+        logger.debug("Validating registration request for restaurant: {}", request.getName());
+
+        if (request.getName() == null || request.getName().isBlank()) {
+            logger.error("Restaurant name is required");
+            throw new IllegalArgumentException("Restaurant name is required");
+        }
+
+        if (restaurantRepository.existsByName(request.getName())) {
+            logger.error("Restaurant name already exists: {}", request.getName());
+            throw new IllegalArgumentException("Restaurant name already exists");
+        }
+
+        validateEmailUniqueness(request.getEmailAddress());
+        validatePhoneUniqueness(request.getPhoneNumber());
+
+        logger.debug("Registration request validation completed successfully");
+    }
+
+    private void validateEmailUniqueness(String email) {
+        if (email != null) {
+            logger.debug("Checking email uniqueness: {}", email);
+            restaurantRepository.findByEmailAddress(email)
+                    .ifPresent(existing -> {
+                        logger.error("Email already exists: {}", email);
+                        throw new IllegalArgumentException("Restaurant email already exists");
+                    });
+        }
+    }
+
+    private void validatePhoneUniqueness(String phone) {
+        if (phone != null) {
+            logger.debug("Checking phone uniqueness: {}", phone);
+            restaurantRepository.findByPhoneNumber(phone)
+                    .ifPresent(existing -> {
+                        logger.error("Phone number already exists: {}", phone);
+                        throw new IllegalArgumentException("Restaurant phone number already exists");
+                    });
+        }
+    }
+
+    private Address saveAddress(RestaurantRegistrationRequest request) {
+        logger.debug("Saving address for restaurant: {}", request.getName());
+
+        Address address = Address.builder()
+                .bldg(request.getBuilding())
+                .streetAddress(request.getStreet())
+                .city(request.getCity())
+                .state(request.getState())
+                .zipCode(request.getZipCode())
+                .build();
+
+        Address savedAddress = addressRepository.save(address);
+        logger.info("Saved address with ID: {}", savedAddress.getAddressId());
+
+        return savedAddress;
+    }
+
+    private Restaurant saveRestaurant(RestaurantRegistrationRequest request, Address address) {
+        logger.debug("Saving restaurant entity");
+
+        String pictureUrl = extractPictureUrl(request);
+
+        Restaurant restaurant = Restaurant.builder()
+                .name(request.getName())
+                .pictureUrl(pictureUrl)
+                .addressId(address.getAddressId())
+                .phoneNumber(request.getPhoneNumber())
+                .contactPersonName(request.getContactPersonName())
+                .emailAddress(request.getEmailAddress())
+                .status(Restaurant.RestaurantStatus.NEW_REG)
+                .build();
+
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        logger.info("Saved restaurant with ID: {}", savedRestaurant.getRestaurantId());
+
+        return savedRestaurant;
+    }
+
+    private String extractPictureUrl(RestaurantRegistrationRequest request) {
+        String pictureUrl = null;
+        if (request.getSupportingFiles() != null && !request.getSupportingFiles().isEmpty()) {
+            pictureUrl = request.getSupportingFiles().get(0);
+        }
+        logger.debug("Extracted picture URL: {}", pictureUrl);
+        return pictureUrl;
+    }
+
+    private void saveOperatingHours(RestaurantRegistrationRequest request, Integer restaurantId) {
+        logger.debug("Saving operating hours for restaurant ID: {}", restaurantId);
+
+        if (request.getOperatingHours() == null || request.getOperatingHours().isEmpty()) {
+            logger.debug("No operating hours to save");
+            return;
+        }
+
+        List<OperatingHour> hours = new ArrayList<>();
+        for (RestaurantRegistrationRequest.OperatingHourRequest hourRequest : request.getOperatingHours()) {
+            logger.debug("Processing operating hour: {}", hourRequest);
+
+            if (hourRequest.getDay() == null || hourRequest.getDay().isBlank()) {
+                logger.warn("Skipping operating hour with missing day: {}", hourRequest);
+                continue;
+            }
+
+            OperatingHour hour = createOperatingHour(hourRequest, restaurantId);
+            hours.add(hour);
+        }
+
+        if (!hours.isEmpty()) {
+            operatingHourRepository.saveAll(hours);
+            logger.info("Saved {} operating hours", hours.size());
+        } else {
+            logger.debug("No valid operating hours to save");
+        }
+    }
+
+    private OperatingHour createOperatingHour(RestaurantRegistrationRequest.OperatingHourRequest hourRequest, Integer restaurantId) {
+        LocalTime openTime = parseTimeSafely(hourRequest.getOpenTime());
+        LocalTime closeTime = parseTimeSafely(hourRequest.getCloseTime());
+
+        return OperatingHour.builder()
+                .restaurantId(restaurantId)
+                .weekDay(hourRequest.getDay().toUpperCase())
+                .openTime(openTime)
+                .closeTime(closeTime)
+                .build();
+    }
+
+    private LocalTime parseTimeSafely(String timeString) {
+        if (timeString == null || timeString.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(timeString);
+        } catch (Exception e) {
+            logger.warn("Failed to parse time: {}, using null", timeString);
+            return null;
+        }
+    }
+
+    private void saveMenuItems(RestaurantRegistrationRequest request, Integer restaurantId) {
+        logger.debug("Saving menu items for restaurant ID: {}", restaurantId);
+
+        if (request.getMenuItems() == null || request.getMenuItems().isEmpty()) {
+            logger.debug("No menu items to save");
+            return;
+        }
+
+        Map<String, List<RestaurantRegistrationRequest.MenuItemRequest>> itemsByCategory =
+                request.getMenuItems().stream()
+                        .collect(Collectors.groupingBy(RestaurantRegistrationRequest.MenuItemRequest::getCategory));
+
+        logger.debug("Found menu categories: {}", itemsByCategory.keySet());
+
+        for (Map.Entry<String, List<RestaurantRegistrationRequest.MenuItemRequest>> entry : itemsByCategory.entrySet()) {
+            String categoryName = entry.getKey();
+            List<RestaurantRegistrationRequest.MenuItemRequest> itemsInCategory = entry.getValue();
+
+            logger.debug("Processing category '{}' with {} items", categoryName, itemsInCategory.size());
+
+            MenuCategory savedCategory = saveMenuCategory(restaurantId, categoryName);
+            saveMenuItemsForCategory(savedCategory.getCategoryId(), itemsInCategory);
+        }
+    }
+
+    private MenuCategory saveMenuCategory(Integer restaurantId, String categoryName) {
+        MenuCategory category = MenuCategory.builder()
+                .restaurantId(restaurantId)
+                .categoryName(categoryName)
+                .build();
+
+        MenuCategory savedCategory = menuCategoryRepository.save(category);
+        logger.debug("Saved menu category '{}' with ID: {}", categoryName, savedCategory.getCategoryId());
+
+        return savedCategory;
+    }
+
+    private void saveMenuItemsForCategory(Integer categoryId, List<RestaurantRegistrationRequest.MenuItemRequest> itemRequests) {
+        List<MenuItem> menuItems = itemRequests.stream()
+                .map(itemReq -> createMenuItem(itemReq, categoryId))
+                .collect(Collectors.toList());
+
+        menuItemRepository.saveAll(menuItems);
+        logger.info("Saved {} menu items for category ID: {}", menuItems.size(), categoryId);
+    }
+
+    private MenuItem createMenuItem(RestaurantRegistrationRequest.MenuItemRequest itemRequest, Integer categoryId) {
+        logger.debug("Creating menu item: {}", itemRequest.getName());
+
+        return MenuItem.builder()
+                .categoryId(categoryId)
+                .itemName(itemRequest.getName())
+                .description(itemRequest.getDescription())
+                .price(new BigDecimal(itemRequest.getPrice()))
+                .availability(MenuItem.AvailabilityStatus.AVAILABLE)
+                .build();
     }
 
 
@@ -482,12 +689,11 @@ public class RestaurantService {
         return RestaurantProfileResponse.builder()
                 .restaurantId(restaurant.getRestaurantId())
                 .name(restaurant.getName())
-                .description(restaurant.getDescription())
-                .businessType(restaurant.getBusinessType() != null ? restaurant.getBusinessType() : restaurant.getCuisineType())
                 .contactName(restaurant.getContactPersonName())
                 .phoneNumber(restaurant.getPhoneNumber())
                 .email(restaurant.getEmailAddress())
                 .status(restaurant.getStatus().name())
+                .imageUrl(restaurant.getPictureUrl())
                 .address(address != null ? com.frontdash.dao.response.AddressResponse.builder()
                         .addressId(address.getAddressId())
                         .streetAddress(address.getStreetAddress())
@@ -501,6 +707,7 @@ public class RestaurantService {
 
     @Transactional
     public RestaurantProfileResponse updateRestaurantProfile(Integer restaurantId, RestaurantProfileUpdateRequest request) {
+        System.out.println(request.toString());
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 
@@ -508,9 +715,10 @@ public class RestaurantService {
             restaurant.setName(request.getName());
         }
 
-        if (request.getBusinessType() != null) {
-            restaurant.setBusinessType(request.getBusinessType());
-            restaurant.setCuisineType(request.getBusinessType());
+        if (request.getImageUrl() != null) {
+            restaurant.setPictureUrl(request.getImageUrl());
+        } else {
+            restaurant.setPictureUrl(null);
         }
 
         restaurantRepository.save(restaurant);
@@ -725,4 +933,3 @@ public class RestaurantService {
     }
 
 }
-

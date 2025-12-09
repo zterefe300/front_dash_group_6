@@ -14,12 +14,11 @@ import java.util.List;
 public class RestaurantProfileResponse {
     private Integer restaurantId;
     private String name;
-    private String description;
-    private String businessType;
     private String contactName;
     private String phoneNumber;
     private String email;
     private String status;
+    private String imageUrl;
     private AddressResponse address;
     private List<OperatingHourResponse> operatingHours;
 }

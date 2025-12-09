@@ -3,14 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store';
+import { ImageUpload } from '../ImageUpload';
 
 type ProfileFormState = {
   name: string;
-  description: string;
-  businessType: string;
+  imageUrl?: string;
 };
 
 export function RestaurantProfile() {
@@ -25,8 +24,7 @@ export function RestaurantProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileFormState>({
     name: restaurantProfile?.name || restaurant?.name || '',
-    description: restaurantProfile?.description || '',
-    businessType: restaurantProfile?.businessType || '',
+    imageUrl: restaurantProfile?.imageUrl,
   });
 
   useEffect(() => {
@@ -40,8 +38,7 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
-        description: restaurantProfile.description || '',
-        businessType: restaurantProfile.businessType || '',
+        imageUrl: restaurantProfile.imageUrl,
       });
     }
   }, [restaurantProfile]);
@@ -53,8 +50,7 @@ export function RestaurantProfile() {
     }
     updateProfile(token, restaurant.id, {
       name: profile.name,
-      description: profile.description,
-      businessType: profile.businessType,
+      imageUrl: profile.imageUrl,
     })
       .then(() => {
         setIsEditing(false);
@@ -71,8 +67,7 @@ export function RestaurantProfile() {
     if (restaurantProfile) {
       setProfile({
         name: restaurantProfile.name,
-        description: restaurantProfile.description || '',
-        businessType: restaurantProfile.businessType || '',
+        imageUrl: restaurantProfile.imageUrl,
       });
     }
   };
@@ -90,7 +85,7 @@ export function RestaurantProfile() {
           </Button>
         ) : (
           <div className="space-x-2">
-            <Button variant="outline" onClick={handleCancel} disabled={isProfileUpdating}>
+            <Button onClick={handleCancel} disabled={isProfileUpdating}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isProfileUpdating}>
@@ -103,7 +98,7 @@ export function RestaurantProfile() {
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Tell customers more about your restaurant</CardDescription>
+          <CardDescription>Manage your restaurant&apos;s Image</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -116,27 +111,12 @@ export function RestaurantProfile() {
               placeholder="FrontDash Demo Kitchen"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Restaurant Description</Label>
-            <Textarea
-              id="description"
-              value={profile.description}
-              onChange={(e) => setProfile((prev) => ({ ...prev, description: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="Describe your restaurant, atmosphere, and offerings"
-              rows={5}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="businessType">Business Type</Label>
-            <Input
-              id="businessType"
-              value={profile.businessType}
-              onChange={(e) => setProfile((prev) => ({ ...prev, businessType: e.target.value }))}
-              disabled={!isEditing}
-              placeholder="Restaurant, Cafe, Bakery..."
-            />
-          </div>
+          <ImageUpload
+            value={profile.imageUrl}
+            onChange={(url) => setProfile((prev) => ({ ...prev, imageUrl: url }))}
+            label="Restaurant Image"
+            disabled={!isEditing}
+          />
         </CardContent>
       </Card>
     </div>

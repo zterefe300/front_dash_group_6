@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.frontdash.dao.request.LoginRequest;
-import com.frontdash.dao.response.LoginResponse;
+import com.frontdash.dao.response.EmployeeLoginResponse;
+import com.frontdash.dao.response.RestaurantLoginResponse;
 import com.frontdash.entity.EmployeeLogin;
 import com.frontdash.entity.Restaurant;
 import com.frontdash.entity.RestaurantLogin;
@@ -14,10 +15,6 @@ import com.frontdash.repository.EmployeeLoginRepository;
 import com.frontdash.repository.RestaurantLoginRepository;
 import com.frontdash.repository.RestaurantRepository;
 import com.frontdash.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -52,7 +49,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Verify current password
-        if (!currentPassword.equals(restaurantLogin.getPassword())) {
+        if (!passwordEncoder.matches(currentPassword, restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect");
         }
 
@@ -62,11 +59,16 @@ public class AuthService {
         }
 
         // Update password (Note: Should be encoded in production)
-        restaurantLogin.setPassword(newPassword);
+        restaurantLogin.setPassword(passwordEncoder.encode(newPassword));
+
+        // Mark as no longer first login
+        restaurantLogin.setIsFirstLogin(false);
+
         restaurantLoginRepository.save(restaurantLogin);
     }
 
-    public LoginResponse loginEmployee(LoginRequest request) {
+    @Transactional
+    public EmployeeLoginResponse loginEmployee(LoginRequest request) {
         System.out.println(request.getUsername());
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
@@ -79,20 +81,27 @@ public class AuthService {
         String message = login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN ?
             "Admin login successful" : "Staff login successful";
 
-        return LoginResponse.builder()
+        // Check if staff user needs to change password on first login
+        boolean forcePasswordChange = login.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF
+            && login.getLastLogin() == null;
+
+        // Update last login timestamp
+        login.setLastLogin(java.time.LocalDateTime.now());
+        employeeLoginRepository.save(login);
+
+        return EmployeeLoginResponse.builder()
                 .success(true)
                 .message(message)
                 .role(role)
+                .forcePasswordChange(forcePasswordChange)
                 .build();
     }
 
-    public LoginResponse loginOwner(String username, String password) {
+    public RestaurantLoginResponse loginOwner(String username, String password) {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        System.out.println(password);
-        System.out.println(restaurantLogin);
-        if (!password.equals(restaurantLogin.getPassword())) {
+        if (!passwordEncoder.matches(password, restaurantLogin.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
@@ -106,7 +115,7 @@ public class AuthService {
         // Generate JWT token
         String token = jwtUtil.generateToken(username, restaurant.getRestaurantId(), "OWNER");
 
-        return LoginResponse.builder()
+        return RestaurantLoginResponse.builder()
                 .success(true)
                 .message("Restaurant owner login successful")
                 .role("OWNER")
@@ -116,17 +125,7 @@ public class AuthService {
                 .restaurantName(restaurant.getName())
                 .email(restaurant.getEmailAddress())
                 .status(restaurant.getStatus().name())
+                .isFirstLogin(restaurantLogin.getIsFirstLogin())
                 .build();
     }
-
-    public LoginResponse login(LoginRequest request) {
-        try {
-            // First try employee login
-            return loginEmployee(request);
-        } catch (IllegalArgumentException e) {
-            // If employee login fails, try owner login
-            return loginOwner(request.getUsername(), request.getPassword());
-        }
-    }
-
 }

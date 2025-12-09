@@ -41,6 +41,7 @@ export const useAppStore = create<AppState>()(
         isAuthenticated: state.isAuthenticated,
         token: state.token,
         user: state.user,
+        isFirstLogin: state.isFirstLogin,
       }),
     }
   )
