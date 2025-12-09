@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../components/common/card';
-import { Input } from '../../../components/common/input';
-import { Button } from '../../../components/common/button';
-import { Label } from '../../../components/common/label';
-import { Alert, AlertDescription } from '../../../components/common/alert';
-import { useUser } from '../../../contexts/UserContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "../../../components/common/alert";
+import { Button } from "../../../components/common/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../../../components/common/card";
+import { Input } from "../../../components/common/input";
+import { Label } from "../../../components/common/label";
+import { useUser } from "../../../contexts/UserContext";
 
 export const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { login } = useUser();
+  const navigate = useNavigate();
 
   const validateUsername = (username: string): boolean => {
     // Administrator is always valid
-    if (username === 'administrator') return true;
+    if (username === "administrator") return true;
     // Staff usernames should have minimum 2 chars followed by 2 digits
     const staffPattern = /^[a-zA-Z]{2,}[0-9]{2}$/;
     // For wireframe: allow any other username format (will be treated as admin)
@@ -26,18 +35,22 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     if (!validateUsername(username)) {
-      setError('Please enter a valid username');
+      setError("Please enter a valid username");
       setIsLoading(false);
       return;
     }
 
     try {
-      await login(username, password);
+      const result = await login(username, password);
+      // If staff user needs to change password on first login, redirect to password change
+      if (result.forcePasswordChange) {
+        navigate('/employee/change-password');
+      }
     } catch (err) {
-      setError('Invalid credentials. Please try again.');
+      setError("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -53,9 +66,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <CardTitle className="text-center">FrontDash Employee Portal</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to access your employee dashboard
-          </CardDescription>
+          <CardDescription className="text-center">Sign in to access your employee dashboard</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -88,18 +99,14 @@ export const LoginPage: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </Button>
             <div className="text-sm text-muted-foreground">

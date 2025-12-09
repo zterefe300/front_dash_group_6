@@ -1,10 +1,16 @@
 import { Navigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
+import { useUser } from "../contexts/UserContext";
 
 /* RouteGuard for Employee portal*/
 export const EmployeePortalProtectedRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, forcePasswordChange } = useUser();
+
+  // If authenticated but needs to change password, redirect to change password
+  if (isAuthenticated && forcePasswordChange) {
+    return <Navigate to="/employee/change-password" replace />;
+  }
+
   return isAuthenticated ? (
     <DashboardLayout>{element}</DashboardLayout>
   ) : (
@@ -13,12 +19,18 @@ export const EmployeePortalProtectedRoute = ({ element }: { element: JSX.Element
 };
 
 export const EmployeePortalPublicRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, forcePasswordChange } = useUser();
+
+  // Allow authenticated users access to change-password if they need to change password
+  if (isAuthenticated && forcePasswordChange && window.location.pathname.includes('/change-password')) {
+    return element;
+  }
+
   return !isAuthenticated ? element : <Navigate to="/employee/dashboard" replace />;
 };
 
 export const CustomerPortalPublicRoute = ({ element }: { element: JSX.Element }) => {
-  return element
+  return element;
 };
 
 export const CustomerPortalProtectedRoute = ({ element }: { element: JSX.Element }) => {

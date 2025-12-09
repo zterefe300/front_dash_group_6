@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.frontdash.dao.request.LoginRequest;
-import com.frontdash.dao.response.LoginResponse;
+import com.frontdash.dao.response.EmployeeLoginResponse;
+import com.frontdash.dao.response.RestaurantLoginResponse;
 import com.frontdash.entity.EmployeeLogin;
 import com.frontdash.entity.Restaurant;
 import com.frontdash.entity.RestaurantLogin;
@@ -38,7 +39,8 @@ public class AuthService {
         employeeLoginRepository.save(login);
     }
 
-    public LoginResponse loginEmployee(LoginRequest request) {
+    @Transactional
+    public EmployeeLoginResponse loginEmployee(LoginRequest request) {
         System.out.println(request.getUsername());
         EmployeeLogin login = employeeLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
@@ -51,14 +53,23 @@ public class AuthService {
         String message = login.getEmployeeType() == EmployeeLogin.EmployeeType.ADMIN ?
             "Admin login successful" : "Staff login successful";
 
-        return LoginResponse.builder()
+        // Check if staff user needs to change password on first login
+        boolean forcePasswordChange = login.getEmployeeType() == EmployeeLogin.EmployeeType.STAFF
+            && login.getLastLogin() == null;
+
+        // Update last login timestamp
+        login.setLastLogin(java.time.LocalDateTime.now());
+        employeeLoginRepository.save(login);
+
+        return EmployeeLoginResponse.builder()
                 .success(true)
                 .message(message)
                 .role(role)
+                .forcePasswordChange(forcePasswordChange)
                 .build();
     }
 
-    public LoginResponse loginOwner(LoginRequest request) {
+    public RestaurantLoginResponse loginOwner(LoginRequest request) {
         RestaurantLogin restaurantLogin = restaurantLoginRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
@@ -73,21 +84,11 @@ public class AuthService {
             throw new IllegalArgumentException("Restaurant is not active");
         }
 
-        return LoginResponse.builder()
+        return RestaurantLoginResponse.builder()
                 .success(true)
                 .message("Restaurant owner login successful")
                 .role("OWNER")
                 .restaurantId(restaurant.getRestaurantId())
                 .build();
-    }
-
-    public LoginResponse login(LoginRequest request) {
-        try {
-            // First try employee login
-            return loginEmployee(request);
-        } catch (IllegalArgumentException e) {
-            // If employee login fails, try owner login
-            return loginOwner(request);
-        }
     }
 }
